@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Satyansh's Science Lab · Virtual Labs for Classes 6–8</title>
+<meta name="description" content="Interactive virtual science labs for every chapter of the NCERT Curiosity textbooks for Classes 6, 7 and 8.">
+<meta name="theme-color" content="#3b1d8f">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="Satyansh's Science Lab">
+<meta property="og:description" content="Virtual science labs for Classes 6, 7 and 8 — experiment, play and learn.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#ffffff; --ink2:rgba(255,255,255,.82); --ink3:rgba(255,255,255,.62);
+  --glass:rgba(255,255,255,.13); --glass2:rgba(255,255,255,.22); --edge:rgba(255,255,255,.38);
+  --c6a:#ff8a5c; --c6b:#ff4f8b; --c7a:#2ee6a8; --c7b:#14a6ff; --c8a:#a98bff; --c8b:#5b6bff;
+  --r:28px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;color:var(--ink);font:600 17px/1.55 "Nunito","Segoe UI",system-ui,sans-serif;background:#26115f;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+h1,h2,h3{font-family:"Baloo 2","Nunito",system-ui,sans-serif;line-height:1.08;margin:0;letter-spacing:-.01em}
+a{color:inherit}
+button{font:inherit}
+:focus-visible{outline:3px solid #ffe066;outline-offset:3px;border-radius:12px}
+
+/* ---------- living background ---------- */
+.sky{position:fixed;inset:0;z-index:0;overflow:hidden;background:
+  radial-gradient(1200px 800px at 10% 10%,#5b2bd6 0%,transparent 60%),
+  radial-gradient(900px 700px at 90% 20%,#d6338a 0%,transparent 60%),
+  radial-gradient(1000px 900px at 50% 110%,#0f7fb3 0%,transparent 60%),
+  linear-gradient(160deg,#2a1477,#3b1d8f 45%,#1d1a6b)}
+.blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;animation:drift 22s ease-in-out infinite alternate}
+.blob.b1{width:520px;height:520px;background:#ff5fa2;left:-120px;top:30%}
+.blob.b2{width:460px;height:460px;background:#2ee6a8;right:-120px;top:-80px;animation-duration:28s}
+.blob.b3{width:420px;height:420px;background:#ffb347;left:40%;bottom:-180px;animation-duration:25s}
+@keyframes drift{to{transform:translate(80px,-60px) scale(1.15)}}
+.star{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;animation:tw 3s ease-in-out infinite}
+@keyframes tw{50%{opacity:.15;transform:scale(.6)}}
+.float{position:absolute;font-size:34px;opacity:.85;filter:drop-shadow(0 6px 12px rgba(0,0,0,.25));animation:bob 7s ease-in-out infinite;user-select:none;pointer-events:none}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-22px) rotate(8deg)}}
+
+/* ---------- glass ---------- */
+.glass{position:relative;background:linear-gradient(145deg,rgba(255,255,255,.24),rgba(255,255,255,.08));
+  backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);
+  border:1.5px solid var(--edge);border-radius:var(--r);box-shadow:0 20px 50px -20px rgba(10,0,40,.55),inset 0 1px 0 rgba(255,255,255,.45)}
+
+.app{position:relative;z-index:2;min-height:100%;display:flex;flex-direction:column}
+.wrap{width:100%;max-width:1180px;margin:0 auto;padding:0 20px}
+.view{display:none;flex:1;animation:pop .55s cubic-bezier(.2,.9,.3,1.2)}
+.view.on{display:block}
+@keyframes pop{from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:none}}
+
+/* ---------- splash popup ---------- */
+.splash{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:rgba(20,8,60,.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:opacity .6s,visibility .6s}
+.splash.gone{opacity:0;visibility:hidden}
+.splash .card{width:min(520px,100%);padding:40px 30px 34px;text-align:center;animation:pop .8s cubic-bezier(.2,.9,.3,1.25)}
+.splash.gone .card{transform:scale(1.15);transition:transform .6s}
+.logo-xl{width:132px;height:132px;margin:0 auto 14px;display:block;animation:spinin 1.2s cubic-bezier(.2,.9,.3,1.3),wob 5s ease-in-out 1.2s infinite;filter:drop-shadow(0 12px 24px rgba(0,0,0,.3))}
+@keyframes spinin{from{transform:rotate(-200deg) scale(.2);opacity:0}}
+@keyframes wob{50%{transform:rotate(6deg) translateY(-6px)}}
+.splash h1{font-size:clamp(34px,7vw,48px);background:linear-gradient(90deg,#fff,#ffe066 40%,#ffb3d9 80%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.splash p{color:var(--ink2);margin:8px 0 26px;font-size:18px}
+.enter{display:inline-flex;align-items:center;gap:12px;border:0;cursor:pointer;padding:18px 34px;border-radius:99px;font:900 22px/1 "Baloo 2","Nunito",sans-serif;color:#3b1d8f;
+  background:linear-gradient(90deg,#ffe066,#ffb347,#ff8fc7);box-shadow:0 10px 30px -6px rgba(255,180,80,.7),inset 0 -4px 0 rgba(0,0,0,.12);animation:glow 2s ease-in-out infinite;transition:transform .15s}
+.enter:hover{transform:translateY(-3px) scale(1.04)}
+.enter:active{transform:translateY(1px) scale(.98)}
+@keyframes glow{50%{box-shadow:0 10px 50px 2px rgba(255,180,80,.85),inset 0 -4px 0 rgba(0,0,0,.12)}}
+.tiny{font-size:13px;color:var(--ink3);margin-top:18px}
+.burst{position:fixed;z-index:60;pointer-events:none;width:14px;height:14px;border-radius:50%;animation:fly 1s ease-out forwards}
+@keyframes fly{to{transform:translate(var(--x),var(--y)) scale(.2);opacity:0}}
+
+/* ---------- top bar ---------- */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 0}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font:800 20px/1 "Baloo 2",sans-serif}
+.brand img{width:40px;height:40px}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;text-decoration:none;font-weight:900;font-size:15px;cursor:pointer;border:1.5px solid var(--edge);background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:#fff;transition:background .2s,transform .15s}
+.pill:hover{background:var(--glass2);transform:translateY(-2px)}
+
+/* ---------- class picker ---------- */
+.hello{text-align:center;padding:26px 0 30px}
+.hello h2{font-size:clamp(34px,6vw,58px)}
+.hello h2 .wave{display:inline-block;animation:wave 2.2s ease-in-out infinite;transform-origin:70% 70%}
+@keyframes wave{0%,60%,100%{transform:rotate(0)}10%,30%{transform:rotate(16deg)}20%,40%{transform:rotate(-8deg)}}
+.hello p{color:var(--ink2);margin:8px auto 0;max-width:560px}
+.classes{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;perspective:1000px}
+.cls{display:block;text-decoration:none;padding:28px 26px 26px;min-height:330px;overflow:hidden;transform-style:preserve-3d;transition:transform .25s ease,box-shadow .25s;will-change:transform}
+.cls::before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(150deg,var(--a),var(--b));opacity:.35;z-index:-1}
+.cls::after{content:"";position:absolute;top:-60%;left:-80%;width:60%;height:220%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);transform:rotate(20deg);transition:left .7s}
+.cls:hover::after{left:130%}
+.cls:hover{box-shadow:0 30px 60px -20px rgba(10,0,40,.7),0 0 0 2px rgba(255,255,255,.55) inset}
+.cls .num{font:800 clamp(110px,13vw,150px)/.85 "Baloo 2",sans-serif;background:linear-gradient(180deg,#fff,rgba(255,255,255,.55));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 0 rgba(0,0,0,.12))}
+.cls .lbl{font:800 30px/1 "Baloo 2",sans-serif;margin-top:10px}
+.cls .sub{color:var(--ink2);font-size:15.5px;margin-top:6px}
+.cls .emo{position:absolute;right:18px;top:18px;font-size:44px;display:flex;flex-direction:column;gap:6px;align-items:center}
+.cls .emo span{animation:bob 5s ease-in-out infinite}.cls .emo span:nth-child(2){animation-delay:-1.6s;font-size:32px}.cls .emo span:nth-child(3){animation-delay:-3.1s;font-size:26px}
+.cls .go{margin-top:20px;display:inline-flex;align-items:center;gap:8px;background:#fff;color:#2a1477;font-weight:900;padding:11px 20px;border-radius:99px;box-shadow:0 6px 0 rgba(0,0,0,.15)}
+.cls .count{display:inline-block;margin-top:12px;padding:5px 12px;border-radius:99px;background:rgba(255,255,255,.2);font-weight:900;font-size:14px}
+
+/* ---------- logo footer ---------- */
+.badge{display:flex;flex-direction:column;align-items:center;gap:10px;padding:52px 0 40px;text-align:center}
+.badge .ring{position:relative;width:108px;height:108px;display:grid;place-items:center}
+.badge .ring::before{content:"";position:absolute;inset:-10px;border-radius:50%;background:conic-gradient(#ffe066,#ff5fa2,#7c5cff,#2ee6a8,#ffe066);animation:rot 6s linear infinite;filter:blur(8px);opacity:.8}
+.badge .ring img{position:relative;width:108px;height:108px}
+@keyframes rot{to{transform:rotate(360deg)}}
+.badge .word{font:800 clamp(26px,4.4vw,38px)/1 "Baloo 2",sans-serif;background:linear-gradient(90deg,#ffe066,#ff8fc7,#a98bff,#5ef2d6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.badge .url{color:var(--ink3);font-weight:800;letter-spacing:.12em;text-transform:uppercase;font-size:12.5px}
+
+/* ---------- class page ---------- */
+.chead{display:flex;align-items:center;gap:22px;padding:6px 0 22px}
+.chead .big{font:800 96px/.8 "Baloo 2",sans-serif;background:linear-gradient(180deg,var(--a),var(--b));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 0 rgba(255,255,255,.25))}
+.chead h2{font-size:clamp(32px,5vw,50px)}
+.chead p{margin:4px 0 0;color:var(--ink2)}
+.main-tab{display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:center;padding:24px 26px;text-decoration:none;overflow:hidden;transition:transform .2s}
+.main-tab::before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(110deg,var(--a),var(--b));opacity:.5;z-index:-1}
+.main-tab:hover{transform:translateY(-3px) scale(1.01)}
+.main-tab .ic{width:76px;height:76px;border-radius:22px;display:grid;place-items:center;font-size:40px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.5);animation:wob 4s ease-in-out infinite}
+.main-tab h3{font-size:clamp(23px,3vw,30px)}
+.main-tab p{margin:4px 0 0;color:var(--ink2);font-size:16px}
+.main-tab .cta{background:#fff;color:#2a1477;font-weight:900;padding:14px 22px;border-radius:99px;white-space:nowrap;box-shadow:0 6px 0 rgba(0,0,0,.15)}
+.listhead{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:34px 0 14px}
+.listhead h3{font-size:28px}
+.search{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;min-width:min(320px,100%)}
+.search input{all:unset;flex:1;color:#fff;font-weight:800;font-size:16px}
+.search input::placeholder{color:var(--ink3)}
+.chapters{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding-bottom:20px}
+.ch{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;padding:16px 18px;border-radius:22px;text-decoration:none;transition:transform .18s,background .2s;animation:pop .5s backwards}
+.ch:hover{transform:translateX(4px);background:linear-gradient(145deg,rgba(255,255,255,.32),rgba(255,255,255,.12))}
+.ch .n{width:54px;height:54px;border-radius:17px;display:grid;place-items:center;font:800 24px/1 "Baloo 2",sans-serif;background:linear-gradient(140deg,var(--ca),var(--cb));box-shadow:0 6px 14px -4px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.4)}
+.ch .t{font:800 20px/1.15 "Baloo 2",sans-serif}
+.ch .d{color:var(--ink2);font-size:14.5px;margin-top:3px;line-height:1.4}
+.ch .meta{font-size:12.5px;font-weight:900;color:var(--ink3);margin-top:5px;text-transform:uppercase;letter-spacing:.06em}
+.ch .arr{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.2);font-weight:900;transition:background .2s}
+.ch:hover .arr{background:#fff;color:#2a1477}
+.empty{padding:20px;text-align:center;color:var(--ink2)}
+footer.foot{text-align:center;color:var(--ink3);font-size:13.5px;padding:10px 16px 26px}
+
+@media (max-width:900px){.classes{grid-template-columns:1fr;max-width:520px;margin:0 auto}.cls{min-height:auto}.chapters{grid-template-columns:1fr}}
+@media (max-width:640px){
+  .wrap{padding:0 16px}.top{padding:14px 0}.brand span{display:none}
+  .main-tab{grid-template-columns:auto 1fr;padding:20px}.main-tab .cta{grid-column:1/-1;text-align:center}
+  .main-tab .ic{width:60px;height:60px;font-size:32px}
+  .chead .big{font-size:72px}.ch{grid-template-columns:auto 1fr;padding:14px}.ch .arr{display:none}
+  .float{font-size:24px;opacity:.4}
+  .cls .emo{flex-direction:row;gap:4px}.cls .emo span,.cls .emo span:nth-child(2),.cls .emo span:nth-child(3){font-size:26px}
+  .cls .sub{padding-right:0}.cls .num{font-size:96px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="sky" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+<div id="floaters" aria-hidden="true" style="position:fixed;inset:0;z-index:1;pointer-events:none"></div>
+
+<!-- Enter-the-lab popup -->
+<div class="splash gone" id="splash" role="dialog" aria-modal="true" aria-labelledby="sp-title">
+  <div class="glass card">
+    <img class="logo-xl" src="assets/logo.svg" alt="">
+    <h1 id="sp-title">Satyansh's Science Lab</h1>
+    <p>Virtual science labs for Classes 6, 7 &amp; 8.<br>Experiment, play and discover! 🔬✨</p>
+    <button class="enter" id="enterBtn">🚀 Enter the Lab</button>
+    <div class="tiny">Works on phones, tablets and computers</div>
+  </div>
+</div>
+
+<div class="app">
+  <!-- Class picker -->
+  <section class="view" id="v-home" aria-label="Choose your class">
+    <div class="wrap">
+      <div class="top"><a class="brand" href="#/"><img src="assets/logo.svg" alt=""><span>Science Lab</span></a><span class="pill" style="cursor:default">🧪 <span id="totalLabs">37</span> labs</span></div>
+      <div class="hello"><h2>Pick your class <span class="wave">👋</span></h2><p>Every chapter has its own virtual lab — with experiments, games and a quiz.</p></div>
+      <div class="classes" id="classes"></div>
+      <div class="badge">
+        <div class="ring"><img src="assets/logo.svg" alt="Science Lab logo"></div>
+        <div class="word">Satyansh's Science Lab</div>
+        <div class="url">lab.satyansh.blog · Curiosity labs · Grades 6–8</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Class page -->
+  <section class="view" id="v-class" aria-label="Class labs">
+    <div class="wrap">
+      <div class="top"><a class="pill" href="#/classes">← All classes</a><a class="brand" href="#/classes"><img src="assets/logo.svg" alt=""><span>Science Lab</span></a></div>
+      <div class="chead" id="chead"></div>
+      <a class="glass main-tab" id="mainTab"></a>
+      <div class="listhead"><h3>📚 Chapter labs</h3><label class="glass search">🔎<input id="q" type="search" placeholder="Search a chapter…" aria-label="Search chapters"></label></div>
+      <div class="chapters" id="chapters"></div>
+    </div>
+  </section>
+
+  <footer class="foot">Made with 💜 for curious young scientists · Based on the NCERT <i>Curiosity</i> science textbooks</footer>
+</div>
+
+<script>
+const DATA = {"6": [{"num": 1, "file": "ch01-the-wonderful-world-of-science.html", "title": "The Wonderful World of Science", "short": "Solve the pen mystery, find a puncture and learn the scientific method.", "acc": ["#6A4CE0", "#6A4CE0"], "stations": 5}, {"num": 2, "file": "ch02-diversity-in-the-living-world.html", "title": "Diversity in the Living World", "short": "Build herbs, shrubs and trees, match leaves with roots, explore habitats.", "acc": ["#1E8F5A", "#1E8F5A"], "stations": 6}, {"num": 3, "file": "ch03-mindful-eating.html", "title": "Mindful Eating: A Path to a Healthy Body", "short": "Test foods for starch, fat and protein; build a balanced thali.", "acc": ["#E2672E", "#E2672E"], "stations": 5}, {"num": 4, "file": "ch04-exploring-magnets.html", "title": "Exploring Magnets", "short": "Iron filings, compasses, attraction and repulsion, make your own magnet.", "acc": ["#D63B4A", "#D63B4A"], "stations": 6}, {"num": 5, "file": "ch05-measurement-of-length-and-motion.html", "title": "Measurement of Length and Motion", "short": "Handspans, reading a scale, curved lines and types of motion.", "acc": ["#0E8A9A", "#0E8A9A"], "stations": 5}, {"num": 6, "file": "ch06-materials-around-us.html", "title": "Materials Around Us", "short": "Lustre, hardness, transparency, solubility, bounce, mass and volume.", "acc": ["#B3672B", "#B3672B"], "stations": 6}, {"num": 7, "file": "ch07-temperature-and-its-measurement.html", "title": "Temperature and its Measurement", "short": "Fool your hands, read thermometers, convert °C, °F and K.", "acc": ["#D9452B", "#D9452B"], "stations": 6}, {"num": 8, "file": "ch08-a-journey-through-states-of-water.html", "title": "A Journey through States of Water", "short": "Particle model, evaporation race, condensation, matka and the water cycle.", "acc": ["#2C7FD6", "#2C7FD6"], "stations": 6}, {"num": 9, "file": "ch09-methods-of-separation-in-everyday-life.html", "title": "Methods of Separation in Everyday Life", "short": "Winnowing, sieving, filtration, evaporation and magnetic separation.", "acc": ["#7A57C9", "#7A57C9"], "stations": 7}, {"num": 10, "file": "ch10-living-creatures.html", "title": "Living Creatures: Exploring their Characteristics", "short": "Signs of life, seed germination, plant responses and life cycles.", "acc": ["#2E9A44", "#2E9A44"], "stations": 5}, {"num": 11, "file": "ch11-natures-treasures.html", "title": "Nature's Treasures", "short": "Air, wind power, water saving, soil, fossil fuels and resources.", "acc": ["#1F8A70", "#1F8A70"], "stations": 7}, {"num": 12, "file": "ch12-beyond-earth.html", "title": "Beyond Earth", "short": "Constellations, the Pole Star, light pollution and the Solar System.", "acc": ["#4B5BD6", "#4B5BD6"], "stations": 6}], "7": [{"num": 1, "file": "ch01-the-ever-evolving-world-of-science.html", "title": "The Ever-Evolving World of Science", "short": "Great scientists don't just answer questions — they ask amazing ones. Can you think like a scientist?", "acc": ["#e2683c", "#7b3fb5"], "stations": 5}, {"num": 2, "file": "ch02-exploring-substances-acidic-basic-and-neutral.html", "title": "Exploring Substances: Acidic, Basic & Neutral", "short": "Why do some fruits taste sour? Why does soap turn a haldi stain red? Let's test substances with nature's own colour-changers.", "acc": ["#d6336c", "#2b8a3e"], "stations": 5}, {"num": 3, "file": "ch03-electricity-circuits-and-their-components.html", "title": "Electricity: Circuits & their Components", "short": "What does it take to make a lamp glow? Build circuits, flip cells, test materials — and discover the complete path.", "acc": ["#f08c00", "#1c7ed6"], "stations": 6}, {"num": 4, "file": "ch04-the-world-of-metals-and-non-metals.html", "title": "The World of Metals & Non-metals", "short": "Why does an ironsmith beat red-hot iron into shape — while coal just crumbles? Hammer, ring, heat, rust and burn your way to the answer.", "acc": ["#5c7cfa", "#c2410c"], "stations": 7}, {"num": 5, "file": "ch05-changes-around-us-physical-and-chemical.html", "title": "Changes Around Us: Physical & Chemical", "short": "Ice melts, milk curdles, iron rusts, candles burn. Which changes make something new — and which can be undone?", "acc": ["#0ca678", "#e8590c"], "stations": 7}, {"num": 6, "file": "ch06-adolescence-a-stage-of-growth-and-change.html", "title": "Adolescence: A Stage of Growth & Change", "short": "Taller one summer, a new voice the next, big feelings in between — what is happening during adolescence, and how can we make it a joyful journey?", "acc": ["#7048e8", "#e64980"], "stations": 7}, {"num": 7, "file": "ch07-heat-transfer-in-nature.html", "title": "Heat Transfer in Nature", "short": "Why do pins drop one by one from a heated strip, why does smoke rise, and why does the wind at a beach change direction at night?", "acc": ["#f03e3e", "#1971c2"], "stations": 7}, {"num": 8, "file": "ch08-measurement-of-time-and-motion.html", "title": "Measurement of Time & Motion", "short": "How did people tell time before clocks? Why does a pendulum keep such steady time? And how do we decide who is really the fastest?", "acc": ["#1098ad", "#5f3dc4"], "stations": 6}, {"num": 9, "file": "ch09-life-processes-in-animals.html", "title": "Life Processes in Animals", "short": "Where does your chapati go after you swallow it? Why does it taste sweet when you chew it long? And what exactly do your lungs do with every breath?", "acc": ["#e8590c", "#c2255c"], "stations": 7}, {"num": 10, "file": "ch10-life-processes-in-plants.html", "title": "Life Processes in Plants", "short": "Plants don't eat like animals — so where does their food come from? Do they breathe? How does water climb all the way up a tree?", "acc": ["#2f9e44", "#0c8599"], "stations": 7}, {"num": 11, "file": "ch11-light-shadows-and-reflections.html", "title": "Light: Shadows & Reflections", "short": "Does light really travel in straight lines? How are shadows made, why does a mirror swap left and right, and why is a pinhole image upside down?", "acc": ["#f59f00", "#3b5bdb"], "stations": 7}, {"num": 12, "file": "ch12-earth-moon-and-the-sun.html", "title": "Earth, Moon & the Sun", "short": "Does the Sun really move across the sky? Why do we have seasons? How can the small Moon hide the giant Sun?", "acc": ["#364fc7", "#d9480f"], "stations": 6}], "8": [{"num": 1, "file": "ch01-exploring-the-investigative-world-of-science.html", "title": "Exploring the Investigative World of Science", "short": "Sharpen questions, run a fair dough-rise test, order the investigation cycle and estimate the uncountable.", "acc": ["#7048e8", "#12b886"], "stations": 5}, {"num": 2, "file": "ch02-the-invisible-living-world.html", "title": "The Invisible Living World: Beyond Our Naked Eye", "short": "Focus a microscope on onion and cheek cells, explore cell parts, meet microbes and make curd.", "acc": ["#0ca678", "#5f3dc4"], "stations": 6}, {"num": 3, "file": "ch03-health-the-ultimate-treasure.html", "title": "Health: The Ultimate Treasure", "short": "Balance the health triangle, tell signs from symptoms, stop a germ outbreak and see how vaccines train the body.", "acc": ["#f76707", "#1098ad"], "stations": 6}, {"num": 4, "file": "ch04-electricity-magnetic-and-heating-effects.html", "title": "Electricity: Magnetic and Heating Effects", "short": "Deflect a compass with current, build an electromagnet, heat a wire and light an LED with lemons.", "acc": ["#f59f00", "#1c7ed6"], "stations": 6}, {"num": 5, "file": "ch05-exploring-forces.html", "title": "Exploring Forces", "short": "Push a ball around, pull blocks over rough and smooth surfaces, charge a balloon, weigh things on the Moon and feel upthrust.", "acc": ["#3b5bdb", "#e64980"], "stations": 6}, {"num": 6, "file": "ch06-pressure-winds-storms-and-cyclones.html", "title": "Pressure, Winds, Storms, and Cyclones", "short": "Sink bricks in sand, squirt water from a bottle, make a sea breeze, guide lightning safely and grow a cyclone.", "acc": ["#1971c2", "#12b886"], "stations": 6}, {"num": 7, "file": "ch07-particulate-nature-of-matter.html", "title": "Particulate Nature of Matter", "short": "Dilute a purple crystal, heat and cool particles, squeeze a syringe, race ink in hot and cold water.", "acc": ["#ae3ec9", "#1098ad"], "stations": 6}, {"num": 8, "file": "ch08-nature-of-matter-elements-compounds-mixtures.html", "title": "Nature of Matter: Elements, Compounds, and Mixtures", "short": "Identify particle pictures, turn iron and sulfur into a new compound, char sugar and split water with electricity.", "acc": ["#2f9e44", "#f08c00"], "stations": 6}, {"num": 9, "file": "ch09-solutes-solvents-and-solutions.html", "title": "The Amazing World of Solutes, Solvents, and Solutions", "short": "Saturate a solution, warm it to dissolve more, fizz a soda, measure density and build a liquid rainbow tower.", "acc": ["#0c8599", "#e8590c"], "stations": 5}, {"num": 10, "file": "ch10-light-mirrors-and-lenses.html", "title": "Light: Mirrors and Lenses", "short": "Check the laws of reflection, move a candle in front of curved mirrors and lenses, and match them to their uses.", "acc": ["#f59f00", "#7048e8"], "stations": 5}, {"num": 11, "file": "ch11-keeping-time-with-the-skies.html", "title": "Keeping Time with the Skies", "short": "Spin the Moon through its phases, name the phases, watch festivals drift, convert dates to the Indian National Calendar and launch satellites.", "acc": ["#364fc7", "#f08c00"], "stations": 6}, {"num": 12, "file": "ch12-how-nature-works-in-harmony.html", "title": "How Nature Works in Harmony", "short": "Sort a pond into living and non-living parts, build food chains, balance a forest, match partnerships and watch decomposers recycle.", "acc": ["#2b8a3e", "#f59f00"], "stations": 6}, {"num": 13, "file": "ch13-our-home-earth-a-unique-planet.html", "title": "Our Home: Earth, a Unique Life Sustaining Planet", "short": "Find the Goldilocks zone, switch on Earth’s shields, sort the four spheres, explore reproduction and the triple planetary crisis.", "acc": ["#1971c2", "#2f9e44"], "stations": 6}]};
+const CLS = {
+  '6': {a:'#ff8a5c', b:'#ff4f8b', emo:['🧲','🌱','🌡️'], blurb:'Magnets, food, water, plants & the night sky'},
+  '7': {a:'#2ee6a8', b:'#14a6ff', emo:['⚡','🧪','🌞'], blurb:'Acids & bases, circuits, heat, light & life'},
+  '8': {a:'#a98bff', b:'#5b6bff', emo:['🦠','🔦','🌪️'], blurb:'Microbes, forces, matter, mirrors & cyclones'}
+};
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const words = ['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen'];
+
+/* background decorations */
+(function deco(){
+  const sky = document.querySelector('.sky');
+  for (let i = 0; i < 70; i++) { const s = document.createElement('i'); s.className = 'star'; s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${-Math.random()*3}s;opacity:${.3+Math.random()*.7}`; sky.appendChild(s); }
+  const em = ['🔬','🧪','🚀','🪐','🧲','🌱','💡','⚛️','🦠','🌈','🔭','🧬','⭐','🌍'];
+  const f = $('#floaters'); const n = innerWidth < 640 ? 5 : 12;
+  for (let i = 0; i < n; i++) { const e = document.createElement('span'); e.className = 'float'; e.textContent = em[i % em.length];
+    const side = i % 2 ? 'left' : 'right'; e.style.cssText = `${side}:${2 + Math.random()*10}%;top:${6 + (i*83)%86}%;animation-delay:${-Math.random()*7}s;animation-duration:${6+Math.random()*4}s`; f.appendChild(e); }
+})();
+
+/* tiny sounds */
+let ac; function tone(f, d = .12, v = .08, type = 'sine') { try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(v, ac.currentTime); g.gain.exponentialRampToValueAtTime(.0001, ac.currentTime + d); o.connect(g).connect(ac.destination); o.start(); o.stop(ac.currentTime + d); } catch (e) {} }
+const chime = () => [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => tone(f, .25, .07), i * 80));
+
+/* class picker */
+$('#totalLabs').textContent = Object.values(DATA).reduce((s, a) => s + a.length, 0);
+$('#classes').innerHTML = ['6','7','8'].map(k => { const c = CLS[k];
+  return `<a class="glass cls" href="#/class-${k}" style="--a:${c.a};--b:${c.b}" data-tilt>
+    <div class="emo">${c.emo.map(e => `<span>${e}</span>`).join('')}</div>
+    <div class="num">${k}</div><div class="lbl">Class ${k}</div><div class="sub">${c.blurb}</div>
+    <span class="count">${DATA[k].length} chapter labs</span><br><span class="go">Let's go →</span></a>`; }).join('');
+document.querySelectorAll('[data-tilt]').forEach(el => {
+  el.addEventListener('pointermove', e => { if (e.pointerType !== 'mouse') return; const r = el.getBoundingClientRect(); const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5; el.style.transform = `rotateY(${x*12}deg) rotateX(${-y*12}deg) translateY(-6px)`; });
+  el.addEventListener('pointerleave', () => el.style.transform = '');
+  el.addEventListener('click', () => tone(880, .1, .06));
+});
+
+/* class page */
+function renderClass(k) {
+  const c = CLS[k], list = DATA[k];
+  const v = $('#v-class'); v.style.setProperty('--a', c.a); v.style.setProperty('--b', c.b);
+  $('#chead').innerHTML = `<div class="big" style="--a:${c.a};--b:${c.b}">${k}</div><div><h2>Class ${k} Science Labs</h2><p>${list.length} chapters · ${c.blurb}</p></div>`;
+  const mt = $('#mainTab'); mt.href = `class-${k}/index.html`; mt.style.setProperty('--a', c.a); mt.style.setProperty('--b', c.b);
+  mt.innerHTML = `<div class="ic">🧭</div><div><h3>Class ${k} Lab Hub</h3><p>The main tab — enter to explore all ${words[list.length] || list.length} chapter labs in one place.</p></div><span class="cta">Enter →</span>`;
+  const q = $('#q'); q.value = '';
+  const draw = () => { const s = q.value.trim().toLowerCase();
+    const items = list.filter(ch => !s || (ch.title + ' ' + ch.short + ' ' + ch.num).toLowerCase().includes(s));
+    $('#chapters').innerHTML = items.length ? items.map((ch, i) => `<a class="glass ch" href="class-${k}/${ch.file}" style="--ca:${ch.acc[0]};--cb:${ch.acc[1]};animation-delay:${i*40}ms">
+      <span class="n">${ch.num}</span><span><div class="t">${esc(ch.title)}</div><div class="d">${esc(ch.short)}</div><div class="meta">Chapter ${ch.num} · ${ch.stations} stations</div></span><span class="arr">→</span></a>`).join('')
+      : '<div class="glass empty">No chapter matches that search. Try another word!</div>'; };
+  q.oninput = draw; draw();
+  document.title = `Class ${k} · Satyansh's Science Lab`;
+}
+
+/* router */
+function show(id) { document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id)); window.scrollTo(0, 0); }
+function route() {
+  const h = location.hash.replace(/^#\/?/, '');
+  const m = h.match(/^class-(6|7|8)$/);
+  if (m) { renderClass(m[1]); show('v-class'); return; }
+  document.title = "Satyansh's Science Lab · Virtual Labs for Classes 6–8";
+  show('v-home');
+  if (!h) { $('#splash').classList.remove('gone'); setTimeout(() => $('#enterBtn').focus({preventScroll:true}), 50); }
+}
+window.addEventListener('hashchange', route);
+$('#enterBtn').addEventListener('click', e => {
+  if ($('#splash').classList.contains('gone')) return;
+  chime();
+  const r = e.currentTarget.getBoundingClientRect(), cols = ['#ffe066','#ff8fc7','#5ef2d6','#a98bff','#ffb347'];
+  for (let i = 0; i < 26; i++) { const b = document.createElement('i'); b.className = 'burst'; const a = Math.random() * Math.PI * 2, d = 80 + Math.random() * 160;
+    b.style.cssText = `left:${r.left + r.width/2}px;top:${r.top + r.height/2}px;background:${cols[i%5]};--x:${Math.cos(a)*d}px;--y:${Math.sin(a)*d}px`; document.body.appendChild(b); setTimeout(() => b.remove(), 1000); }
+  $('#splash').classList.add('gone');
+  history.replaceState(null, '', '#/classes');
+});
+route();
+</script>
+</body>
+</html>
