@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Magnet Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3F7F4; --grid:#DCE9E3; --ink:#18324A; --ink2:#4B6274; --bench:#1D2A33; --bench2:#26363F;
+  --marker:#FFD84D; --ok:#1E9E6A; --bad:#D64545; --line:#C9D9D2; --card:#FFFFFF;
+  --acc:#2F7DD1; --acc2:#9CC8F5; --accInk:#fff;
+  --r-lg:22px; --r-md:14px; --r-sm:9px;
+  --fh:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --fb:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);font:17px/1.55 var(--fb);background:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;}
+h1,h2,h3,h4{font-family:var(--fh);line-height:1.1;margin:0 0 .4em;letter-spacing:-.01em}
+p{margin:0 0 .8em}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--marker);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* hero */
+.hero{padding:44px 0 26px}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center}
+.chapno{font-family:var(--fh);font-weight:800;font-size:15px;color:var(--acc);display:inline-flex;gap:8px;align-items:center;background:#fff;border:2px solid var(--acc);border-radius:99px;padding:3px 14px 3px 4px}
+.chapno b{background:var(--acc);color:var(--accInk);border-radius:99px;min-width:28px;height:28px;display:grid;place-items:center;font-size:15px}
+.hero h1{font-size:clamp(38px,5.6vw,68px);font-weight:800;margin:16px 0 14px}
+.hero h1 .u{background:linear-gradient(transparent 62%,var(--marker) 62% 92%,transparent 92%)}
+.hero .lede{font-size:19px;color:var(--ink2);max-width:52ch}
+.hero-stage{background:var(--bench);border-radius:var(--r-lg);aspect-ratio:5/4;position:relative;overflow:hidden;box-shadow:0 18px 0 -8px var(--acc2),0 24px 40px -18px rgba(24,50,74,.45)}
+.hero-stage canvas,.hero-stage svg{width:100%;height:100%;display:block}
+.procedure{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:6px;counter-reset:p}
+.procedure li{counter-increment:p;display:flex;gap:10px;align-items:center;font-weight:700}
+.procedure li::before{content:counter(p);width:26px;height:26px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-size:13px;flex:none}
+.procedure li.done::before{content:"✓";background:var(--ok);border-color:var(--ok);color:#fff}
+
+/* tab bar */
+.bar{position:sticky;top:0;z-index:20;background:rgba(243,247,244,.92);backdrop-filter:blur(8px);border-bottom:2px solid var(--line)}
+.bar .wrap{display:flex;gap:8px;align-items:center;overflow-x:auto;padding-top:10px;padding-bottom:10px;scrollbar-width:thin}
+.tab{border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:99px;padding:7px 15px;font-weight:700;font-size:15px;white-space:nowrap;transition:transform .15s}
+.tab:hover{transform:translateY(-2px)}
+.tab[aria-selected=true]{background:var(--ink);color:#fff}
+.tab .tick{display:none;color:var(--ok);margin-left:6px}
+.tab.done .tick{display:inline}
+.tab[aria-selected=true] .tick{color:var(--marker)}
+.meter{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;white-space:nowrap;padding-left:12px}
+.meter i{display:block;width:90px;height:9px;background:#fff;border:2px solid var(--ink);border-radius:9px;overflow:hidden}
+.meter i b{display:block;height:100%;width:0;background:var(--ok);transition:width .5s}
+
+/* panels */
+main{padding:28px 0 60px}
+.panel{display:none;animation:rise .35s ease}
+.panel.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.panel-head{display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.panel-head h2{font-size:clamp(26px,3.4vw,38px);margin:0}
+.panel-head .aim{color:var(--ink2);max-width:62ch;margin:6px 0 0}
+.lab{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:20px;align-items:start}
+.lab.wide{grid-template-columns:1fr}
+.stage{background:var(--bench);border-radius:var(--r-lg);position:relative;overflow:hidden;color:#E8F0F2;min-height:300px}
+.stage canvas,.stage>svg{display:block;width:100%;height:auto}
+.stage .hud{position:absolute;left:14px;top:12px;font-weight:700;font-size:14px;background:rgba(0,0,0,.35);padding:4px 10px;border-radius:8px;pointer-events:none}
+.side{display:grid;gap:14px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:var(--r-md);padding:16px 18px}
+.card h3{font-size:19px}
+.card.note{background:#FFFBE6;border-color:#F1DF8F}
+.card.note h3::before{content:"✎ ";color:#B98B00}
+.card.why{border-left:7px solid var(--acc)}
+.ctrl{display:grid;gap:12px}
+.ctrl label{font-weight:700;font-size:15px;display:grid;gap:4px}
+.ctrl .row{display:flex;gap:8px;flex-wrap:wrap}
+input[type=range]{width:100%;accent-color:var(--acc);height:28px}
+.btn{border:2px solid var(--ink);background:var(--acc);color:var(--accInk);border-radius:12px;padding:9px 16px;font-weight:700;box-shadow:0 4px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn.sm{padding:6px 11px;font-size:14px;border-radius:10px;box-shadow:0 3px 0 var(--ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.sel{background:var(--marker);color:var(--ink)}
+.readout{font-family:var(--fh);font-size:30px;font-weight:800;line-height:1}
+.readout small{font-size:14px;font-weight:600;color:var(--ink2);display:block;margin-top:4px;font-family:var(--fb)}
+.obs{min-height:3em;font-size:16px}
+.obs.ok{color:var(--ok)} .obs.bad{color:var(--bad)}
+.hl{background:linear-gradient(transparent 55%,var(--marker) 55%);font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pill:empty{display:none}
+.pill{display:inline-block;border-radius:99px;padding:2px 10px;font-size:13px;font-weight:700;background:var(--acc2);color:var(--ink)}
+table.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th,.tbl td{border-bottom:1.5px solid var(--line);padding:6px 8px;text-align:left}
+.tbl th{font-family:var(--fh)}
+
+/* sorting game */
+.sorter{display:grid;gap:14px}
+.tray{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:10px;border:2px dashed var(--line);border-radius:var(--r-md);background:#fff}
+.chip{border:2px solid var(--ink);background:#fff;border-radius:12px;padding:7px 12px;font-weight:700;font-size:15px;user-select:none;touch-action:none;display:inline-flex;align-items:center;gap:6px;transition:transform .15s,background .2s}
+.chip .em{font-size:22px;line-height:1}
+.chip.picked{background:var(--marker);transform:scale(1.06) rotate(-2deg)}
+.chip.right{border-color:var(--ok);background:#E3F6EC;cursor:default}
+.chip.dragging{position:fixed;z-index:999;pointer-events:none;box-shadow:0 12px 24px rgba(0,0,0,.25)}
+.bins{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.bin{border:2px solid var(--ink);border-radius:var(--r-md);background:#fff;min-height:140px;padding:10px;display:flex;flex-direction:column;gap:6px;transition:background .2s,transform .2s}
+.bin h4{font-size:17px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.bin.hover{background:#FFF6CC;transform:scale(1.02)}
+.bin .chips{display:flex;flex-wrap:wrap;gap:6px}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+
+/* order game */
+.order{display:flex;flex-wrap:wrap;gap:8px}
+.slots{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.slot{min-width:120px;min-height:44px;border:2px dashed var(--ink2);border-radius:12px;display:grid;place-items:center;padding:6px 10px;font-weight:700;color:var(--ink2);background:#fff}
+.slot.filled{border-style:solid;border-color:var(--ok);color:var(--ink);background:#E3F6EC}
+
+/* quiz */
+.quiz{max-width:760px;margin:0 auto}
+.qcard{background:#fff;border:2px solid var(--ink);border-radius:var(--r-lg);padding:24px;box-shadow:8px 8px 0 var(--acc2)}
+.qtop{display:flex;justify-content:space-between;font-weight:700;color:var(--ink2);margin-bottom:10px;font-size:15px}
+.qtext{font-family:var(--fh);font-size:24px;font-weight:700;margin-bottom:16px}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:11px 14px;font-weight:700;display:flex;gap:12px;align-items:center}
+.opt:hover:not([disabled]){border-color:var(--ink)}
+.opt .k{width:30px;height:30px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;flex:none;font-size:14px}
+.opt.right{border-color:var(--ok);background:#E3F6EC}
+.opt.wrong{border-color:var(--bad);background:#FCE8E8}
+.qexp{margin-top:14px;padding:12px 14px;border-radius:12px;background:#F2F6FA;display:none}
+.qexp.on{display:block;animation:rise .3s}
+.qnav{display:flex;justify-content:flex-end;margin-top:16px}
+.score{text-align:center}
+.score .big{font-family:var(--fh);font-size:72px;font-weight:800;color:var(--acc)}
+
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:22px}
+.fact{background:#fff;border:2px solid var(--line);border-radius:var(--r-md);padding:14px 16px;font-size:15px}
+.fact b{font-family:var(--fh);display:block;font-size:17px;margin-bottom:4px;color:var(--acc)}
+
+footer{padding:24px 0 40px;color:var(--ink2);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:12px;font-weight:700;z-index:1000;transition:transform .35s cubic-bezier(.2,1.4,.4,1);max-width:90vw;text-align:center}
+.toast.on{transform:translate(-50%,0)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:999}
+
+@media (max-width:860px){
+  .hero .wrap,.lab{grid-template-columns:1fr}
+  .hero{padding-top:26px}
+  .meter i{width:60px}
+  .grid2{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+
+:root{--acc:#D63B4A;--acc2:#FFB8BF}
+.stage canvas{touch-action:none}
+.legend{display:flex;gap:14px;font-size:14px;font-weight:700;flex-wrap:wrap}
+.legend span::before{content:"";display:inline-block;width:14px;height:14px;border-radius:3px;margin-right:6px;vertical-align:-2px;background:var(--c)}
+.count{font-family:var(--fh);font-weight:800;font-size:44px;color:var(--acc);line-height:1}
+
+</style><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"></head><body>
+
+
+<header class="hero"><div class="wrap">
+  <div>
+    <span class="chapno"><b>4</b>Chapter 4</span>
+    <h1>Exploring <span class="u">Magnets</span></h1>
+    <p class="lede">Find out which materials a magnet attracts, see where its pull is strongest, use it to find directions, and make a magnet of your own from a sewing needle.</p>
+    <ol class="procedure">
+      <li data-t="attract">Test what sticks</li>
+      <li data-t="filings">Sprinkle iron filings</li>
+      <li data-t="dir">Find north and south</li>
+      <li data-t="poles">Make poles meet</li>
+      <li data-t="make">Make your own magnet</li>
+      <li data-t="quiz">Check what you learnt</li>
+    </ol>
+  </div>
+  <div class="hero-stage"><canvas id="heroCv"></canvas></div>
+</div></header>
+
+<nav class="bar"><div class="wrap">
+  <button class="tab" data-t="attract">What sticks?<span class="tick">✓</span></button>
+  <button class="tab" data-t="filings">Iron filings<span class="tick">✓</span></button>
+  <button class="tab" data-t="dir">Finding directions<span class="tick">✓</span></button>
+  <button class="tab" data-t="poles">Attract or repel<span class="tick">✓</span></button>
+  <button class="tab" data-t="make">Make a magnet<span class="tick">✓</span></button>
+  <button class="tab" data-t="quiz">Quiz<span class="tick">✓</span></button>
+  <div class="meter"><i><b></b></i><span></span></div>
+</div></nav>
+
+<main class="wrap">
+<section class="panel" id="p-attract">
+  <div class="panel-head"><div><h2>Which objects stick to a magnet?</h2><p class="aim">Drag the magnet over the table and bring it near each object. Predict first, then test!</p></div><button class="btn ghost sm" id="attReset">Put everything back</button></div>
+  <div class="lab">
+    <div class="stage"><canvas id="attCv"></canvas><div class="hud">Drag the magnet</div></div>
+    <div class="side"><div class="card"><h3>Results</h3><table class="tbl"><thead><tr><th>Object</th><th>Material</th><th>Attracted?</th></tr></thead><tbody id="attTbl"></tbody></table></div>
+      <div class="card why"><p class="obs" id="attObs">Materials that are attracted towards a magnet are <b>magnetic</b>. Those that are not attracted are <b>non-magnetic</b>.</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-filings">
+  <div class="panel-head"><div><h2>Where is the magnet strongest?</h2><p class="aim">Iron filings are spread on a sheet of paper over a bar magnet. Tap the paper to let them settle. Drag the magnet to move it.</p></div></div>
+  <div class="lab">
+    <div class="stage"><canvas id="filCv"></canvas></div>
+    <div class="side"><div class="card ctrl"><div class="row"><button class="btn" id="tapBtn">Tap the paper</button><button class="btn ghost" id="spreadBtn">Spread fresh filings</button></div>
+      <label><span><input type="checkbox" id="showLines"> Show the magnetic field lines</span></label></div>
+      <div class="card why"><p class="obs" id="filObs">What do you notice about where the filings collect?</p></div>
+      <div class="card note"><h3>Poles</h3><p>Most filings stick near the two ends of the bar magnet. These ends are its <b>poles</b>: the North pole and the South pole. Every magnet has two poles.</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-dir">
+  <div class="panel-head"><div><h2>A freely suspended magnet</h2><p class="aim">A bar magnet hangs from a thread so it can turn freely. Drag it to spin it in any direction, let go, and see where it comes to rest. Do it three times.</p></div></div>
+  <div class="lab">
+    <div class="stage"><canvas id="dirCv"></canvas><div class="hud" id="dirHud">Spins: 0</div></div>
+    <div class="side"><div class="card"><div class="count" id="dirAng">—</div><p>angle from north when it stops</p><p class="obs" id="dirObs"></p></div>
+      <div class="card note"><h3>The magnetic compass</h3><p>A compass has a small magnetised needle that can rotate freely. Its north-pointing end is painted red. Once the needle points north, we can mark all the other directions.</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-poles">
+  <div class="panel-head"><div><h2>Attract or repel?</h2><p class="aim">Magnet A rests on round pencils so it can roll. Move magnet B closer and try both of its ends. You can also slide a wooden block between them.</p></div></div>
+  <div class="lab">
+    <div class="stage"><canvas id="poleCv"></canvas></div>
+    <div class="side"><div class="card ctrl">
+      <label>Move magnet B<input type="range" id="bPos" min="0" max="100" value="0"></label>
+      <div class="row"><button class="btn" id="flipB">Turn magnet B around</button><button class="btn ghost" id="woodB">Add a wooden block</button><button class="btn ghost sm" id="resetA">Reset A</button></div></div>
+      <div class="card why"><p class="obs" id="poleObs">Bring magnet B close to magnet A.</p></div>
+      <div class="card note"><p><b>Like poles repel</b> (N–N or S–S).<br><b>Unlike poles attract</b> (N–S).<br>The magnet's force acts even through wood!</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-make">
+  <div class="panel-head"><div><h2>Make your own magnet</h2><p class="aim">Stroke the iron needle with one pole of the magnet, always from the same end in the same direction, about 30 times. Then test it.</p></div><button class="btn ghost sm" id="mkReset">Start again</button></div>
+  <div class="lab">
+    <div class="stage"><canvas id="mkCv"></canvas><div class="hud" id="mkHud">Drag the magnet from left to right along the needle</div></div>
+    <div class="side"><div class="card"><div class="count" id="strokes">0</div><p>correct strokes (need 30)</p>
+      <div class="row"><button class="btn" id="pinTest" disabled>Bring pins near the needle</button><button class="btn" id="floatTest" disabled>Float it on water with a cork</button></div><p class="obs" id="mkObs" style="margin-top:10px"></p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-quiz">
+  <div class="panel-head"><div><h2>Check what you learnt</h2></div></div>
+  <div class="quiz" id="quiz"></div>
+  <div class="facts">
+    <div class="fact"><b>Magnes the shepherd</b>A story says a shepherd named Magnes found that his iron-tipped stick stuck to a rock. That rock was magnetite, a natural magnet.</div>
+    <div class="fact"><b>Look after magnets</b>Keep magnets away from mobiles, TVs and computers. Do not drop or hammer them; store bar magnets in pairs with unlike poles side by side.</div>
+    <div class="fact"><b>Always two poles</b>Even if you break a magnet, each piece still has a North and a South pole.</div>
+  </div>
+</section>
+</main>
+<footer><a href="../index.html#/class-6" style="color:inherit;font-weight:700">← All Grade 6 labs</a><br>Based on NCERT Curiosity, Grade 6, Chapter 4: Exploring Magnets</footer>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LAB={done:new Set(),total:0,key:'lab-'+location.pathname.split('/').pop()};
+function store(get,val){try{if(get)return JSON.parse(localStorage.getItem(LAB.key)||'[]');localStorage.setItem(LAB.key,JSON.stringify(val))}catch(e){return []}}
+function toast(msg,ms=2600){let t=$('.toast');if(!t){t=document.createElement('div');t.className='toast';document.body.appendChild(t)}
+  t.textContent=msg;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),ms)}
+function markDone(id){if(LAB.done.has(id))return;LAB.done.add(id);store(false,[...LAB.done]);paintProgress();
+  if(LAB.done.size===LAB.total){confetti();toast('You completed every experiment in this lab!')}}
+function paintProgress(){$$('.tab[data-t]').forEach(b=>b.classList.toggle('done',LAB.done.has(b.dataset.t)));
+  $$('.procedure li[data-t]').forEach(l=>l.classList.toggle('done',LAB.done.has(l.dataset.t)));
+  const m=$('.meter b'),n=$('.meter span');if(m){m.style.width=(100*LAB.done.size/LAB.total)+'%';n.textContent=LAB.done.size+' of '+LAB.total+' done'}}
+const tabHooks={};
+function onTab(id,fn){(tabHooks[id]=tabHooks[id]||[]).push(fn)}
+function showTab(id,scroll){$$('.tab[data-t]').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===id));
+  $$('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+id));(tabHooks[id]||[]).forEach(f=>f());
+  if(scroll){const bar=$('.bar');window.scrollTo({top:bar.offsetTop,behavior:'smooth'})}}
+function initTabs(){const tabs=$$('.tab[data-t]');LAB.total=tabs.length;store(true).forEach(x=>LAB.done.add(x));
+  tabs.forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.t,true)));
+  $$('.procedure li[data-t]').forEach(l=>{l.style.cursor='pointer';l.addEventListener('click',()=>showTab(l.dataset.t,true))});
+  paintProgress();showTab(tabs[0].dataset.t)}
+document.addEventListener('DOMContentLoaded',()=>{if($('.tab'))initTabs()});
+
+/* confetti */
+function confetti(){let c=$('#confetti');if(!c){c=document.createElement('canvas');c.id='confetti';document.body.appendChild(c)}
+  const x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;const cols=['#FFD84D','#1E9E6A','#2F7DD1','#E8567C','#8A5CF6','#FF8A3D'];
+  const ps=Array.from({length:160},()=>({x:innerWidth/2+(Math.random()-.5)*200,y:innerHeight*.35,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,r:Math.random()*6+4,c:cols[Math.random()*6|0],a:Math.random()*6,va:(Math.random()-.5)*.4}));
+  let f=0;(function tick(){x.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.vx*=.99;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()});
+    if(++f<180)requestAnimationFrame(tick);else x.clearRect(0,0,c.width,c.height)})()}
+
+/* hi-dpi canvas: returns ctx sized to logical w,h */
+function hiCanvas(cv,w,h){const d=Math.min(2,window.devicePixelRatio||1);cv.width=w*d;cv.height=h*d;cv.style.aspectRatio=w+'/'+h;const x=cv.getContext('2d');x.setTransform(d,0,0,d,0,0);x.W=w;x.H=h;return x}
+function canvasPoint(cv,e,w,h){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*w/r.width,y:(e.clientY-r.top)*h/r.height}}
+function loop(fn){let last=performance.now(),run=true;function f(t){if(!run)return;const dt=Math.min(.05,(t-last)/1000);last=t;fn(dt,t/1000);requestAnimationFrame(f)}requestAnimationFrame(f);return()=>run=false}
+const lerp=(a,b,t)=>a+(b-a)*t, clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), rand=(a,b)=>a+Math.random()*(b-a);
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+
+/* Quiz: qs=[{q,o:[..],a:index,e:explain}] */
+function Quiz(el,qs,doneId){let i=0,score=0,order=shuffle(qs);
+  function render(){if(i>=order.length){const pct=Math.round(100*score/order.length);
+      el.innerHTML=`<div class="qcard score"><div class="big">${score}/${order.length}</div><h3>${pct>=80?'Brilliant work, scientist!':pct>=50?'Good effort! Revisit the experiments and try again.':'Keep exploring the experiments, then try again.'}</h3><p>Every question comes from what you tested in this lab.</p><button class="btn">Try the quiz again</button></div>`;
+      $('button',el).onclick=()=>{i=0;score=0;order=shuffle(qs);render()};if(pct>=60){confetti();doneId&&markDone(doneId)}return}
+    const q=order[i];el.innerHTML=`<div class="qcard"><div class="qtop"><span>Question ${i+1} of ${order.length}</span><span>Score ${score}</span></div>
+      <div class="qtext">${q.q}</div><div class="opts">${q.o.map((o,k)=>`<button class="opt" data-k="${k}"><span class="k">${'ABCD'[k]}</span>${o}</button>`).join('')}</div>
+      <div class="qexp"></div><div class="qnav"><button class="btn" disabled>Next question</button></div></div>`;
+    $$('.opt',el).forEach(b=>b.onclick=()=>{const k=+b.dataset.k;$$('.opt',el).forEach(x=>x.disabled=true);
+      $$('.opt',el)[q.a].classList.add('right');if(k===q.a){score++}else{b.classList.add('wrong');b.classList.add('shake')}
+      const ex=$('.qexp',el);ex.innerHTML=(k===q.a?'<b>Correct.</b> ':'<b>Not quite.</b> ')+q.e;ex.classList.add('on');
+      const nb=$('.qnav .btn',el);nb.disabled=false;nb.textContent=i===order.length-1?'See my score':'Next question';nb.focus()});
+    $('.qnav .btn',el).onclick=()=>{i++;render()}}
+  render()}
+
+/* Sorter: items=[{t,em,c,why}], bins=[{c,t,em}] ; click a chip then a bin, or drag */
+function Sorter(el,items,bins,opts={}){
+  el.innerHTML=`<div class="sorter"><div class="tray"></div><div class="bins">${bins.map(b=>`<div class="bin" data-c="${b.c}"><h4>${b.em?`<span class="em">${b.em}</span>`:''}${b.t}</h4><div class="chips"></div></div>`).join('')}</div><div class="obs" aria-live="polite"></div></div>`;
+  const tray=$('.tray',el),obs=$('.obs',el);let picked=null,left=items.length;
+  shuffle(items).forEach(it=>{const c=document.createElement('button');c.className='chip';c.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;c._it=it;tray.appendChild(c);
+    c.addEventListener('click',()=>{if(c.classList.contains('right'))return;$$('.chip.picked',el).forEach(x=>x.classList.remove('picked'));picked=c;c.classList.add('picked');obs.className='obs';obs.textContent='Now choose a group for “'+it.t+'”.'});
+    c.addEventListener('pointerdown',e=>{if(c.classList.contains('right'))return;const sx=e.clientX,sy=e.clientY;let ghost=null;
+      const mv=ev=>{if(!ghost&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>8){ghost=c.cloneNode(true);ghost.classList.add('dragging');document.body.appendChild(ghost);c.style.opacity=.3}
+        if(ghost){ghost.style.left=ev.clientX-30+'px';ghost.style.top=ev.clientY-20+'px';$$('.bin',el).forEach(b=>{const r=b.getBoundingClientRect();b.classList.toggle('hover',ev.clientX>r.left&&ev.clientX<r.right&&ev.clientY>r.top&&ev.clientY<r.bottom)})}};
+      const up=ev=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);if(ghost){ghost.remove();c.style.opacity=1;const b=$('.bin.hover',el);$$('.bin',el).forEach(x=>x.classList.remove('hover'));if(b)drop(c,b);c._dragged=true;setTimeout(()=>c._dragged=false,50)}};
+      addEventListener('pointermove',mv);addEventListener('pointerup',up)})});
+  $$('.bin',el).forEach(b=>b.addEventListener('click',()=>{if(picked)drop(picked,b)}));
+  function drop(c,b){const it=c._it;if(it.c===b.dataset.c){c.classList.remove('picked');c.classList.add('right');$('.chips',b).appendChild(c);obs.className='obs ok';obs.innerHTML='✓ '+(it.why||'Correct!');left--;picked=null;
+      if(!left){obs.innerHTML='✓ All sorted! '+(opts.end||'');confetti();opts.done&&markDone(opts.done)}}
+    else{c.classList.add('shake');setTimeout(()=>c.classList.remove('shake'),400);obs.className='obs bad';obs.innerHTML='✗ Not this group. '+(it.hint||'Look again at its features.')}}
+}
+
+/* Order game: items in correct order [{t,em}] */
+function OrderGame(el,items,opts={}){
+  el.innerHTML=`<div class="order"></div><div class="slots">${items.map((_,i)=>`<div class="slot">${i+1}</div>`).join('')}</div><div class="obs" style="margin-top:10px"></div>`;
+  let n=0;const box=$('.order',el),obs=$('.obs',el);
+  shuffle(items.map((x,i)=>({...x,i}))).forEach(it=>{const b=document.createElement('button');b.className='chip';b.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;
+    b.onclick=()=>{if(it.i===n){const s=$$('.slot',el)[n];s.innerHTML=b.innerHTML;s.classList.add('filled');b.remove();n++;obs.className='obs ok';obs.textContent=opts.say?opts.say(it.i):'✓ Right!';
+        if(n===items.length){obs.textContent='✓ Perfect order! '+(opts.end||'');confetti();opts.done&&markDone(opts.done);opts.onDone&&opts.onDone()}}
+      else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);obs.className='obs bad';obs.textContent='✗ That is not step '+(n+1)+'. Think about what has to happen first.'}};box.appendChild(b)})}
+
+const DARK='#1D2A33',RED='#E04A55',BLUE='#3D7BE0';
+function drawBar(x,cx,cy,ang,L=180,H=44,lbl=true){x.save();x.translate(cx,cy);x.rotate(ang);x.fillStyle=RED;x.fillRect(0,-H/2,L/2,H);x.fillStyle=BLUE;x.fillRect(-L/2,-H/2,L/2,H);
+ x.strokeStyle='rgba(0,0,0,.35)';x.lineWidth=2;x.strokeRect(-L/2,-H/2,L,H);if(lbl){x.fillStyle='#fff';x.font='800 '+(H*.5|0)+'px Bricolage Grotesque, sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('N',L/2-H*.45,1);x.fillText('S',-L/2+H*.45,1)}x.restore()}
+function field(px,py,mx,my,ang,L){const c=Math.cos(ang),s=Math.sin(ang),nx=mx+c*L*.42,ny=my+s*L*.42,sx=mx-c*L*.42,sy=my-s*L*.42;
+ const dn=Math.hypot(px-nx,py-ny)+8,ds=Math.hypot(px-sx,py-sy)+8;return{x:(px-nx)/dn**3-(px-sx)/ds**3,y:(py-ny)/dn**3-(py-sy)/ds**3,dn,ds}}
+
+/* HERO */
+(()=>{const x=hiCanvas($('#heroCv'),500,400);const F=Array.from({length:900},()=>({x:rand(0,500),y:rand(0,400)}));
+ loop((dt,t)=>{const ang=Math.sin(t*.4)*.5;x.fillStyle=DARK;x.fillRect(0,0,500,400);x.strokeStyle='rgba(220,230,240,.75)';x.lineWidth=1.6;
+  F.forEach(f=>{const b=field(f.x,f.y,250,200,ang,200),m=Math.hypot(b.x,b.y)||1,len=4+Math.min(5,m*1e5);x.beginPath();x.moveTo(f.x-b.x/m*len,f.y-b.y/m*len);x.lineTo(f.x+b.x/m*len,f.y+b.y/m*len);x.stroke()});
+  drawBar(x,250,200,ang,200,48)})})();
+
+/* ATTRACT */
+(()=>{const cv=$('#attCv'),x=hiCanvas(cv,640,440);const O=[['Iron nail','🔩','Iron',1],['Paper clip','📎','Steel',1],['Safety pin','🧷','Steel',1],['Iron key','🗝️','Iron',1],
+ ['Eraser','🧽','Rubber',0],['Pencil','✏️','Wood',0],['Plastic scale','📏','Plastic',0],['Marble','🔮','Glass',0],['Coin (aluminium)','🪙','Aluminium',0],['Cotton ball','☁️','Cotton',0],['Paper','📄','Paper',0],['Leather shoe','👞','Leather',0]];
+ let objs,mag={x:320,y:60,a:0},drag=false,tested;
+ function reset(){objs=O.map((o,i)=>({o,x:80+(i%6)*96,y:i<6?230:350,hx:80+(i%6)*96,hy:i<6?230:350,stuck:false,wig:0}));tested={};tbl()}
+ function tbl(){$('#attTbl').innerHTML=O.map(o=>`<tr><td>${o[1]} ${o[0]}</td><td>${o[2]}</td><td>${tested[o[0]]===undefined?'–':tested[o[0]]?'<b style="color:var(--ok)">Yes</b>':'No'}</td></tr>`).join('')}
+ $('#attReset').onclick=reset;reset();
+ cv.addEventListener('pointerdown',e=>{const p=canvasPoint(cv,e,640,440);if(Math.hypot(p.x-mag.x,p.y-mag.y)<90){drag=true;cv.setPointerCapture(e.pointerId)}});
+ cv.addEventListener('pointermove',e=>{if(!drag)return;const p=canvasPoint(cv,e,640,440);mag.x=clamp(p.x,60,580);mag.y=clamp(p.y,30,420)});
+ cv.addEventListener('pointerup',()=>drag=false);
+ loop((dt,t)=>{x.fillStyle=DARK;x.fillRect(0,0,640,440);x.fillStyle='#5E4632';x.fillRect(20,170,600,250);x.fillStyle='#6E533C';for(let i=0;i<8;i++)x.fillRect(20,175+i*31,600,2);
+  const tip={x:mag.x+70,y:mag.y};
+  objs.forEach(b=>{const d=Math.hypot(b.x-tip.x,b.y-tip.y),dm=Math.hypot(b.x-mag.x,b.y-mag.y);
+   if(dm<110&&tested[b.o[0]]===undefined){tested[b.o[0]]=!!b.o[3];tbl();if(!b.o[3]){b.wig=1}const n=O.filter(o=>o[3]).length;if(Object.entries(tested).filter(([k,v])=>v).length===n&&Object.keys(tested).length>=10){markDone('attract');$('#attObs').innerHTML='<span class="hl">Only iron and steel objects stuck.</span> Iron, nickel and cobalt are magnetic materials. Rubber, wood, plastic, glass, aluminium, cotton, paper and leather are non-magnetic.'}}
+   if(b.o[3]&&(b.stuck||dm<110)){b.stuck=true;const k=objs.filter(z=>z.stuck).indexOf(b);const tx=mag.x+(k%2?70:-70)+(k>>1)*6,ty=mag.y+22+(k>>1)*14;b.x=lerp(b.x,tx,.25);b.y=lerp(b.y,ty,.25)}
+   b.wig=Math.max(0,b.wig-dt);x.save();x.translate(b.x,b.y);x.rotate(Math.sin(t*30)*b.wig*.2);x.fillStyle='#000';x.font='38px serif';x.textAlign='center';x.fillText(b.o[1],0,14);x.restore();
+   if(!b.stuck){x.fillStyle='#E8DCCB';x.font='12px Atkinson Hyperlegible, sans-serif';x.textAlign='center';x.fillText(b.o[0],b.hx,b.hy+36)}});
+  drawBar(x,mag.x,mag.y,0,180,44)})})();
+
+/* FILINGS */
+(()=>{const cv=$('#filCv'),x=hiCanvas(cv,640,440);let F=[],mag={x:320,y:220},drag=false,taps=0;
+ function spread(){F=Array.from({length:1400},()=>({x:rand(20,620),y:rand(20,420),a:rand(0,3.14)}));taps=0;$('#filObs').textContent='The filings lie in random directions. Tap the paper!'}
+ spread();$('#spreadBtn').onclick=spread;
+ $('#tapBtn').onclick=()=>{taps++;F.forEach(f=>{const b=field(f.x,f.y,mag.x,mag.y,0,200),m=Math.hypot(b.x,b.y);f.ta=Math.atan2(b.y,b.x);
+   const pull=Math.min(18,m*1.6e6);const near=b.dn<b.ds?{x:mag.x+84,y:mag.y}:{x:mag.x-84,y:mag.y};const dx=near.x-f.x,dy=near.y-f.y,dd=Math.hypot(dx,dy)||1;
+   if(dd>30){f.tx=f.x+dx/dd*pull;f.ty=f.y+dy/dd*pull}else{f.tx=f.x;f.ty=f.y}});
+   if(taps>=3){$('#filObs').innerHTML='<span class="hl">Most filings crowd at the two ends</span> and very few stick in the middle. The attraction is strongest at the poles. The filings also line up in curved lines from one pole to the other.';markDone('filings')}else $('#filObs').textContent='The filings start to line up. Tap again!'};
+ cv.addEventListener('pointerdown',e=>{const p=canvasPoint(cv,e,640,440);if(Math.abs(p.x-mag.x)<100&&Math.abs(p.y-mag.y)<30){drag=true;cv.setPointerCapture(e.pointerId)}});
+ cv.addEventListener('pointermove',e=>{if(drag){const p=canvasPoint(cv,e,640,440);mag.x=clamp(p.x,120,520);mag.y=clamp(p.y,60,380)}});cv.addEventListener('pointerup',()=>drag=false);
+ loop((dt,t)=>{x.fillStyle='#F4F1E8';x.fillRect(0,0,640,440);
+  drawBar(x,mag.x,mag.y,0,200,46);x.fillStyle='rgba(244,241,232,.55)';x.fillRect(0,0,640,440);// paper over magnet
+  if($('#showLines').checked){x.strokeStyle='rgba(214,59,74,.5)';x.lineWidth=1.5;for(let k=-6;k<=6;k++){if(!k)continue;let px=mag.x+84,py=mag.y+k*3;x.beginPath();x.moveTo(px,py);for(let s=0;s<400;s++){const b=field(px,py,mag.x,mag.y,0,200),m=Math.hypot(b.x,b.y);px+=b.x/m*3;py+=b.y/m*3;x.lineTo(px,py);if(Math.abs(px-(mag.x-84))<6&&Math.abs(py-mag.y)<8)break;if(px<0||px>640||py<0||py>440)break}x.stroke()}}
+  x.strokeStyle='#3A3A3A';x.lineWidth=1.8;F.forEach(f=>{if(f.tx!==undefined){f.x=lerp(f.x,f.tx,.12);f.y=lerp(f.y,f.ty,.12);f.a=lerp(f.a,f.ta,.15)}const c=Math.cos(f.a)*3.5,s=Math.sin(f.a)*3.5;x.beginPath();x.moveTo(f.x-c,f.y-s);x.lineTo(f.x+c,f.y+s);x.stroke()})})})();
+
+/* DIRECTION */
+(()=>{const cv=$('#dirCv'),x=hiCanvas(cv,640,440);let a=2,w=0,drag=false,spins=0,stopped=true,res=[];
+ cv.addEventListener('pointerdown',e=>{drag=true;cv.setPointerCapture(e.pointerId);stopped=false});
+ cv.addEventListener('pointermove',e=>{if(!drag)return;const p=canvasPoint(cv,e,640,440);const na=Math.atan2(p.y-220,p.x-320);w=(na-a)*20;a=na});
+ cv.addEventListener('pointerup',()=>{if(drag){drag=false;spins++;$('#dirHud').textContent='Spins: '+spins;w+=rand(-8,8)}});
+ loop((dt,t)=>{if(!drag){// north is up => angle -PI/2 for N end
+   let d=(-Math.PI/2)-a;d=Math.atan2(Math.sin(d),Math.cos(d));w+=d*3*dt*4;w*=Math.pow(.35,dt);a+=w*dt;
+   if(!stopped&&Math.abs(w)<.03&&Math.abs(d)<.03){stopped=true;const deg=Math.round(Math.abs(d)*57.3);$('#dirAng').textContent=deg+'°';
+     res.push(1);$('#dirObs').innerHTML='It came to rest along the <b>north–south</b> direction again! The end pointing north is the <b>North-seeking pole</b> (N).'+(spins>=3?' <span class="hl">Every time, the same direction.</span>':'');if(spins>=3)markDone('dir')}}
+  x.fillStyle=DARK;x.fillRect(0,0,640,440);
+  // compass rose on ground
+  x.strokeStyle='rgba(255,255,255,.18)';x.lineWidth=2;x.beginPath();x.arc(320,220,190,0,7);x.stroke();x.fillStyle='#cde';x.font='800 22px Bricolage Grotesque, sans-serif';x.textAlign='center';x.textBaseline='middle';
+  [['N',0,-205],['S',0,205],['E',205,0],['W',-205,0]].forEach(([l,dx,dy])=>{x.fillStyle=l==='N'?'#FFD84D':'#cde';x.fillText(l,320+dx,220+dy)});
+  x.setLineDash([6,8]);x.beginPath();x.moveTo(320,40);x.lineTo(320,400);x.stroke();x.setLineDash([]);
+  drawBar(x,320,220,a,260,50);x.fillStyle='#fff';x.beginPath();x.arc(320,220,6,0,7);x.fill();
+  // mini compass
+  x.save();x.translate(560,370);x.fillStyle='#F4F1E8';x.beginPath();x.arc(0,0,44,0,7);x.fill();x.strokeStyle='#888';x.stroke();x.rotate(Math.sin(t*2)*.03);
+  x.fillStyle=RED;x.beginPath();x.moveTo(0,-36);x.lineTo(7,0);x.lineTo(-7,0);x.fill();x.fillStyle='#555';x.beginPath();x.moveTo(0,36);x.lineTo(7,0);x.lineTo(-7,0);x.fill();x.restore();
+  x.fillStyle='#cde';x.font='13px Atkinson Hyperlegible, sans-serif';x.fillText('compass',560,428)})})();
+
+/* POLES */
+(()=>{const x=hiCanvas($('#poleCv'),640,360);let flip=false,wood=false,ax=230,av=0;
+ $('#flipB').onclick=()=>{flip=!flip};$('#woodB').onclick=e=>{wood=!wood;e.target.textContent=wood?'Remove the wooden block':'Add a wooden block'};$('#resetA').onclick=()=>{ax=230;av=0};
+ let seen=new Set();
+ loop((dt,t)=>{const bx=470-(+$('#bPos').value)*1.6;// B left end position
+  const aRight=ax+80,gap=bx-aRight;const bLeftPole=flip?'S':'N';// A right pole = N
+  const force=(gap<160)?(bLeftPole==='N'?1:-1)*Math.min(400,9000/Math.max(gap,12)**1.3):0;// + repel
+  av+= -force*dt*1.2;av*=Math.pow(.25,dt);ax+=av*dt*60*.02;ax=clamp(ax,90,bx-80-(wood?28:2));if(ax>=bx-80-(wood?28:2)-0.5&&av>0)av=0;
+  if(gap<150){const k=bLeftPole==='N'?'rep':'att';if(!seen.has(k)){seen.add(k);if(seen.size===2)markDone('poles')}
+   $('#poleObs').innerHTML=bLeftPole==='N'?'N faces N: magnet A <b>rolls away</b>. <span class="hl">Like poles repel.</span>':'S faces N: magnet A <b>rolls towards</b> B. <span class="hl">Unlike poles attract.</span>';if(wood)$('#poleObs').innerHTML+=' It works even through the wood!'}
+  x.fillStyle=DARK;x.fillRect(0,0,640,360);x.fillStyle='#5E4632';x.fillRect(0,270,640,90);
+  for(let i=0;i<5;i++){const px=ax-70+i*35;x.save();x.translate(px,256);x.rotate(ax/14);x.fillStyle='#F2C230';x.beginPath();x.arc(0,0,12,0,7);x.fill();x.strokeStyle='#B8901E';x.lineWidth=3;x.beginPath();x.moveTo(-10,0);x.lineTo(10,0);x.stroke();x.restore()}
+  drawBar(x,ax,222,0,160,44);x.fillStyle='#fff';x.font='800 16px Bricolage Grotesque, sans-serif';x.textAlign='center';x.fillText('A',ax,180);
+  drawBar(x,bx+80,222,flip?0:Math.PI,160,44);x.fillStyle='#fff';x.fillText('B',bx+80,180);
+  if(wood){x.fillStyle='#B07A44';x.fillRect(bx-24,170,20,100);x.fillStyle='#8C5C2E';for(let i=0;i<4;i++)x.fillRect(bx-24,178+i*24,20,3)}
+  if(gap<150){const rep=bLeftPole==='N';x.strokeStyle=rep?'#FF8A8A':'#9FE8B8';x.lineWidth=3;x.setLineDash([5,5]);x.beginPath();x.moveTo(aRight+6,190);x.lineTo(bx-6,190);x.stroke();x.setLineDash([])}})})();
+
+/* MAKE */
+(()=>{const cv=$('#mkCv'),x=hiCanvas(cv,640,420);let n,mag,drag,startOK,mode,pins,ang,ang_v;
+ function reset(){n=0;mag={x:120,y:150};drag=false;startOK=false;mode='stroke';pins=[];ang=.9;ang_v=0;$('#strokes').textContent=0;$('#pinTest').disabled=true;$('#floatTest').disabled=true;$('#mkObs').textContent='';$('#mkHud').textContent='Drag the magnet from left to right along the needle'}
+ reset();$('#mkReset').onclick=reset;
+ cv.addEventListener('pointerdown',e=>{if(mode!=='stroke')return;const p=canvasPoint(cv,e,640,420);if(Math.hypot(p.x-mag.x,p.y-mag.y)<80){drag=true;cv.setPointerCapture(e.pointerId);startOK=mag.x<200}});
+ cv.addEventListener('pointermove',e=>{if(!drag)return;const p=canvasPoint(cv,e,640,420);mag.x=clamp(p.x,60,600);mag.y=clamp(p.y,60,300);if(mag.x>500&&startOK&&Math.abs(mag.y-200)<70){startOK=false;n++;$('#strokes').textContent=n;
+   if(n===30){$('#pinTest').disabled=false;$('#floatTest').disabled=false;$('#mkObs').innerHTML='<span class="hl">30 strokes done!</span> Now test your needle.'}}});
+ cv.addEventListener('pointerup',()=>{drag=false;if(mag.x>480)$('#mkHud').textContent='Lift it, go back to the left end and stroke again';});
+ $('#pinTest').onclick=()=>{mode='pins';pins=Array.from({length:6},(_,i)=>({x:200+i*45,y:360,tx:200+i*40,ty:212+(i%2)*8}));$('#mkObs').innerHTML='The pins jump to the needle. <b>Your needle is now a magnet!</b>'};
+ $('#floatTest').onclick=()=>{mode='float';ang=rand(.5,2.5);ang_v=0;$('#mkObs').innerHTML='Floating on a cork, the needle turns and settles along <b>north–south</b>. You have made a compass!';markDone('make')};
+ loop((dt,t)=>{x.fillStyle=DARK;x.fillRect(0,0,640,420);
+  if(mode==='float'){let d=-Math.PI/2-ang;d=Math.atan2(Math.sin(d),Math.cos(d));ang_v+=d*6*dt;ang_v*=Math.pow(.3,dt);ang+=ang_v*dt;
+   x.fillStyle='#6FB3E8';x.beginPath();x.ellipse(320,220,250,170,0,0,7);x.fill();x.strokeStyle='rgba(255,255,255,.25)';for(let r=40;r<240;r+=50){x.beginPath();x.ellipse(320,220,r+Math.sin(t*2)*4,r*.68,0,0,7);x.stroke()}
+   x.fillStyle='#C48A55';x.beginPath();x.ellipse(320,220,40,28,0,0,7);x.fill();x.save();x.translate(320,220);x.rotate(ang);x.strokeStyle='#ddd';x.lineWidth=5;x.beginPath();x.moveTo(-130,0);x.lineTo(130,0);x.stroke();x.fillStyle=RED;x.beginPath();x.moveTo(130,0);x.lineTo(110,-5);x.lineTo(110,5);x.fill();x.restore();
+   x.fillStyle='#FFD84D';x.font='800 24px Bricolage Grotesque, sans-serif';x.textAlign='center';x.fillText('N',320,30);x.fillText('S',320,412);return}
+  x.fillStyle='#5E4632';x.fillRect(0,240,640,180);
+  x.strokeStyle='#DDE3E8';x.lineWidth=6;x.lineCap='round';x.beginPath();x.moveTo(130,214);x.lineTo(510,214);x.stroke();x.fillStyle='#DDE3E8';x.beginPath();x.moveTo(510,211);x.lineTo(535,214);x.lineTo(510,217);x.fill();
+  x.strokeStyle='#888';x.lineWidth=2;x.beginPath();x.ellipse(140,214,8,3,0,0,7);x.stroke();
+  if(n>0&&n<30){x.fillStyle=`rgba(224,74,85,${n/30*.4})`;x.fillRect(130,208,380,12)}
+  if(mode==='pins'){pins.forEach(p=>{p.x=lerp(p.x,p.tx,.1);p.y=lerp(p.y,p.ty,.1);x.strokeStyle='#C9D3DA';x.lineWidth=2;x.beginPath();x.moveTo(p.x,p.y);x.lineTo(p.x+3,p.y+34);x.stroke();x.fillStyle='#E9C94D';x.beginPath();x.arc(p.x,p.y,4,0,7);x.fill()})}
+  else{x.save();x.translate(mag.x,mag.y);x.rotate(Math.PI/2);drawBar(x,-40,0,0,130,40,false);x.restore();x.fillStyle='#fff';x.font='800 16px Bricolage Grotesque, sans-serif';x.textAlign='center';x.fillText('N',mag.x,mag.y+30);
+   if(n<30){x.strokeStyle='rgba(255,216,77,.6)';x.setLineDash([8,8]);x.lineWidth=2;x.beginPath();x.moveTo(150,186);x.lineTo(500,186);x.stroke();x.setLineDash([]);x.fillStyle='rgba(255,216,77,.8)';x.beginPath();x.moveTo(500,180);x.lineTo(514,186);x.lineTo(500,192);x.fill()}}})})();
+
+Quiz($('#quiz'),[
+ {q:'Which of these will a magnet attract?',o:['Plastic scale','Iron nail','Wooden pencil','Glass marble'],a:1,e:'Iron is a magnetic material. Plastic, wood and glass are non-magnetic.'},
+ {q:'Where do most iron filings stick on a bar magnet?',o:['In the middle','Near the two ends (poles)','Evenly all over','They do not stick at all'],a:1,e:'The attraction is strongest at the poles, near the ends of the magnet.'},
+ {q:'A freely suspended bar magnet always comes to rest in which direction?',o:['East–west','North–south','Up–down','Any direction'],a:1,e:'A freely suspended magnet always comes to rest in the north–south direction.'},
+ {q:'The North pole of one magnet is brought near the North pole of another. They will…',o:['Attract','Repel','Stick together','Do nothing'],a:1,e:'Like poles repel each other.'},
+ {q:'The South pole of a bar magnet is brought near the North end of a compass needle. The needle will…',o:['Be attracted towards it','Be pushed away','Stop working','Break'],a:0,e:'Unlike poles attract, so the north end of the needle turns towards the magnet\'s South pole.'},
+ {q:'How can you make an iron needle into a magnet?',o:['Heat it','Stroke it with one pole of a magnet in the same direction many times','Dip it in water','Rub it with a cloth'],a:1,e:'Stroking the needle 30–40 times with the same pole, in one direction, magnetises it.'},
+ {q:'Which of these can damage a magnet so it loses its magnetism?',o:['Keeping it with a keeper','Dropping or hammering it','Storing pairs with unlike poles together','Keeping it in a box'],a:1,e:'Magnets lose their properties if they are heated, hammered or dropped.'},
+ {q:'A wooden block is placed between a magnet and a compass. The needle…',o:['Still deflects','Stops moving forever','Points east','Breaks'],a:0,e:'The magnet\'s effect passes through wood, so the needle still deflects.'}
+],'quiz');
+</script>
+
+<a href="../index.html#/class-6" style="position:fixed;right:16px;bottom:16px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;background:rgba(255,255,255,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.95);box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font:900 14px/1 Nunito,'Segoe UI',system-ui,sans-serif;text-decoration:none">🏠 Lab Home</a></body></html>

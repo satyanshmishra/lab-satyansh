@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Living Things Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3F7F4; --grid:#DCE9E3; --ink:#18324A; --ink2:#4B6274; --bench:#1D2A33; --bench2:#26363F;
+  --marker:#FFD84D; --ok:#1E9E6A; --bad:#D64545; --line:#C9D9D2; --card:#FFFFFF;
+  --acc:#2F7DD1; --acc2:#9CC8F5; --accInk:#fff;
+  --r-lg:22px; --r-md:14px; --r-sm:9px;
+  --fh:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --fb:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);font:17px/1.55 var(--fb);background:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;}
+h1,h2,h3,h4{font-family:var(--fh);line-height:1.1;margin:0 0 .4em;letter-spacing:-.01em}
+p{margin:0 0 .8em}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--marker);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* hero */
+.hero{padding:44px 0 26px}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center}
+.chapno{font-family:var(--fh);font-weight:800;font-size:15px;color:var(--acc);display:inline-flex;gap:8px;align-items:center;background:#fff;border:2px solid var(--acc);border-radius:99px;padding:3px 14px 3px 4px}
+.chapno b{background:var(--acc);color:var(--accInk);border-radius:99px;min-width:28px;height:28px;display:grid;place-items:center;font-size:15px}
+.hero h1{font-size:clamp(38px,5.6vw,68px);font-weight:800;margin:16px 0 14px}
+.hero h1 .u{background:linear-gradient(transparent 62%,var(--marker) 62% 92%,transparent 92%)}
+.hero .lede{font-size:19px;color:var(--ink2);max-width:52ch}
+.hero-stage{background:var(--bench);border-radius:var(--r-lg);aspect-ratio:5/4;position:relative;overflow:hidden;box-shadow:0 18px 0 -8px var(--acc2),0 24px 40px -18px rgba(24,50,74,.45)}
+.hero-stage canvas,.hero-stage svg{width:100%;height:100%;display:block}
+.procedure{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:6px;counter-reset:p}
+.procedure li{counter-increment:p;display:flex;gap:10px;align-items:center;font-weight:700}
+.procedure li::before{content:counter(p);width:26px;height:26px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-size:13px;flex:none}
+.procedure li.done::before{content:"✓";background:var(--ok);border-color:var(--ok);color:#fff}
+
+/* tab bar */
+.bar{position:sticky;top:0;z-index:20;background:rgba(243,247,244,.92);backdrop-filter:blur(8px);border-bottom:2px solid var(--line)}
+.bar .wrap{display:flex;gap:8px;align-items:center;overflow-x:auto;padding-top:10px;padding-bottom:10px;scrollbar-width:thin}
+.tab{border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:99px;padding:7px 15px;font-weight:700;font-size:15px;white-space:nowrap;transition:transform .15s}
+.tab:hover{transform:translateY(-2px)}
+.tab[aria-selected=true]{background:var(--ink);color:#fff}
+.tab .tick{display:none;color:var(--ok);margin-left:6px}
+.tab.done .tick{display:inline}
+.tab[aria-selected=true] .tick{color:var(--marker)}
+.meter{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;white-space:nowrap;padding-left:12px}
+.meter i{display:block;width:90px;height:9px;background:#fff;border:2px solid var(--ink);border-radius:9px;overflow:hidden}
+.meter i b{display:block;height:100%;width:0;background:var(--ok);transition:width .5s}
+
+/* panels */
+main{padding:28px 0 60px}
+.panel{display:none;animation:rise .35s ease}
+.panel.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.panel-head{display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.panel-head h2{font-size:clamp(26px,3.4vw,38px);margin:0}
+.panel-head .aim{color:var(--ink2);max-width:62ch;margin:6px 0 0}
+.lab{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:20px;align-items:start}
+.lab.wide{grid-template-columns:1fr}
+.stage{background:var(--bench);border-radius:var(--r-lg);position:relative;overflow:hidden;color:#E8F0F2;min-height:300px}
+.stage canvas,.stage>svg{display:block;width:100%;height:auto}
+.stage .hud{position:absolute;left:14px;top:12px;font-weight:700;font-size:14px;background:rgba(0,0,0,.35);padding:4px 10px;border-radius:8px;pointer-events:none}
+.side{display:grid;gap:14px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:var(--r-md);padding:16px 18px}
+.card h3{font-size:19px}
+.card.note{background:#FFFBE6;border-color:#F1DF8F}
+.card.note h3::before{content:"✎ ";color:#B98B00}
+.card.why{border-left:7px solid var(--acc)}
+.ctrl{display:grid;gap:12px}
+.ctrl label{font-weight:700;font-size:15px;display:grid;gap:4px}
+.ctrl .row{display:flex;gap:8px;flex-wrap:wrap}
+input[type=range]{width:100%;accent-color:var(--acc);height:28px}
+.btn{border:2px solid var(--ink);background:var(--acc);color:var(--accInk);border-radius:12px;padding:9px 16px;font-weight:700;box-shadow:0 4px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn.sm{padding:6px 11px;font-size:14px;border-radius:10px;box-shadow:0 3px 0 var(--ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.sel{background:var(--marker);color:var(--ink)}
+.readout{font-family:var(--fh);font-size:30px;font-weight:800;line-height:1}
+.readout small{font-size:14px;font-weight:600;color:var(--ink2);display:block;margin-top:4px;font-family:var(--fb)}
+.obs{min-height:3em;font-size:16px}
+.obs.ok{color:var(--ok)} .obs.bad{color:var(--bad)}
+.hl{background:linear-gradient(transparent 55%,var(--marker) 55%);font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pill:empty{display:none}
+.pill{display:inline-block;border-radius:99px;padding:2px 10px;font-size:13px;font-weight:700;background:var(--acc2);color:var(--ink)}
+table.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th,.tbl td{border-bottom:1.5px solid var(--line);padding:6px 8px;text-align:left}
+.tbl th{font-family:var(--fh)}
+
+/* sorting game */
+.sorter{display:grid;gap:14px}
+.tray{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:10px;border:2px dashed var(--line);border-radius:var(--r-md);background:#fff}
+.chip{border:2px solid var(--ink);background:#fff;border-radius:12px;padding:7px 12px;font-weight:700;font-size:15px;user-select:none;touch-action:none;display:inline-flex;align-items:center;gap:6px;transition:transform .15s,background .2s}
+.chip .em{font-size:22px;line-height:1}
+.chip.picked{background:var(--marker);transform:scale(1.06) rotate(-2deg)}
+.chip.right{border-color:var(--ok);background:#E3F6EC;cursor:default}
+.chip.dragging{position:fixed;z-index:999;pointer-events:none;box-shadow:0 12px 24px rgba(0,0,0,.25)}
+.bins{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.bin{border:2px solid var(--ink);border-radius:var(--r-md);background:#fff;min-height:140px;padding:10px;display:flex;flex-direction:column;gap:6px;transition:background .2s,transform .2s}
+.bin h4{font-size:17px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.bin.hover{background:#FFF6CC;transform:scale(1.02)}
+.bin .chips{display:flex;flex-wrap:wrap;gap:6px}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+
+/* order game */
+.order{display:flex;flex-wrap:wrap;gap:8px}
+.slots{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.slot{min-width:120px;min-height:44px;border:2px dashed var(--ink2);border-radius:12px;display:grid;place-items:center;padding:6px 10px;font-weight:700;color:var(--ink2);background:#fff}
+.slot.filled{border-style:solid;border-color:var(--ok);color:var(--ink);background:#E3F6EC}
+
+/* quiz */
+.quiz{max-width:760px;margin:0 auto}
+.qcard{background:#fff;border:2px solid var(--ink);border-radius:var(--r-lg);padding:24px;box-shadow:8px 8px 0 var(--acc2)}
+.qtop{display:flex;justify-content:space-between;font-weight:700;color:var(--ink2);margin-bottom:10px;font-size:15px}
+.qtext{font-family:var(--fh);font-size:24px;font-weight:700;margin-bottom:16px}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:11px 14px;font-weight:700;display:flex;gap:12px;align-items:center}
+.opt:hover:not([disabled]){border-color:var(--ink)}
+.opt .k{width:30px;height:30px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;flex:none;font-size:14px}
+.opt.right{border-color:var(--ok);background:#E3F6EC}
+.opt.wrong{border-color:var(--bad);background:#FCE8E8}
+.qexp{margin-top:14px;padding:12px 14px;border-radius:12px;background:#F2F6FA;display:none}
+.qexp.on{display:block;animation:rise .3s}
+.qnav{display:flex;justify-content:flex-end;margin-top:16px}
+.score{text-align:center}
+.score .big{font-family:var(--fh);font-size:72px;font-weight:800;color:var(--acc)}
+
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:22px}
+.fact{background:#fff;border:2px solid var(--line);border-radius:var(--r-md);padding:14px 16px;font-size:15px}
+.fact b{font-family:var(--fh);display:block;font-size:17px;margin-bottom:4px;color:var(--acc)}
+
+footer{padding:24px 0 40px;color:var(--ink2);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:12px;font-weight:700;z-index:1000;transition:transform .35s cubic-bezier(.2,1.4,.4,1);max-width:90vw;text-align:center}
+.toast.on{transform:translate(-50%,0)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:999}
+
+@media (max-width:860px){
+  .hero .wrap,.lab{grid-template-columns:1fr}
+  .hero{padding-top:26px}
+  .meter i{width:60px}
+  .grid2{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+
+:root{--acc:#2E9A44;--acc2:#B5E8BF}
+.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.checks button{text-align:left}
+.pots-res{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center;font-size:14px}
+.pots-res div{background:#F2F6FA;border-radius:10px;padding:8px}
+.pots-res b{display:block;font-family:var(--fh);font-size:20px}
+.pots-res select{font:inherit;font-size:13px;width:100%;margin-top:4px}
+.cyc{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+
+</style><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"></head><body>
+
+
+<header class="hero"><div class="wrap">
+  <div>
+    <span class="chapno"><b>10</b>Chapter 10</span>
+    <h1>Living Creatures: Exploring their <span class="u">Characteristics</span></h1>
+    <p class="lede">What makes something alive? Test the signs of life, grow bean seeds under different conditions, watch shoots chase light, and follow the life cycles of a frog and a mosquito.</p>
+    <ol class="procedure">
+      <li data-t="alive">Living or non-living?</li>
+      <li data-t="germ">Germinate bean seeds</li>
+      <li data-t="resp">Make plants respond</li>
+      <li data-t="cycle">Follow life cycles</li>
+      <li data-t="quiz">Check what you learnt</li>
+    </ol>
+  </div>
+  <div class="hero-stage"><canvas id="heroCv"></canvas></div>
+</div></header>
+
+<nav class="bar"><div class="wrap">
+  <button class="tab" data-t="alive">Signs of life<span class="tick">✓</span></button>
+  <button class="tab" data-t="germ">Germination<span class="tick">✓</span></button>
+  <button class="tab" data-t="resp">Plants respond<span class="tick">✓</span></button>
+  <button class="tab" data-t="cycle">Life cycles<span class="tick">✓</span></button>
+  <button class="tab" data-t="quiz">Quiz<span class="tick">✓</span></button>
+  <div class="meter"><i><b></b></i><span></span></div>
+</div></nav>
+
+<main class="wrap">
+<section class="panel" id="p-alive">
+  <div class="panel-head"><div><h2>The signs-of-life checker</h2><p class="aim">Pick something. Tick every sign of life it shows, then decide. Living beings show all of these signs.</p></div></div>
+  <div class="lab">
+    <div class="card"><div class="cyc" id="things"></div>
+      <div class="checks" id="checks"></div>
+      <div class="row" style="margin-top:12px;display:flex;gap:8px"><button class="btn" data-v="1">It is living</button><button class="btn ghost" data-v="0">It is non-living</button></div>
+      <p class="obs" id="aliveObs" style="margin-top:10px"></p></div>
+    <div class="card note"><h3>Living beings…</h3><p>need food and water, grow, breathe (respire), get rid of wastes (excrete), respond to stimuli, reproduce, and have a life span. Many can move from place to place.</p><p>Plants respire too: they take in air through tiny pores called <b>stomata</b>.</p></div>
+  </div>
+  <div class="panel-head" style="margin-top:24px"><div><h3 style="font-size:26px">Sort them</h3></div></div>
+  <div id="aliveSort"></div>
+</section>
+
+<section class="panel" id="p-germ">
+  <div class="panel-head"><div><h2>What do seeds need to germinate?</h2><p class="aim">Four pots, each with four bean seeds, are kept for 15 days. Predict for each pot, then move the day slider.</p></div></div>
+  <div class="stage"><canvas id="gCv"></canvas><div class="hud" id="gHud">Day 0</div></div>
+  <div class="lab" style="margin-top:14px">
+    <div class="card ctrl"><label>Days<input type="range" id="day" min="0" max="15" step="0.1" value="0"></label><div class="pots-res" id="potRes"></div></div>
+    <div class="card why"><p class="obs" id="gObs">Make a prediction for every pot before you start.</p></div>
+  </div>
+</section>
+
+<section class="panel" id="p-resp">
+  <div class="panel-head"><div><h2>Plants respond too</h2><p class="aim">Touch the leaves of the touch-me-not (chhui-mui). Then watch seedlings grow in three set-ups.</p></div></div>
+  <div class="lab">
+    <div class="stage"><canvas id="mimCv"></canvas><div class="hud">Tap the leaflets</div></div>
+    <div class="side"><div class="card why"><p class="obs" id="mimObs">Anything that makes a living being respond is a <b>stimulus</b>.</p></div></div>
+  </div>
+  <div class="lab" style="margin-top:20px">
+    <div class="stage"><canvas id="trCv"></canvas><div class="hud" id="trHud">Day 0</div></div>
+    <div class="side"><div class="card ctrl"><label>Days<input type="range" id="trDay" min="0" max="7" step="0.05" value="0"></label></div>
+      <div class="card why"><p class="obs" id="trObs">A: upright, light from all sides. B: upside down, light from all sides. C: upright inside a box with a hole on one side.</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-cycle">
+  <div class="panel-head"><div><h2>Life cycles</h2><p class="aim">Put the stages in order. Then watch the whole life cycle play.</p></div></div>
+  <div class="cyc"><button class="btn sel" data-c="frog">Frog</button><button class="btn ghost" data-c="mosq">Mosquito</button></div>
+  <div class="lab">
+    <div class="stage"><canvas id="cyCv"></canvas><div class="hud" id="cyHud"></div></div>
+    <div class="side"><div class="card" id="cyOrder"></div><div class="card note"><h3>The larva or pupa puzzle</h3><p>Puddle water has both larvae and pupae of mosquitoes. To find which comes first after the egg, keep larvae alone in a jar and observe each day. The larvae change into pupae, so <b>larva comes before pupa</b>.</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-quiz">
+  <div class="panel-head"><div><h2>Check what you learnt</h2></div></div>
+  <div class="quiz" id="quiz"></div>
+  <div class="facts">
+    <div class="fact"><b>Seeds are alive</b>A seed seems non-living, but given water, air and the right temperature it grows into a plant.</div>
+    <div class="fact"><b>Life span</b>Every living being lives only for a certain period of time, called its life span.</div>
+    <div class="fact"><b>Stop the breeding</b>Mosquitoes lay eggs in still water. Emptying coolers, pots and tyres stops their life cycle.</div>
+  </div>
+</section>
+</main>
+<footer><a href="../index.html#/class-6" style="color:inherit;font-weight:700">← All Grade 6 labs</a><br>Based on NCERT Curiosity, Grade 6, Chapter 10: Living Creatures: Exploring their Characteristics</footer>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LAB={done:new Set(),total:0,key:'lab-'+location.pathname.split('/').pop()};
+function store(get,val){try{if(get)return JSON.parse(localStorage.getItem(LAB.key)||'[]');localStorage.setItem(LAB.key,JSON.stringify(val))}catch(e){return []}}
+function toast(msg,ms=2600){let t=$('.toast');if(!t){t=document.createElement('div');t.className='toast';document.body.appendChild(t)}
+  t.textContent=msg;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),ms)}
+function markDone(id){if(LAB.done.has(id))return;LAB.done.add(id);store(false,[...LAB.done]);paintProgress();
+  if(LAB.done.size===LAB.total){confetti();toast('You completed every experiment in this lab!')}}
+function paintProgress(){$$('.tab[data-t]').forEach(b=>b.classList.toggle('done',LAB.done.has(b.dataset.t)));
+  $$('.procedure li[data-t]').forEach(l=>l.classList.toggle('done',LAB.done.has(l.dataset.t)));
+  const m=$('.meter b'),n=$('.meter span');if(m){m.style.width=(100*LAB.done.size/LAB.total)+'%';n.textContent=LAB.done.size+' of '+LAB.total+' done'}}
+const tabHooks={};
+function onTab(id,fn){(tabHooks[id]=tabHooks[id]||[]).push(fn)}
+function showTab(id,scroll){$$('.tab[data-t]').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===id));
+  $$('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+id));(tabHooks[id]||[]).forEach(f=>f());
+  if(scroll){const bar=$('.bar');window.scrollTo({top:bar.offsetTop,behavior:'smooth'})}}
+function initTabs(){const tabs=$$('.tab[data-t]');LAB.total=tabs.length;store(true).forEach(x=>LAB.done.add(x));
+  tabs.forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.t,true)));
+  $$('.procedure li[data-t]').forEach(l=>{l.style.cursor='pointer';l.addEventListener('click',()=>showTab(l.dataset.t,true))});
+  paintProgress();showTab(tabs[0].dataset.t)}
+document.addEventListener('DOMContentLoaded',()=>{if($('.tab'))initTabs()});
+
+/* confetti */
+function confetti(){let c=$('#confetti');if(!c){c=document.createElement('canvas');c.id='confetti';document.body.appendChild(c)}
+  const x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;const cols=['#FFD84D','#1E9E6A','#2F7DD1','#E8567C','#8A5CF6','#FF8A3D'];
+  const ps=Array.from({length:160},()=>({x:innerWidth/2+(Math.random()-.5)*200,y:innerHeight*.35,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,r:Math.random()*6+4,c:cols[Math.random()*6|0],a:Math.random()*6,va:(Math.random()-.5)*.4}));
+  let f=0;(function tick(){x.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.vx*=.99;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()});
+    if(++f<180)requestAnimationFrame(tick);else x.clearRect(0,0,c.width,c.height)})()}
+
+/* hi-dpi canvas: returns ctx sized to logical w,h */
+function hiCanvas(cv,w,h){const d=Math.min(2,window.devicePixelRatio||1);cv.width=w*d;cv.height=h*d;cv.style.aspectRatio=w+'/'+h;const x=cv.getContext('2d');x.setTransform(d,0,0,d,0,0);x.W=w;x.H=h;return x}
+function canvasPoint(cv,e,w,h){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*w/r.width,y:(e.clientY-r.top)*h/r.height}}
+function loop(fn){let last=performance.now(),run=true;function f(t){if(!run)return;const dt=Math.min(.05,(t-last)/1000);last=t;fn(dt,t/1000);requestAnimationFrame(f)}requestAnimationFrame(f);return()=>run=false}
+const lerp=(a,b,t)=>a+(b-a)*t, clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), rand=(a,b)=>a+Math.random()*(b-a);
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+
+/* Quiz: qs=[{q,o:[..],a:index,e:explain}] */
+function Quiz(el,qs,doneId){let i=0,score=0,order=shuffle(qs);
+  function render(){if(i>=order.length){const pct=Math.round(100*score/order.length);
+      el.innerHTML=`<div class="qcard score"><div class="big">${score}/${order.length}</div><h3>${pct>=80?'Brilliant work, scientist!':pct>=50?'Good effort! Revisit the experiments and try again.':'Keep exploring the experiments, then try again.'}</h3><p>Every question comes from what you tested in this lab.</p><button class="btn">Try the quiz again</button></div>`;
+      $('button',el).onclick=()=>{i=0;score=0;order=shuffle(qs);render()};if(pct>=60){confetti();doneId&&markDone(doneId)}return}
+    const q=order[i];el.innerHTML=`<div class="qcard"><div class="qtop"><span>Question ${i+1} of ${order.length}</span><span>Score ${score}</span></div>
+      <div class="qtext">${q.q}</div><div class="opts">${q.o.map((o,k)=>`<button class="opt" data-k="${k}"><span class="k">${'ABCD'[k]}</span>${o}</button>`).join('')}</div>
+      <div class="qexp"></div><div class="qnav"><button class="btn" disabled>Next question</button></div></div>`;
+    $$('.opt',el).forEach(b=>b.onclick=()=>{const k=+b.dataset.k;$$('.opt',el).forEach(x=>x.disabled=true);
+      $$('.opt',el)[q.a].classList.add('right');if(k===q.a){score++}else{b.classList.add('wrong');b.classList.add('shake')}
+      const ex=$('.qexp',el);ex.innerHTML=(k===q.a?'<b>Correct.</b> ':'<b>Not quite.</b> ')+q.e;ex.classList.add('on');
+      const nb=$('.qnav .btn',el);nb.disabled=false;nb.textContent=i===order.length-1?'See my score':'Next question';nb.focus()});
+    $('.qnav .btn',el).onclick=()=>{i++;render()}}
+  render()}
+
+/* Sorter: items=[{t,em,c,why}], bins=[{c,t,em}] ; click a chip then a bin, or drag */
+function Sorter(el,items,bins,opts={}){
+  el.innerHTML=`<div class="sorter"><div class="tray"></div><div class="bins">${bins.map(b=>`<div class="bin" data-c="${b.c}"><h4>${b.em?`<span class="em">${b.em}</span>`:''}${b.t}</h4><div class="chips"></div></div>`).join('')}</div><div class="obs" aria-live="polite"></div></div>`;
+  const tray=$('.tray',el),obs=$('.obs',el);let picked=null,left=items.length;
+  shuffle(items).forEach(it=>{const c=document.createElement('button');c.className='chip';c.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;c._it=it;tray.appendChild(c);
+    c.addEventListener('click',()=>{if(c.classList.contains('right'))return;$$('.chip.picked',el).forEach(x=>x.classList.remove('picked'));picked=c;c.classList.add('picked');obs.className='obs';obs.textContent='Now choose a group for “'+it.t+'”.'});
+    c.addEventListener('pointerdown',e=>{if(c.classList.contains('right'))return;const sx=e.clientX,sy=e.clientY;let ghost=null;
+      const mv=ev=>{if(!ghost&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>8){ghost=c.cloneNode(true);ghost.classList.add('dragging');document.body.appendChild(ghost);c.style.opacity=.3}
+        if(ghost){ghost.style.left=ev.clientX-30+'px';ghost.style.top=ev.clientY-20+'px';$$('.bin',el).forEach(b=>{const r=b.getBoundingClientRect();b.classList.toggle('hover',ev.clientX>r.left&&ev.clientX<r.right&&ev.clientY>r.top&&ev.clientY<r.bottom)})}};
+      const up=ev=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);if(ghost){ghost.remove();c.style.opacity=1;const b=$('.bin.hover',el);$$('.bin',el).forEach(x=>x.classList.remove('hover'));if(b)drop(c,b);c._dragged=true;setTimeout(()=>c._dragged=false,50)}};
+      addEventListener('pointermove',mv);addEventListener('pointerup',up)})});
+  $$('.bin',el).forEach(b=>b.addEventListener('click',()=>{if(picked)drop(picked,b)}));
+  function drop(c,b){const it=c._it;if(it.c===b.dataset.c){c.classList.remove('picked');c.classList.add('right');$('.chips',b).appendChild(c);obs.className='obs ok';obs.innerHTML='✓ '+(it.why||'Correct!');left--;picked=null;
+      if(!left){obs.innerHTML='✓ All sorted! '+(opts.end||'');confetti();opts.done&&markDone(opts.done)}}
+    else{c.classList.add('shake');setTimeout(()=>c.classList.remove('shake'),400);obs.className='obs bad';obs.innerHTML='✗ Not this group. '+(it.hint||'Look again at its features.')}}
+}
+
+/* Order game: items in correct order [{t,em}] */
+function OrderGame(el,items,opts={}){
+  el.innerHTML=`<div class="order"></div><div class="slots">${items.map((_,i)=>`<div class="slot">${i+1}</div>`).join('')}</div><div class="obs" style="margin-top:10px"></div>`;
+  let n=0;const box=$('.order',el),obs=$('.obs',el);
+  shuffle(items.map((x,i)=>({...x,i}))).forEach(it=>{const b=document.createElement('button');b.className='chip';b.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;
+    b.onclick=()=>{if(it.i===n){const s=$$('.slot',el)[n];s.innerHTML=b.innerHTML;s.classList.add('filled');b.remove();n++;obs.className='obs ok';obs.textContent=opts.say?opts.say(it.i):'✓ Right!';
+        if(n===items.length){obs.textContent='✓ Perfect order! '+(opts.end||'');confetti();opts.done&&markDone(opts.done);opts.onDone&&opts.onDone()}}
+      else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);obs.className='obs bad';obs.textContent='✗ That is not step '+(n+1)+'. Think about what has to happen first.'}};box.appendChild(b)})}
+
+const DARK='#1D2A33';
+function sprout(x,bx,by,g,dir=-1,lean=0,col='#5BBF5A'){// g 0..1 growth
+ if(g<=0){x.fillStyle='#C99A5B';x.beginPath();x.ellipse(bx,by,8,5,0,0,7);x.fill();return}
+ x.strokeStyle='#E8D2A8';x.lineWidth=2;x.beginPath();x.moveTo(bx,by);x.lineTo(bx+Math.sin(bx)*3,by+g*30);x.stroke();
+ const h=g*90,tx=bx+lean*h*.6,ty=by+dir*h;x.strokeStyle=col;x.lineWidth=4;x.beginPath();x.moveTo(bx,by);x.quadraticCurveTo(bx+lean*h*.1,by+dir*h*.6,tx,ty);x.stroke();
+ if(g>.3){x.fillStyle=col;const s=Math.min(1,(g-.3)*2);x.beginPath();x.ellipse(tx-10*s,ty,12*s,6*s,-.5,0,7);x.ellipse(tx+10*s,ty,12*s,6*s,.5,0,7);x.fill()}}
+
+/* HERO: growing bean timelapse */
+(()=>{const x=hiCanvas($('#heroCv'),500,400);
+ loop((dt,t)=>{const g=(t%8)/6;x.fillStyle=DARK;x.fillRect(0,0,500,400);x.fillStyle='#5B4030';x.fillRect(0,300,500,100);
+  for(let i=0;i<3;i++)sprout(x,130+i*120,300,clamp(g-i*.15,0,1),-1,Math.sin(t+i)*.08);
+  x.font='40px serif';x.fillStyle='#000';x.fillText('☀️',420,60);x.fillStyle='#fff';x.font='800 20px Bricolage Grotesque, sans-serif';x.textAlign='center';x.fillText('Living things grow',250,385)})})();
+
+/* SIGNS OF LIFE */
+(()=>{const S=['Needs food','Grows','Breathes','Excretes wastes','Responds to stimuli','Reproduces','Has a life span'];
+ const T=[['Pigeon','🐦',1,[1,1,1,1,1,1,1]],['Mango tree','🌳',1,[1,1,1,1,1,1,1]],['Car','🚗',0,[0,0,0,0,0,0,0]],['Seed','🫘',1,[1,1,1,1,1,1,1]],['Cloud','☁️',0,[0,0,0,0,0,0,0]],['Robot toy','🤖',0,[0,0,0,0,0,0,0]]];
+ let cur=0,ticks=new Set(),done=new Set();
+ $('#things').innerHTML=T.map((t,i)=>`<button class="btn ghost sm" data-i="${i}">${t[1]} ${t[0]}</button>`).join('');
+ $('#checks').innerHTML=S.map((s,i)=>`<button class="btn ghost sm" data-s="${i}">☐ ${s}</button>`).join('');
+ function sel(i){cur=i;ticks.clear();$$('#things .btn').forEach((b,k)=>b.classList.toggle('sel',k===i));$$('#checks .btn').forEach((b,k)=>{b.classList.remove('sel');b.textContent='☐ '+S[k]});$('#aliveObs').textContent=''}
+ $$('#things .btn').forEach(b=>b.onclick=()=>sel(+b.dataset.i));
+ $$('#checks .btn').forEach(b=>b.onclick=()=>{const k=+b.dataset.s;ticks.has(k)?ticks.delete(k):ticks.add(k);b.classList.toggle('sel',ticks.has(k));b.textContent=(ticks.has(k)?'☑ ':'☐ ')+S[k]});
+ $$('[data-v]').forEach(b=>b.onclick=()=>{const t=T[cur],v=+b.dataset.v;if(v===t[2]){done.add(cur);$('#aliveObs').innerHTML='✓ Correct! '+(t[2]?`A ${t[0].toLowerCase()} shows all the signs of life.`+(t[0]==='Seed'?' A seed may look lifeless, but it grows when it gets water, air and warmth.':''):`A ${t[0].toLowerCase()} may move or change, but it does not eat, grow, breathe or reproduce.`);if(done.size>=5)markDone('alive')}
+   else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);$('#aliveObs').textContent='Check the signs of life again.'}});
+ sel(0)})();
+Sorter($('#aliveSort'),[{t:'Pigeon',em:'🐦',c:'l'},{t:'Grass',em:'🌿',c:'l'},{t:'Mushroom',em:'🍄',c:'l'},{t:'Ant',em:'🐜',c:'l'},{t:'Sunflower seed',em:'🌻',c:'l',why:'A seed is living: it can grow into a plant.'},{t:'Pencil',em:'✏️',c:'n'},{t:'Book',em:'📘',c:'n'},{t:'Stone',em:'🪨',c:'n'},{t:'Fire',em:'🔥',c:'n',why:'Fire spreads, but it does not reproduce, breathe like living things or grow by itself.'},{t:'River',em:'🏞️',c:'n',why:'A river flows, but it is non-living.'}],
+ [{c:'l',t:'Living',em:'💚'},{c:'n',t:'Non-living',em:'⚙️'}]);
+
+/* GERMINATION */
+(()=>{const x=hiCanvas($('#gCv'),1100,380);const P=[['A','No water, sunlight',0,'dry'],['B','Excess water, sunlight',0,'flood'],['C','Moist soil, dark',1,'dark'],['D','Moist soil, sunlight',1,'sun']];let pred={};
+ $('#potRes').innerHTML=P.map((p,i)=>`<div><b>Pot ${p[0]}</b>${p[1]}<select data-i="${i}"><option value="">Predict…</option><option value="1">Will germinate</option><option value="0">Will not</option></select></div>`).join('');
+ $$('#potRes select').forEach(s=>s.onchange=()=>{pred[s.dataset.i]=s.value});
+ let said=false;
+ loop((dt,t)=>{const d=+$('#day').value;$('#gHud').textContent='Day '+Math.floor(d);x.fillStyle=DARK;x.fillRect(0,0,1100,380);
+  if(d>0&&Object.keys(pred).filter(k=>pred[k]!=='').length<4){$('#day').value=0;$('#gObs').textContent='Predict for all four pots first!'}
+  P.forEach((p,i)=>{const cx=137+i*275;x.save();x.beginPath();x.rect(cx-137,0,275,380);x.clip();
+   if(p[3]==='dark'){x.fillStyle='#0E161B';x.fillRect(cx-137,0,275,380);x.fillStyle='#3A2A20';x.fillRect(cx-110,40,220,20)}else{x.fillStyle='#FFE27A';x.beginPath();x.arc(cx+90,50,20,0,7);x.fill()}
+   x.fillStyle='#B5653A';x.beginPath();x.moveTo(cx-80,240);x.lineTo(cx+80,240);x.lineTo(cx+60,340);x.lineTo(cx-60,340);x.fill();
+   x.fillStyle=p[3]==='dry'?'#B08E65':'#4A3424';x.fillRect(cx-78,240,156,14);if(p[3]==='flood'){x.fillStyle='rgba(90,160,240,.75)';x.fillRect(cx-78,226,156,20)}
+   const g=p[2]?clamp((d-3)/10,0,1):0;for(let k=0;k<4;k++){const bx=cx-48+k*32;if(p[3]==='dark'&&g>0)sprout(x,bx,244,g,-1,0,'#E8E39A');else sprout(x,bx,244,g)}
+   x.fillStyle='#fff';x.font='800 20px Bricolage Grotesque, sans-serif';x.textAlign='center';x.fillText('Pot '+p[0],cx,370);x.restore()});
+  if(d>=14.9&&!said){said=true;let right=P.filter((p,i)=>+pred[i]===p[2]).length;
+   $('#gObs').innerHTML=`Seeds germinated in <b>pots C and D</b> only. You predicted ${right} of 4 correctly. Pot A had no water. In pot B, too much water left no air for the seeds. Pot C germinated even in the dark! <span class="hl">Seeds need water, air and a suitable temperature to germinate; sunlight is not needed for germination.</span> (The seedlings in the dark look pale yellow.)`;markDone('germ')}
+  if(d<14.9)said=false})})();
+
+/* MIMOSA */
+(()=>{const cv=$('#mimCv'),x=hiCanvas(cv,640,380);const L=Array.from({length:5},(_,i)=>({x:120+i*100,y:150+(i%2)*60,f:0,tf:0,t:0}));let n=0;
+ cv.addEventListener('click',e=>{const p=canvasPoint(cv,e,640,380);L.forEach(l=>{if(Math.hypot(p.x-l.x,p.y-l.y)<70){l.tf=1;l.t=4;n++}});if(n>=2){$('#mimObs').innerHTML='The leaflets <span class="hl">fold up when touched</span> and open again after some time. Touch is the stimulus; folding is the response.';markDone('resp')}});
+ loop((dt)=>{x.fillStyle=DARK;x.fillRect(0,0,640,380);x.strokeStyle='#4E8F3A';x.lineWidth=6;x.beginPath();x.moveTo(320,380);x.lineTo(320,250);x.stroke();
+  L.forEach(l=>{l.t-=dt;if(l.t<=0)l.tf=0;l.f=lerp(l.f,l.tf,l.tf?.25:.02);x.strokeStyle='#4E8F3A';x.lineWidth=3;x.beginPath();x.moveTo(320,280);x.quadraticCurveTo((320+l.x)/2,l.y+40,l.x,l.y+30);x.stroke();
+   x.strokeStyle='#3E7F2A';x.lineWidth=2;x.beginPath();x.moveTo(l.x-50,l.y+30);x.lineTo(l.x+50,l.y+30);x.stroke();
+   for(let k=-4;k<=4;k++){if(!k)continue;const px=l.x+k*11;for(const s of[-1,1]){x.save();x.translate(px,l.y+30);x.rotate(s*l.f*1.35);x.fillStyle='#6BCB5A';x.beginPath();x.ellipse(0,-s*12,4.5,12,0,0,7);x.fill();x.restore()}}})})})();
+
+/* TROPISM */
+(()=>{const x=hiCanvas($('#trCv'),640,380);let said=false;
+ loop((dt)=>{const d=+$('#trDay').value,g=d/7;$('#trHud').textContent='Day '+Math.floor(d);x.fillStyle=DARK;x.fillRect(0,0,640,380);
+  [[110,'A',0],[320,'B',1],[530,'C',2]].forEach(([cx,n,k])=>{x.strokeStyle='#fff';x.lineWidth=2;x.beginPath();x.moveTo(cx-70,90);x.lineTo(cx-65,320);x.lineTo(cx+65,320);x.lineTo(cx+70,90);x.stroke();
+   x.fillStyle='rgba(120,180,240,.4)';x.fillRect(cx-66,270,131,50);x.fillStyle='#EDE6D8';x.fillRect(cx-40,110,80,200);
+   if(k===2){x.strokeStyle='#8C6B42';x.lineWidth=6;x.strokeRect(cx-95,60,190,280);x.fillStyle='#FFE27A';x.fillRect(cx+90,120,8,40);x.fillStyle='rgba(255,226,122,.15)';x.beginPath();x.moveTo(cx+92,120);x.lineTo(cx-40,100);x.lineTo(cx-40,200);x.lineTo(cx+92,160);x.fill()}
+   const by=200;// seed position
+   // root
+   const rootDir=1;x.strokeStyle='#E8D2A8';x.lineWidth=3;x.beginPath();x.moveTo(cx,by);
+   if(k===1){x.quadraticCurveTo(cx+10,by-30,cx+20*g,by-30+g*90)}else x.lineTo(cx,by+30+g*50);x.stroke();
+   // shoot
+   x.strokeStyle='#5BBF5A';x.lineWidth=4;x.beginPath();x.moveTo(cx,by);let tx,ty;
+   if(k===0){tx=cx;ty=by-30-g*60;x.lineTo(tx,ty)}
+   if(k===1){tx=cx-24*g;ty=by+30-g*110;x.quadraticCurveTo(cx-10,by+40,tx,ty)}
+   if(k===2){tx=cx+20+g*30;ty=by-30-g*45;x.quadraticCurveTo(cx,by-40,tx,ty)}
+   x.stroke();x.fillStyle='#5BBF5A';x.beginPath();x.ellipse(tx-6,ty,7,4,-.4,0,7);x.ellipse(tx+6,ty,7,4,.4,0,7);x.fill();
+   x.fillStyle='#C99A5B';x.beginPath();x.ellipse(cx,by,9,6,0,0,7);x.fill();
+   x.fillStyle='#fff';x.font='800 18px Bricolage Grotesque, sans-serif';x.textAlign='center';x.fillText(n,cx,360)});
+  if(d>6.9&&!said){said=true;$('#trObs').innerHTML='<span class="hl">Shoots grow towards light and roots grow downwards</span>, even when the seedling is turned upside down (B). In C, the shoot bends towards the hole where the light comes from.'}if(d<6.9)said=false})})();
+
+/* LIFE CYCLES */
+(()=>{const x=hiCanvas($('#cyCv'),640,440);const C={frog:[['Eggs','🫧'],['Tadpole','🐟'],['Tadpole with legs','🦎'],['Froglet','🐸'],['Adult frog','🐸']],mosq:[['Eggs','⚪'],['Larva','🪱'],['Pupa','🫘'],['Adult mosquito','🦟']]};
+ let cur='frog',solved={},ph=0;
+ function setup(){$('#cyHud').textContent=cur==='frog'?'Frog':'Mosquito';$$('[data-c]').forEach(b=>{b.classList.toggle('sel',b.dataset.c===cur);b.classList.toggle('ghost',b.dataset.c!==cur)});
+  $('#cyOrder').innerHTML='<h3>Order the stages</h3><div id="og"></div>';OrderGame($('#og'),C[cur].map(s=>({t:s[0],em:s[1]})),{end:'Watch the cycle repeat.',onDone:()=>{solved[cur]=1;if(solved.frog&&solved.mosq)markDone('cycle')}})}
+ $$('[data-c]').forEach(b=>b.onclick=()=>{cur=b.dataset.c;setup()});setup();
+ loop((dt,t)=>{const S=C[cur],n=S.length;ph+=dt*.5;x.fillStyle=DARK;x.fillRect(0,0,640,440);
+  x.fillStyle='rgba(90,160,240,.15)';x.beginPath();x.arc(320,220,190,0,7);x.fill();x.strokeStyle='rgba(255,255,255,.25)';x.lineWidth=3;x.beginPath();x.arc(320,220,150,0,7);x.stroke();
+  const act=Math.floor(ph)%n;
+  S.forEach((s,i)=>{const a=-Math.PI/2+i*2*Math.PI/n,px=320+Math.cos(a)*150,py=220+Math.sin(a)*150,on=solved[cur]?i===act:false;
+   x.fillStyle=on?'#FFD84D':'#26363F';x.beginPath();x.arc(px,py,on?46:38,0,7);x.fill();x.font=(on?44:34)+'px serif';x.textAlign='center';x.fillStyle='#000';
+   if(solved[cur]&&cur==='frog'&&i===2){x.fillText('🐟',px,py+12);x.strokeStyle='#7BE0AE';x.lineWidth=2;x.beginPath();x.moveTo(px-6,py+14);x.lineTo(px-10,py+24);x.moveTo(px+6,py+14);x.lineTo(px+10,py+24);x.stroke()}
+   else if(solved[cur]&&cur==='frog'&&i===3){x.save();x.translate(px,py);x.scale(.7,.7);x.fillText('🐸',0,14);x.restore();x.strokeStyle='#7BE0AE';x.lineWidth=3;x.beginPath();x.moveTo(px+12,py+10);x.quadraticCurveTo(px+30,py+20,px+26,py+30);x.stroke()}
+   else x.fillText(solved[cur]?s[1]:'?',px,py+14);
+   x.fillStyle=on?'#FFD84D':'#cde';x.font='700 13px Atkinson Hyperlegible, sans-serif';x.fillText(solved[cur]?s[0]:'Stage '+(i+1),px,py+(py>220?62:-48))});
+  if(solved[cur]){const a=-Math.PI/2+(ph%n)*2*Math.PI/n;x.fillStyle='#fff';x.beginPath();x.arc(320+Math.cos(a)*150,220+Math.sin(a)*150,6,0,7);x.fill()}
+  x.fillStyle='#fff';x.font='800 20px Bricolage Grotesque, sans-serif';x.fillText(solved[cur]?'Life cycle of a '+(cur==='frog'?'frog':'mosquito'):'Order the stages →',320,226)})})();
+
+Quiz($('#quiz'),[
+ {q:'Which of these is a sign that something is living?',o:['It can be moved by wind','It grows and reproduces','It is shiny','It is heavy'],a:1,e:'Living beings grow, reproduce, respire, excrete and respond to stimuli.'},
+ {q:'Seeds in moist soil kept in the dark…',o:['Do not germinate','Germinate','Turn into stones','Dry up'],a:1,e:'Sunlight is not needed for germination; water, air and a suitable temperature are.'},
+ {q:'Why did seeds in the pot with excess water not germinate?',o:['Too much sunlight','No air reached the seeds','The pot was too big','The seeds were too small'],a:1,e:'Excess water left no air for the seeds.'},
+ {q:'The leaves of the touch-me-not fold when touched. Touch here is a…',o:['Response','Stimulus','Habitat','Life span'],a:1,e:'Touch is the stimulus; folding is the response.'},
+ {q:'Through which tiny pores do leaves take in air?',o:['Roots','Stomata','Veins','Flowers'],a:1,e:'Stomata are tiny pores, mostly on the leaves.'},
+ {q:'Which is the correct life cycle of a mosquito?',o:['Egg → pupa → larva → adult','Egg → larva → pupa → adult','Larva → egg → pupa → adult','Egg → adult → larva → pupa'],a:1,e:'A mosquito goes from egg to larva to pupa to adult.'},
+ {q:'A young frog that lives in water and breathes with gills is a…',o:['Froglet','Tadpole','Larva of a mosquito','Pupa'],a:1,e:'The tadpole hatches from the egg and lives in water.'},
+ {q:'A seedling is fixed upside down. After some days, its shoot…',o:['Grows downwards','Bends and grows upwards towards light','Stops growing','Turns into a root'],a:1,e:'Shoots grow towards light and roots grow downwards.'}
+],'quiz');
+</script>
+
+<a href="../index.html#/class-6" style="position:fixed;right:16px;bottom:16px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;background:rgba(255,255,255,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.95);box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font:900 14px/1 Nunito,'Segoe UI',system-ui,sans-serif;text-decoration:none">🏠 Lab Home</a></body></html>

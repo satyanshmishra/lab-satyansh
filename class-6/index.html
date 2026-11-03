@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Curiosity Science Labs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3F7F4; --grid:#DCE9E3; --ink:#18324A; --ink2:#4B6274; --bench:#1D2A33; --bench2:#26363F;
+  --marker:#FFD84D; --ok:#1E9E6A; --bad:#D64545; --line:#C9D9D2; --card:#FFFFFF;
+  --acc:#2F7DD1; --acc2:#9CC8F5; --accInk:#fff;
+  --r-lg:22px; --r-md:14px; --r-sm:9px;
+  --fh:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --fb:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);font:17px/1.55 var(--fb);background:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;}
+h1,h2,h3,h4{font-family:var(--fh);line-height:1.1;margin:0 0 .4em;letter-spacing:-.01em}
+p{margin:0 0 .8em}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--marker);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* hero */
+.hero{padding:44px 0 26px}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center}
+.chapno{font-family:var(--fh);font-weight:800;font-size:15px;color:var(--acc);display:inline-flex;gap:8px;align-items:center;background:#fff;border:2px solid var(--acc);border-radius:99px;padding:3px 14px 3px 4px}
+.chapno b{background:var(--acc);color:var(--accInk);border-radius:99px;min-width:28px;height:28px;display:grid;place-items:center;font-size:15px}
+.hero h1{font-size:clamp(38px,5.6vw,68px);font-weight:800;margin:16px 0 14px}
+.hero h1 .u{background:linear-gradient(transparent 62%,var(--marker) 62% 92%,transparent 92%)}
+.hero .lede{font-size:19px;color:var(--ink2);max-width:52ch}
+.hero-stage{background:var(--bench);border-radius:var(--r-lg);aspect-ratio:5/4;position:relative;overflow:hidden;box-shadow:0 18px 0 -8px var(--acc2),0 24px 40px -18px rgba(24,50,74,.45)}
+.hero-stage canvas,.hero-stage svg{width:100%;height:100%;display:block}
+.procedure{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:6px;counter-reset:p}
+.procedure li{counter-increment:p;display:flex;gap:10px;align-items:center;font-weight:700}
+.procedure li::before{content:counter(p);width:26px;height:26px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-size:13px;flex:none}
+.procedure li.done::before{content:"✓";background:var(--ok);border-color:var(--ok);color:#fff}
+
+/* tab bar */
+.bar{position:sticky;top:0;z-index:20;background:rgba(243,247,244,.92);backdrop-filter:blur(8px);border-bottom:2px solid var(--line)}
+.bar .wrap{display:flex;gap:8px;align-items:center;overflow-x:auto;padding-top:10px;padding-bottom:10px;scrollbar-width:thin}
+.tab{border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:99px;padding:7px 15px;font-weight:700;font-size:15px;white-space:nowrap;transition:transform .15s}
+.tab:hover{transform:translateY(-2px)}
+.tab[aria-selected=true]{background:var(--ink);color:#fff}
+.tab .tick{display:none;color:var(--ok);margin-left:6px}
+.tab.done .tick{display:inline}
+.tab[aria-selected=true] .tick{color:var(--marker)}
+.meter{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;white-space:nowrap;padding-left:12px}
+.meter i{display:block;width:90px;height:9px;background:#fff;border:2px solid var(--ink);border-radius:9px;overflow:hidden}
+.meter i b{display:block;height:100%;width:0;background:var(--ok);transition:width .5s}
+
+/* panels */
+main{padding:28px 0 60px}
+.panel{display:none;animation:rise .35s ease}
+.panel.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.panel-head{display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.panel-head h2{font-size:clamp(26px,3.4vw,38px);margin:0}
+.panel-head .aim{color:var(--ink2);max-width:62ch;margin:6px 0 0}
+.lab{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:20px;align-items:start}
+.lab.wide{grid-template-columns:1fr}
+.stage{background:var(--bench);border-radius:var(--r-lg);position:relative;overflow:hidden;color:#E8F0F2;min-height:300px}
+.stage canvas,.stage>svg{display:block;width:100%;height:auto}
+.stage .hud{position:absolute;left:14px;top:12px;font-weight:700;font-size:14px;background:rgba(0,0,0,.35);padding:4px 10px;border-radius:8px;pointer-events:none}
+.side{display:grid;gap:14px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:var(--r-md);padding:16px 18px}
+.card h3{font-size:19px}
+.card.note{background:#FFFBE6;border-color:#F1DF8F}
+.card.note h3::before{content:"✎ ";color:#B98B00}
+.card.why{border-left:7px solid var(--acc)}
+.ctrl{display:grid;gap:12px}
+.ctrl label{font-weight:700;font-size:15px;display:grid;gap:4px}
+.ctrl .row{display:flex;gap:8px;flex-wrap:wrap}
+input[type=range]{width:100%;accent-color:var(--acc);height:28px}
+.btn{border:2px solid var(--ink);background:var(--acc);color:var(--accInk);border-radius:12px;padding:9px 16px;font-weight:700;box-shadow:0 4px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn.sm{padding:6px 11px;font-size:14px;border-radius:10px;box-shadow:0 3px 0 var(--ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.sel{background:var(--marker);color:var(--ink)}
+.readout{font-family:var(--fh);font-size:30px;font-weight:800;line-height:1}
+.readout small{font-size:14px;font-weight:600;color:var(--ink2);display:block;margin-top:4px;font-family:var(--fb)}
+.obs{min-height:3em;font-size:16px}
+.obs.ok{color:var(--ok)} .obs.bad{color:var(--bad)}
+.hl{background:linear-gradient(transparent 55%,var(--marker) 55%);font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pill:empty{display:none}
+.pill{display:inline-block;border-radius:99px;padding:2px 10px;font-size:13px;font-weight:700;background:var(--acc2);color:var(--ink)}
+table.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th,.tbl td{border-bottom:1.5px solid var(--line);padding:6px 8px;text-align:left}
+.tbl th{font-family:var(--fh)}
+
+/* sorting game */
+.sorter{display:grid;gap:14px}
+.tray{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:10px;border:2px dashed var(--line);border-radius:var(--r-md);background:#fff}
+.chip{border:2px solid var(--ink);background:#fff;border-radius:12px;padding:7px 12px;font-weight:700;font-size:15px;user-select:none;touch-action:none;display:inline-flex;align-items:center;gap:6px;transition:transform .15s,background .2s}
+.chip .em{font-size:22px;line-height:1}
+.chip.picked{background:var(--marker);transform:scale(1.06) rotate(-2deg)}
+.chip.right{border-color:var(--ok);background:#E3F6EC;cursor:default}
+.chip.dragging{position:fixed;z-index:999;pointer-events:none;box-shadow:0 12px 24px rgba(0,0,0,.25)}
+.bins{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.bin{border:2px solid var(--ink);border-radius:var(--r-md);background:#fff;min-height:140px;padding:10px;display:flex;flex-direction:column;gap:6px;transition:background .2s,transform .2s}
+.bin h4{font-size:17px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.bin.hover{background:#FFF6CC;transform:scale(1.02)}
+.bin .chips{display:flex;flex-wrap:wrap;gap:6px}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+
+/* order game */
+.order{display:flex;flex-wrap:wrap;gap:8px}
+.slots{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.slot{min-width:120px;min-height:44px;border:2px dashed var(--ink2);border-radius:12px;display:grid;place-items:center;padding:6px 10px;font-weight:700;color:var(--ink2);background:#fff}
+.slot.filled{border-style:solid;border-color:var(--ok);color:var(--ink);background:#E3F6EC}
+
+/* quiz */
+.quiz{max-width:760px;margin:0 auto}
+.qcard{background:#fff;border:2px solid var(--ink);border-radius:var(--r-lg);padding:24px;box-shadow:8px 8px 0 var(--acc2)}
+.qtop{display:flex;justify-content:space-between;font-weight:700;color:var(--ink2);margin-bottom:10px;font-size:15px}
+.qtext{font-family:var(--fh);font-size:24px;font-weight:700;margin-bottom:16px}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:11px 14px;font-weight:700;display:flex;gap:12px;align-items:center}
+.opt:hover:not([disabled]){border-color:var(--ink)}
+.opt .k{width:30px;height:30px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;flex:none;font-size:14px}
+.opt.right{border-color:var(--ok);background:#E3F6EC}
+.opt.wrong{border-color:var(--bad);background:#FCE8E8}
+.qexp{margin-top:14px;padding:12px 14px;border-radius:12px;background:#F2F6FA;display:none}
+.qexp.on{display:block;animation:rise .3s}
+.qnav{display:flex;justify-content:flex-end;margin-top:16px}
+.score{text-align:center}
+.score .big{font-family:var(--fh);font-size:72px;font-weight:800;color:var(--acc)}
+
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:22px}
+.fact{background:#fff;border:2px solid var(--line);border-radius:var(--r-md);padding:14px 16px;font-size:15px}
+.fact b{font-family:var(--fh);display:block;font-size:17px;margin-bottom:4px;color:var(--acc)}
+
+footer{padding:24px 0 40px;color:var(--ink2);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:12px;font-weight:700;z-index:1000;transition:transform .35s cubic-bezier(.2,1.4,.4,1);max-width:90vw;text-align:center}
+.toast.on{transform:translate(-50%,0)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:999}
+
+@media (max-width:860px){
+  .hero .wrap,.lab{grid-template-columns:1fr}
+  .hero{padding-top:26px}
+  .meter i{width:60px}
+  .grid2{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+
+:root{--acc:#18324A;--acc2:#FFD84D}
+.labs{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:10px}
+.lc{display:flex;flex-direction:column;gap:8px;background:#fff;border:2px solid var(--ink);border-radius:18px;padding:16px 18px;text-decoration:none;color:var(--ink);box-shadow:6px 6px 0 var(--c);transition:transform .15s,box-shadow .15s;position:relative}
+.lc:hover{transform:translate(-2px,-2px);box-shadow:9px 9px 0 var(--c)}
+.lc .n{width:40px;height:40px;border-radius:12px;background:var(--c);color:#fff;font-family:var(--fh);font-weight:800;font-size:20px;display:grid;place-items:center}
+.lc h3{font-size:20px;margin:0}
+.lc p{font-size:14.5px;color:var(--ink2);margin:0}
+.lc .pr{margin-top:auto;font-size:13px;font-weight:700;color:var(--ink2);display:flex;align-items:center;gap:8px}
+.lc .pr i{flex:1;height:8px;border-radius:8px;background:#E6ECEF;overflow:hidden}
+.lc .pr i b{display:block;height:100%;background:var(--c)}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:26px 0 8px}
+
+</style><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"></head><body>
+
+
+<header class="hero"><div class="wrap">
+  <div>
+    <span class="chapno"><b>6</b>Grade 6 Science</span>
+    <h1>Curiosity <span class="u">Science Labs</span></h1>
+    <p class="lede">Twelve interactive labs, one for every chapter of the Grade 6 science textbook, Curiosity. Each lab has hands-on experiments, animations, games and a quiz. Pick a chapter to begin.</p>
+  </div>
+  <div class="hero-stage"><canvas id="heroCv"></canvas></div>
+</div></header>
+
+<main class="wrap" style="padding-top:10px">
+  <div class="labs" id="labs"></div>
+  <div class="how">
+    <div class="fact"><b>Works offline</b>Every lab is a single file. Open it in any web browser, on a computer, smart board or projector.</div>
+    <div class="fact"><b>Track progress</b>A green tick appears on each experiment you finish. Progress is saved in this browser.</div>
+    <div class="fact"><b>Predict, test, explain</b>Most experiments ask you to predict first, then test and read what happened, just like real scientists.</div>
+  </div>
+</main>
+<footer>Based on NCERT Curiosity, Textbook of Science for Grade 6</footer>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LAB={done:new Set(),total:0,key:'lab-'+location.pathname.split('/').pop()};
+function store(get,val){try{if(get)return JSON.parse(localStorage.getItem(LAB.key)||'[]');localStorage.setItem(LAB.key,JSON.stringify(val))}catch(e){return []}}
+function toast(msg,ms=2600){let t=$('.toast');if(!t){t=document.createElement('div');t.className='toast';document.body.appendChild(t)}
+  t.textContent=msg;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),ms)}
+function markDone(id){if(LAB.done.has(id))return;LAB.done.add(id);store(false,[...LAB.done]);paintProgress();
+  if(LAB.done.size===LAB.total){confetti();toast('You completed every experiment in this lab!')}}
+function paintProgress(){$$('.tab[data-t]').forEach(b=>b.classList.toggle('done',LAB.done.has(b.dataset.t)));
+  $$('.procedure li[data-t]').forEach(l=>l.classList.toggle('done',LAB.done.has(l.dataset.t)));
+  const m=$('.meter b'),n=$('.meter span');if(m){m.style.width=(100*LAB.done.size/LAB.total)+'%';n.textContent=LAB.done.size+' of '+LAB.total+' done'}}
+const tabHooks={};
+function onTab(id,fn){(tabHooks[id]=tabHooks[id]||[]).push(fn)}
+function showTab(id,scroll){$$('.tab[data-t]').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===id));
+  $$('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+id));(tabHooks[id]||[]).forEach(f=>f());
+  if(scroll){const bar=$('.bar');window.scrollTo({top:bar.offsetTop,behavior:'smooth'})}}
+function initTabs(){const tabs=$$('.tab[data-t]');LAB.total=tabs.length;store(true).forEach(x=>LAB.done.add(x));
+  tabs.forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.t,true)));
+  $$('.procedure li[data-t]').forEach(l=>{l.style.cursor='pointer';l.addEventListener('click',()=>showTab(l.dataset.t,true))});
+  paintProgress();showTab(tabs[0].dataset.t)}
+document.addEventListener('DOMContentLoaded',()=>{if($('.tab'))initTabs()});
+
+/* confetti */
+function confetti(){let c=$('#confetti');if(!c){c=document.createElement('canvas');c.id='confetti';document.body.appendChild(c)}
+  const x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;const cols=['#FFD84D','#1E9E6A','#2F7DD1','#E8567C','#8A5CF6','#FF8A3D'];
+  const ps=Array.from({length:160},()=>({x:innerWidth/2+(Math.random()-.5)*200,y:innerHeight*.35,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,r:Math.random()*6+4,c:cols[Math.random()*6|0],a:Math.random()*6,va:(Math.random()-.5)*.4}));
+  let f=0;(function tick(){x.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.vx*=.99;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()});
+    if(++f<180)requestAnimationFrame(tick);else x.clearRect(0,0,c.width,c.height)})()}
+
+/* hi-dpi canvas: returns ctx sized to logical w,h */
+function hiCanvas(cv,w,h){const d=Math.min(2,window.devicePixelRatio||1);cv.width=w*d;cv.height=h*d;cv.style.aspectRatio=w+'/'+h;const x=cv.getContext('2d');x.setTransform(d,0,0,d,0,0);x.W=w;x.H=h;return x}
+function canvasPoint(cv,e,w,h){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*w/r.width,y:(e.clientY-r.top)*h/r.height}}
+function loop(fn){let last=performance.now(),run=true;function f(t){if(!run)return;const dt=Math.min(.05,(t-last)/1000);last=t;fn(dt,t/1000);requestAnimationFrame(f)}requestAnimationFrame(f);return()=>run=false}
+const lerp=(a,b,t)=>a+(b-a)*t, clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), rand=(a,b)=>a+Math.random()*(b-a);
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+
+/* Quiz: qs=[{q,o:[..],a:index,e:explain}] */
+function Quiz(el,qs,doneId){let i=0,score=0,order=shuffle(qs);
+  function render(){if(i>=order.length){const pct=Math.round(100*score/order.length);
+      el.innerHTML=`<div class="qcard score"><div class="big">${score}/${order.length}</div><h3>${pct>=80?'Brilliant work, scientist!':pct>=50?'Good effort! Revisit the experiments and try again.':'Keep exploring the experiments, then try again.'}</h3><p>Every question comes from what you tested in this lab.</p><button class="btn">Try the quiz again</button></div>`;
+      $('button',el).onclick=()=>{i=0;score=0;order=shuffle(qs);render()};if(pct>=60){confetti();doneId&&markDone(doneId)}return}
+    const q=order[i];el.innerHTML=`<div class="qcard"><div class="qtop"><span>Question ${i+1} of ${order.length}</span><span>Score ${score}</span></div>
+      <div class="qtext">${q.q}</div><div class="opts">${q.o.map((o,k)=>`<button class="opt" data-k="${k}"><span class="k">${'ABCD'[k]}</span>${o}</button>`).join('')}</div>
+      <div class="qexp"></div><div class="qnav"><button class="btn" disabled>Next question</button></div></div>`;
+    $$('.opt',el).forEach(b=>b.onclick=()=>{const k=+b.dataset.k;$$('.opt',el).forEach(x=>x.disabled=true);
+      $$('.opt',el)[q.a].classList.add('right');if(k===q.a){score++}else{b.classList.add('wrong');b.classList.add('shake')}
+      const ex=$('.qexp',el);ex.innerHTML=(k===q.a?'<b>Correct.</b> ':'<b>Not quite.</b> ')+q.e;ex.classList.add('on');
+      const nb=$('.qnav .btn',el);nb.disabled=false;nb.textContent=i===order.length-1?'See my score':'Next question';nb.focus()});
+    $('.qnav .btn',el).onclick=()=>{i++;render()}}
+  render()}
+
+/* Sorter: items=[{t,em,c,why}], bins=[{c,t,em}] ; click a chip then a bin, or drag */
+function Sorter(el,items,bins,opts={}){
+  el.innerHTML=`<div class="sorter"><div class="tray"></div><div class="bins">${bins.map(b=>`<div class="bin" data-c="${b.c}"><h4>${b.em?`<span class="em">${b.em}</span>`:''}${b.t}</h4><div class="chips"></div></div>`).join('')}</div><div class="obs" aria-live="polite"></div></div>`;
+  const tray=$('.tray',el),obs=$('.obs',el);let picked=null,left=items.length;
+  shuffle(items).forEach(it=>{const c=document.createElement('button');c.className='chip';c.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;c._it=it;tray.appendChild(c);
+    c.addEventListener('click',()=>{if(c.classList.contains('right'))return;$$('.chip.picked',el).forEach(x=>x.classList.remove('picked'));picked=c;c.classList.add('picked');obs.className='obs';obs.textContent='Now choose a group for “'+it.t+'”.'});
+    c.addEventListener('pointerdown',e=>{if(c.classList.contains('right'))return;const sx=e.clientX,sy=e.clientY;let ghost=null;
+      const mv=ev=>{if(!ghost&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>8){ghost=c.cloneNode(true);ghost.classList.add('dragging');document.body.appendChild(ghost);c.style.opacity=.3}
+        if(ghost){ghost.style.left=ev.clientX-30+'px';ghost.style.top=ev.clientY-20+'px';$$('.bin',el).forEach(b=>{const r=b.getBoundingClientRect();b.classList.toggle('hover',ev.clientX>r.left&&ev.clientX<r.right&&ev.clientY>r.top&&ev.clientY<r.bottom)})}};
+      const up=ev=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);if(ghost){ghost.remove();c.style.opacity=1;const b=$('.bin.hover',el);$$('.bin',el).forEach(x=>x.classList.remove('hover'));if(b)drop(c,b);c._dragged=true;setTimeout(()=>c._dragged=false,50)}};
+      addEventListener('pointermove',mv);addEventListener('pointerup',up)})});
+  $$('.bin',el).forEach(b=>b.addEventListener('click',()=>{if(picked)drop(picked,b)}));
+  function drop(c,b){const it=c._it;if(it.c===b.dataset.c){c.classList.remove('picked');c.classList.add('right');$('.chips',b).appendChild(c);obs.className='obs ok';obs.innerHTML='✓ '+(it.why||'Correct!');left--;picked=null;
+      if(!left){obs.innerHTML='✓ All sorted! '+(opts.end||'');confetti();opts.done&&markDone(opts.done)}}
+    else{c.classList.add('shake');setTimeout(()=>c.classList.remove('shake'),400);obs.className='obs bad';obs.innerHTML='✗ Not this group. '+(it.hint||'Look again at its features.')}}
+}
+
+/* Order game: items in correct order [{t,em}] */
+function OrderGame(el,items,opts={}){
+  el.innerHTML=`<div class="order"></div><div class="slots">${items.map((_,i)=>`<div class="slot">${i+1}</div>`).join('')}</div><div class="obs" style="margin-top:10px"></div>`;
+  let n=0;const box=$('.order',el),obs=$('.obs',el);
+  shuffle(items.map((x,i)=>({...x,i}))).forEach(it=>{const b=document.createElement('button');b.className='chip';b.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;
+    b.onclick=()=>{if(it.i===n){const s=$$('.slot',el)[n];s.innerHTML=b.innerHTML;s.classList.add('filled');b.remove();n++;obs.className='obs ok';obs.textContent=opts.say?opts.say(it.i):'✓ Right!';
+        if(n===items.length){obs.textContent='✓ Perfect order! '+(opts.end||'');confetti();opts.done&&markDone(opts.done);opts.onDone&&opts.onDone()}}
+      else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);obs.className='obs bad';obs.textContent='✗ That is not step '+(n+1)+'. Think about what has to happen first.'}};box.appendChild(b)})}
+
+const L=[['ch01-the-wonderful-world-of-science.html','The Wonderful World of Science','Solve the pen mystery, find a puncture and learn the scientific method.','#6A4CE0',5],
+['ch02-diversity-in-the-living-world.html','Diversity in the Living World','Build herbs, shrubs and trees, match leaves with roots, explore habitats.','#1E8F5A',6],
+['ch03-mindful-eating.html','Mindful Eating: A Path to a Healthy Body','Test foods for starch, fat and protein; build a balanced thali.','#E2672E',5],
+['ch04-exploring-magnets.html','Exploring Magnets','Iron filings, compasses, attraction and repulsion, make your own magnet.','#D63B4A',6],
+['ch05-measurement-of-length-and-motion.html','Measurement of Length and Motion','Handspans, reading a scale, curved lines and types of motion.','#0E8A9A',5],
+['ch06-materials-around-us.html','Materials Around Us','Lustre, hardness, transparency, solubility, bounce, mass and volume.','#B3672B',6],
+['ch07-temperature-and-its-measurement.html','Temperature and its Measurement','Fool your hands, read thermometers, convert °C, °F and K.','#D9452B',6],
+['ch08-a-journey-through-states-of-water.html','A Journey through States of Water','Particle model, evaporation race, condensation, matka and the water cycle.','#2C7FD6',6],
+['ch09-methods-of-separation-in-everyday-life.html','Methods of Separation in Everyday Life','Winnowing, sieving, filtration, evaporation and magnetic separation.','#7A57C9',7],
+['ch10-living-creatures.html','Living Creatures: Exploring their Characteristics','Signs of life, seed germination, plant responses and life cycles.','#2E9A44',5],
+['ch11-natures-treasures.html',"Nature's Treasures",'Air, wind power, water saving, soil, fossil fuels and resources.','#1F8A70',7],
+['ch12-beyond-earth.html','Beyond Earth','Constellations, the Pole Star, light pollution and the Solar System.','#4B5BD6',6]];
+function prog(f){try{return JSON.parse(localStorage.getItem('lab-'+encodeURIComponent(f))||localStorage.getItem('lab-'+f)||'[]').length}catch(e){return 0}}
+$('#labs').innerHTML=L.map((l,i)=>{const d=Math.min(prog(l[0]),l[4]);return `<a class="lc" style="--c:${l[3]}" href="${encodeURIComponent(l[0])}"><span class="n">${i+1}</span><h3>${l[1]}</h3><p>${l[2]}</p><span class="pr"><i><b style="width:${100*d/l[4]}%"></b></i>${d} of ${l[4]} done</span></a>`}).join('');
+(()=>{const cv=$('#heroCv'),x=hiCanvas(cv,500,400);const cols=L.map(l=>l[3]);let hover=-1,pos=[];
+ cv.addEventListener('pointermove',e=>{const p=canvasPoint(cv,e,500,400);hover=pos.findIndex(q=>Math.hypot(q.x-p.x,q.y-p.y)<20);cv.style.cursor=hover>=0?'pointer':'default'});
+ cv.addEventListener('click',()=>{if(hover>=0)location.href=encodeURIComponent(L[hover][0])});
+ loop((dt,t)=>{x.fillStyle='#1D2A33';x.fillRect(0,0,500,400);
+  for(let r=60;r<=180;r+=40){x.strokeStyle='rgba(255,255,255,.08)';x.lineWidth=1;x.beginPath();x.ellipse(250,200,r*1.25,r*.9,0,0,7);x.stroke()}
+  pos=L.map((l,i)=>{const ring=60+(i%4)*40,a=t*(.25-(i%4)*.04)+i*.52;return{x:250+Math.cos(a)*ring*1.25,y:200+Math.sin(a)*ring*.9}});
+  pos.forEach((p,i)=>{x.fillStyle=cols[i];x.beginPath();x.arc(p.x,p.y,hover===i?20:15,0,7);x.fill();x.fillStyle='#fff';x.font='800 14px Bricolage Grotesque, sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(i+1,p.x,p.y+1)});
+  x.fillStyle='#FFD84D';x.font='800 64px Bricolage Grotesque, sans-serif';x.fillText('?',250,204);
+  if(hover>=0){x.fillStyle='#fff';x.font='700 15px Atkinson Hyperlegible, sans-serif';x.fillText(L[hover][1],250,380)}x.textBaseline='alphabetic'})})();
+</script>
+
+<a href="../index.html#/class-6" style="position:fixed;right:16px;bottom:16px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;background:rgba(255,255,255,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.95);box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font:900 14px/1 Nunito,'Segoe UI',system-ui,sans-serif;text-decoration:none">🏠 Lab Home</a></body></html>

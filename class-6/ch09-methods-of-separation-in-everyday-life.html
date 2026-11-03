@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Separation Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3F7F4; --grid:#DCE9E3; --ink:#18324A; --ink2:#4B6274; --bench:#1D2A33; --bench2:#26363F;
+  --marker:#FFD84D; --ok:#1E9E6A; --bad:#D64545; --line:#C9D9D2; --card:#FFFFFF;
+  --acc:#2F7DD1; --acc2:#9CC8F5; --accInk:#fff;
+  --r-lg:22px; --r-md:14px; --r-sm:9px;
+  --fh:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --fb:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);font:17px/1.55 var(--fb);background:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;}
+h1,h2,h3,h4{font-family:var(--fh);line-height:1.1;margin:0 0 .4em;letter-spacing:-.01em}
+p{margin:0 0 .8em}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--marker);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* hero */
+.hero{padding:44px 0 26px}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center}
+.chapno{font-family:var(--fh);font-weight:800;font-size:15px;color:var(--acc);display:inline-flex;gap:8px;align-items:center;background:#fff;border:2px solid var(--acc);border-radius:99px;padding:3px 14px 3px 4px}
+.chapno b{background:var(--acc);color:var(--accInk);border-radius:99px;min-width:28px;height:28px;display:grid;place-items:center;font-size:15px}
+.hero h1{font-size:clamp(38px,5.6vw,68px);font-weight:800;margin:16px 0 14px}
+.hero h1 .u{background:linear-gradient(transparent 62%,var(--marker) 62% 92%,transparent 92%)}
+.hero .lede{font-size:19px;color:var(--ink2);max-width:52ch}
+.hero-stage{background:var(--bench);border-radius:var(--r-lg);aspect-ratio:5/4;position:relative;overflow:hidden;box-shadow:0 18px 0 -8px var(--acc2),0 24px 40px -18px rgba(24,50,74,.45)}
+.hero-stage canvas,.hero-stage svg{width:100%;height:100%;display:block}
+.procedure{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:6px;counter-reset:p}
+.procedure li{counter-increment:p;display:flex;gap:10px;align-items:center;font-weight:700}
+.procedure li::before{content:counter(p);width:26px;height:26px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-size:13px;flex:none}
+.procedure li.done::before{content:"✓";background:var(--ok);border-color:var(--ok);color:#fff}
+
+/* tab bar */
+.bar{position:sticky;top:0;z-index:20;background:rgba(243,247,244,.92);backdrop-filter:blur(8px);border-bottom:2px solid var(--line)}
+.bar .wrap{display:flex;gap:8px;align-items:center;overflow-x:auto;padding-top:10px;padding-bottom:10px;scrollbar-width:thin}
+.tab{border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:99px;padding:7px 15px;font-weight:700;font-size:15px;white-space:nowrap;transition:transform .15s}
+.tab:hover{transform:translateY(-2px)}
+.tab[aria-selected=true]{background:var(--ink);color:#fff}
+.tab .tick{display:none;color:var(--ok);margin-left:6px}
+.tab.done .tick{display:inline}
+.tab[aria-selected=true] .tick{color:var(--marker)}
+.meter{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;white-space:nowrap;padding-left:12px}
+.meter i{display:block;width:90px;height:9px;background:#fff;border:2px solid var(--ink);border-radius:9px;overflow:hidden}
+.meter i b{display:block;height:100%;width:0;background:var(--ok);transition:width .5s}
+
+/* panels */
+main{padding:28px 0 60px}
+.panel{display:none;animation:rise .35s ease}
+.panel.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.panel-head{display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.panel-head h2{font-size:clamp(26px,3.4vw,38px);margin:0}
+.panel-head .aim{color:var(--ink2);max-width:62ch;margin:6px 0 0}
+.lab{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:20px;align-items:start}
+.lab.wide{grid-template-columns:1fr}
+.stage{background:var(--bench);border-radius:var(--r-lg);position:relative;overflow:hidden;color:#E8F0F2;min-height:300px}
+.stage canvas,.stage>svg{display:block;width:100%;height:auto}
+.stage .hud{position:absolute;left:14px;top:12px;font-weight:700;font-size:14px;background:rgba(0,0,0,.35);padding:4px 10px;border-radius:8px;pointer-events:none}
+.side{display:grid;gap:14px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:var(--r-md);padding:16px 18px}
+.card h3{font-size:19px}
+.card.note{background:#FFFBE6;border-color:#F1DF8F}
+.card.note h3::before{content:"✎ ";color:#B98B00}
+.card.why{border-left:7px solid var(--acc)}
+.ctrl{display:grid;gap:12px}
+.ctrl label{font-weight:700;font-size:15px;display:grid;gap:4px}
+.ctrl .row{display:flex;gap:8px;flex-wrap:wrap}
+input[type=range]{width:100%;accent-color:var(--acc);height:28px}
+.btn{border:2px solid var(--ink);background:var(--acc);color:var(--accInk);border-radius:12px;padding:9px 16px;font-weight:700;box-shadow:0 4px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn.sm{padding:6px 11px;font-size:14px;border-radius:10px;box-shadow:0 3px 0 var(--ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.sel{background:var(--marker);color:var(--ink)}
+.readout{font-family:var(--fh);font-size:30px;font-weight:800;line-height:1}
+.readout small{font-size:14px;font-weight:600;color:var(--ink2);display:block;margin-top:4px;font-family:var(--fb)}
+.obs{min-height:3em;font-size:16px}
+.obs.ok{color:var(--ok)} .obs.bad{color:var(--bad)}
+.hl{background:linear-gradient(transparent 55%,var(--marker) 55%);font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pill:empty{display:none}
+.pill{display:inline-block;border-radius:99px;padding:2px 10px;font-size:13px;font-weight:700;background:var(--acc2);color:var(--ink)}
+table.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th,.tbl td{border-bottom:1.5px solid var(--line);padding:6px 8px;text-align:left}
+.tbl th{font-family:var(--fh)}
+
+/* sorting game */
+.sorter{display:grid;gap:14px}
+.tray{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:10px;border:2px dashed var(--line);border-radius:var(--r-md);background:#fff}
+.chip{border:2px solid var(--ink);background:#fff;border-radius:12px;padding:7px 12px;font-weight:700;font-size:15px;user-select:none;touch-action:none;display:inline-flex;align-items:center;gap:6px;transition:transform .15s,background .2s}
+.chip .em{font-size:22px;line-height:1}
+.chip.picked{background:var(--marker);transform:scale(1.06) rotate(-2deg)}
+.chip.right{border-color:var(--ok);background:#E3F6EC;cursor:default}
+.chip.dragging{position:fixed;z-index:999;pointer-events:none;box-shadow:0 12px 24px rgba(0,0,0,.25)}
+.bins{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.bin{border:2px solid var(--ink);border-radius:var(--r-md);background:#fff;min-height:140px;padding:10px;display:flex;flex-direction:column;gap:6px;transition:background .2s,transform .2s}
+.bin h4{font-size:17px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.bin.hover{background:#FFF6CC;transform:scale(1.02)}
+.bin .chips{display:flex;flex-wrap:wrap;gap:6px}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+
+/* order game */
+.order{display:flex;flex-wrap:wrap;gap:8px}
+.slots{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.slot{min-width:120px;min-height:44px;border:2px dashed var(--ink2);border-radius:12px;display:grid;place-items:center;padding:6px 10px;font-weight:700;color:var(--ink2);background:#fff}
+.slot.filled{border-style:solid;border-color:var(--ok);color:var(--ink);background:#E3F6EC}
+
+/* quiz */
+.quiz{max-width:760px;margin:0 auto}
+.qcard{background:#fff;border:2px solid var(--ink);border-radius:var(--r-lg);padding:24px;box-shadow:8px 8px 0 var(--acc2)}
+.qtop{display:flex;justify-content:space-between;font-weight:700;color:var(--ink2);margin-bottom:10px;font-size:15px}
+.qtext{font-family:var(--fh);font-size:24px;font-weight:700;margin-bottom:16px}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:11px 14px;font-weight:700;display:flex;gap:12px;align-items:center}
+.opt:hover:not([disabled]){border-color:var(--ink)}
+.opt .k{width:30px;height:30px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;flex:none;font-size:14px}
+.opt.right{border-color:var(--ok);background:#E3F6EC}
+.opt.wrong{border-color:var(--bad);background:#FCE8E8}
+.qexp{margin-top:14px;padding:12px 14px;border-radius:12px;background:#F2F6FA;display:none}
+.qexp.on{display:block;animation:rise .3s}
+.qnav{display:flex;justify-content:flex-end;margin-top:16px}
+.score{text-align:center}
+.score .big{font-family:var(--fh);font-size:72px;font-weight:800;color:var(--acc)}
+
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:22px}
+.fact{background:#fff;border:2px solid var(--line);border-radius:var(--r-md);padding:14px 16px;font-size:15px}
+.fact b{font-family:var(--fh);display:block;font-size:17px;margin-bottom:4px;color:var(--acc)}
+
+footer{padding:24px 0 40px;color:var(--ink2);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:12px;font-weight:700;z-index:1000;transition:transform .35s cubic-bezier(.2,1.4,.4,1);max-width:90vw;text-align:center}
+.toast.on{transform:translate(-50%,0)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:999}
+
+@media (max-width:860px){
+  .hero .wrap,.lab{grid-template-columns:1fr}
+  .hero{padding-top:26px}
+  .meter i{width:60px}
+  .grid2{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+
+:root{--acc:#7A57C9;--acc2:#D8C8FF}
+.stage canvas{touch-action:none}
+.flow{display:flex;gap:6px;flex-wrap:wrap}
+.flow span{padding:4px 10px;border-radius:99px;border:2px solid var(--line);font-weight:700;font-size:13px;color:var(--ink2)}
+.flow span.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.flow span.past{border-color:var(--ok);color:var(--ok)}
+
+</style><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"></head><body>
+
+
+<header class="hero"><div class="wrap">
+  <div>
+    <span class="chapno"><b>9</b>Chapter 9</span>
+    <h1>Methods of Separation in <span class="u">Everyday Life</span></h1>
+    <p class="lede">From a farmer's field to your kitchen, mixtures are separated every day. Thresh and winnow grain, sieve flour, clean muddy water, get salt back from salt water and pull iron out with a magnet.</p>
+    <ol class="procedure">
+      <li data-t="grain">Thresh and winnow</li>
+      <li data-t="sieve">Sieve the flour</li>
+      <li data-t="water">Clean muddy water</li>
+      <li data-t="salt">Get the salt back</li>
+      <li data-t="mag">Separate with a magnet</li>
+      <li data-t="match">Pick the right method</li>
+      <li data-t="quiz">Check what you learnt</li>
+    </ol>
+  </div>
+  <div class="hero-stage"><canvas id="heroCv"></canvas></div>
+</div></header>
+
+<nav class="bar"><div class="wrap">
+  <button class="tab" data-t="grain">Threshing and winnowing<span class="tick">✓</span></button>
+  <button class="tab" data-t="sieve">Sieving<span class="tick">✓</span></button>
+  <button class="tab" data-t="water">Muddy water<span class="tick">✓</span></button>
+  <button class="tab" data-t="salt">Evaporation<span class="tick">✓</span></button>
+  <button class="tab" data-t="mag">Magnet<span class="tick">✓</span></button>
+  <button class="tab" data-t="match">Which method?<span class="tick">✓</span></button>
+  <button class="tab" data-t="quiz">Quiz<span class="tick">✓</span></button>
+  <div class="meter"><i><b></b></i><span></span></div>
+</div></nav>
+
+<main class="wrap">
+<section class="panel" id="p-grain">
+  <div class="panel-head"><div><h2>From stalks to clean grain</h2><p class="aim">First beat the wheat stalks to free the grains (threshing). Then pour the mixture from a height and let the wind do the work (winnowing).</p></div><button class="btn ghost sm" id="grReset">Start again</button></div>
+  <div class="lab">
+    <div class="stage"><canvas id="grCv"></canvas><div class="hud" id="grHud"></div></div>
+    <div class="side"><div class="card ctrl"><div class="flow" id="grFlow"><span>Threshing</span><span>Winnowing</span></div>
+      <button class="btn" id="beat">Beat the stalks</button><label>Wind strength<input type="range" id="wind" min="0" max="100" value="50"></label><button class="btn" id="pourBtn" disabled>Pour from the tray</button></div>
+      <div class="card why"><p class="obs" id="grObs">Tap “Beat the stalks” several times.</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-sieve">
+  <div class="panel-head"><div><h2>Shake the sieve</h2><p class="aim">Flour has some bran and tiny stones mixed in. Drag the sieve left and right (or press the button) to shake it.</p></div><button class="btn ghost sm" id="svReset">Refill the sieve</button></div>
+  <div class="lab">
+    <div class="stage"><canvas id="svCv"></canvas><div class="hud">Drag the sieve sideways</div></div>
+    <div class="side"><div class="card ctrl"><button class="btn" id="shake">Shake</button><label>Size of the holes<input type="range" id="hole" min="1" max="3" step="1" value="2"></label></div>
+      <div class="card why"><p class="obs" id="svObs">Sieving is used when the parts of a mixture have different sizes.</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-water">
+  <div class="panel-head"><div><h2>Cleaning muddy water</h2><p class="aim">Follow three steps: let the mud settle, pour off the water, then filter it.</p></div><button class="btn ghost sm" id="wReset">Fresh muddy water</button></div>
+  <div class="lab">
+    <div class="stage"><canvas id="wCv"></canvas><div class="hud" id="wHud"></div></div>
+    <div class="side"><div class="card ctrl"><div class="flow" id="wFlow"><span>Sedimentation</span><span>Decantation</span><span>Filtration</span></div>
+      <button class="btn" id="wStep">Leave it undisturbed</button></div>
+      <div class="card why"><p class="obs" id="wObs">The water is cloudy with mud.</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-salt">
+  <div class="panel-head"><div><h2>Where did the salt go?</h2><p class="aim">Salt dissolved in water cannot be filtered out. Heat the salt solution in a china dish and watch.</p></div><button class="btn ghost sm" id="sReset">New salt solution</button></div>
+  <div class="lab">
+    <div class="stage"><canvas id="sCv"></canvas></div>
+    <div class="side"><div class="card ctrl"><label>Spirit lamp flame<input type="range" id="flame" min="0" max="100" value="0"></label></div>
+      <div class="card why"><p class="obs" id="sObs">Turn up the flame.</p></div>
+      <div class="card note"><h3>Salt from the sea</h3><p>Sea water is let into shallow salt pans. The Sun's heat evaporates the water, leaving salt behind. Have you seen white patches on dark clothes after they dry? That is salt from your sweat!</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-mag">
+  <div class="panel-head"><div><h2>Nails in the sawdust</h2><p class="aim">A carpenter's heap has iron nails mixed with sawdust. Drag the magnet over the heap, then drag it to the box to drop the nails.</p></div><button class="btn ghost sm" id="mReset">New heap</button></div>
+  <div class="lab">
+    <div class="stage"><canvas id="mCv"></canvas><div class="hud" id="mHud"></div></div>
+    <div class="side"><div class="card why"><p class="obs" id="mObs">Iron is a magnetic substance; sawdust is not.</p></div>
+      <div class="card note"><h3>Churning</h3><p>Butter is separated from curd by churning. The lighter butter collects on top and can be taken out.</p><button class="btn sm" id="churnBtn">Churn the curd</button><canvas id="chCv" style="width:100%;margin-top:8px;border-radius:12px"></canvas></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-match">
+  <div class="panel-head"><div><h2>Which method would you use?</h2><p class="aim">Drag each everyday task to the separation method it needs.</p></div></div>
+  <div id="matchBox"></div>
+</section>
+
+<section class="panel" id="p-quiz">
+  <div class="panel-head"><div><h2>Check what you learnt</h2></div></div>
+  <div class="quiz" id="quiz"></div>
+  <div class="facts">
+    <div class="fact"><b>Threshers</b>Machines called threshers do threshing and winnowing at the same time, saving farmers a lot of time.</div>
+    <div class="fact"><b>Tea bags</b>A tea bag is a tiny filter: water passes through, tea leaves stay inside.</div>
+    <div class="fact"><b>Not complete</b>Decantation does not separate all the mud. That is why we filter the water afterwards.</div>
+  </div>
+</section>
+</main>
+<footer><a href="../index.html#/class-6" style="color:inherit;font-weight:700">← All Grade 6 labs</a><br>Based on NCERT Curiosity, Grade 6, Chapter 9: Methods of Separation in Everyday Life</footer>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LAB={done:new Set(),total:0,key:'lab-'+location.pathname.split('/').pop()};
+function store(get,val){try{if(get)return JSON.parse(localStorage.getItem(LAB.key)||'[]');localStorage.setItem(LAB.key,JSON.stringify(val))}catch(e){return []}}
+function toast(msg,ms=2600){let t=$('.toast');if(!t){t=document.createElement('div');t.className='toast';document.body.appendChild(t)}
+  t.textContent=msg;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),ms)}
+function markDone(id){if(LAB.done.has(id))return;LAB.done.add(id);store(false,[...LAB.done]);paintProgress();
+  if(LAB.done.size===LAB.total){confetti();toast('You completed every experiment in this lab!')}}
+function paintProgress(){$$('.tab[data-t]').forEach(b=>b.classList.toggle('done',LAB.done.has(b.dataset.t)));
+  $$('.procedure li[data-t]').forEach(l=>l.classList.toggle('done',LAB.done.has(l.dataset.t)));
+  const m=$('.meter b'),n=$('.meter span');if(m){m.style.width=(100*LAB.done.size/LAB.total)+'%';n.textContent=LAB.done.size+' of '+LAB.total+' done'}}
+const tabHooks={};
+function onTab(id,fn){(tabHooks[id]=tabHooks[id]||[]).push(fn)}
+function showTab(id,scroll){$$('.tab[data-t]').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===id));
+  $$('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+id));(tabHooks[id]||[]).forEach(f=>f());
+  if(scroll){const bar=$('.bar');window.scrollTo({top:bar.offsetTop,behavior:'smooth'})}}
+function initTabs(){const tabs=$$('.tab[data-t]');LAB.total=tabs.length;store(true).forEach(x=>LAB.done.add(x));
+  tabs.forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.t,true)));
+  $$('.procedure li[data-t]').forEach(l=>{l.style.cursor='pointer';l.addEventListener('click',()=>showTab(l.dataset.t,true))});
+  paintProgress();showTab(tabs[0].dataset.t)}
+document.addEventListener('DOMContentLoaded',()=>{if($('.tab'))initTabs()});
+
+/* confetti */
+function confetti(){let c=$('#confetti');if(!c){c=document.createElement('canvas');c.id='confetti';document.body.appendChild(c)}
+  const x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;const cols=['#FFD84D','#1E9E6A','#2F7DD1','#E8567C','#8A5CF6','#FF8A3D'];
+  const ps=Array.from({length:160},()=>({x:innerWidth/2+(Math.random()-.5)*200,y:innerHeight*.35,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,r:Math.random()*6+4,c:cols[Math.random()*6|0],a:Math.random()*6,va:(Math.random()-.5)*.4}));
+  let f=0;(function tick(){x.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.vx*=.99;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()});
+    if(++f<180)requestAnimationFrame(tick);else x.clearRect(0,0,c.width,c.height)})()}
+
+/* hi-dpi canvas: returns ctx sized to logical w,h */
+function hiCanvas(cv,w,h){const d=Math.min(2,window.devicePixelRatio||1);cv.width=w*d;cv.height=h*d;cv.style.aspectRatio=w+'/'+h;const x=cv.getContext('2d');x.setTransform(d,0,0,d,0,0);x.W=w;x.H=h;return x}
+function canvasPoint(cv,e,w,h){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*w/r.width,y:(e.clientY-r.top)*h/r.height}}
+function loop(fn){let last=performance.now(),run=true;function f(t){if(!run)return;const dt=Math.min(.05,(t-last)/1000);last=t;fn(dt,t/1000);requestAnimationFrame(f)}requestAnimationFrame(f);return()=>run=false}
+const lerp=(a,b,t)=>a+(b-a)*t, clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), rand=(a,b)=>a+Math.random()*(b-a);
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+
+/* Quiz: qs=[{q,o:[..],a:index,e:explain}] */
+function Quiz(el,qs,doneId){let i=0,score=0,order=shuffle(qs);
+  function render(){if(i>=order.length){const pct=Math.round(100*score/order.length);
+      el.innerHTML=`<div class="qcard score"><div class="big">${score}/${order.length}</div><h3>${pct>=80?'Brilliant work, scientist!':pct>=50?'Good effort! Revisit the experiments and try again.':'Keep exploring the experiments, then try again.'}</h3><p>Every question comes from what you tested in this lab.</p><button class="btn">Try the quiz again</button></div>`;
+      $('button',el).onclick=()=>{i=0;score=0;order=shuffle(qs);render()};if(pct>=60){confetti();doneId&&markDone(doneId)}return}
+    const q=order[i];el.innerHTML=`<div class="qcard"><div class="qtop"><span>Question ${i+1} of ${order.length}</span><span>Score ${score}</span></div>
+      <div class="qtext">${q.q}</div><div class="opts">${q.o.map((o,k)=>`<button class="opt" data-k="${k}"><span class="k">${'ABCD'[k]}</span>${o}</button>`).join('')}</div>
+      <div class="qexp"></div><div class="qnav"><button class="btn" disabled>Next question</button></div></div>`;
+    $$('.opt',el).forEach(b=>b.onclick=()=>{const k=+b.dataset.k;$$('.opt',el).forEach(x=>x.disabled=true);
+      $$('.opt',el)[q.a].classList.add('right');if(k===q.a){score++}else{b.classList.add('wrong');b.classList.add('shake')}
+      const ex=$('.qexp',el);ex.innerHTML=(k===q.a?'<b>Correct.</b> ':'<b>Not quite.</b> ')+q.e;ex.classList.add('on');
+      const nb=$('.qnav .btn',el);nb.disabled=false;nb.textContent=i===order.length-1?'See my score':'Next question';nb.focus()});
+    $('.qnav .btn',el).onclick=()=>{i++;render()}}
+  render()}
+
+/* Sorter: items=[{t,em,c,why}], bins=[{c,t,em}] ; click a chip then a bin, or drag */
+function Sorter(el,items,bins,opts={}){
+  el.innerHTML=`<div class="sorter"><div class="tray"></div><div class="bins">${bins.map(b=>`<div class="bin" data-c="${b.c}"><h4>${b.em?`<span class="em">${b.em}</span>`:''}${b.t}</h4><div class="chips"></div></div>`).join('')}</div><div class="obs" aria-live="polite"></div></div>`;
+  const tray=$('.tray',el),obs=$('.obs',el);let picked=null,left=items.length;
+  shuffle(items).forEach(it=>{const c=document.createElement('button');c.className='chip';c.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;c._it=it;tray.appendChild(c);
+    c.addEventListener('click',()=>{if(c.classList.contains('right'))return;$$('.chip.picked',el).forEach(x=>x.classList.remove('picked'));picked=c;c.classList.add('picked');obs.className='obs';obs.textContent='Now choose a group for “'+it.t+'”.'});
+    c.addEventListener('pointerdown',e=>{if(c.classList.contains('right'))return;const sx=e.clientX,sy=e.clientY;let ghost=null;
+      const mv=ev=>{if(!ghost&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>8){ghost=c.cloneNode(true);ghost.classList.add('dragging');document.body.appendChild(ghost);c.style.opacity=.3}
+        if(ghost){ghost.style.left=ev.clientX-30+'px';ghost.style.top=ev.clientY-20+'px';$$('.bin',el).forEach(b=>{const r=b.getBoundingClientRect();b.classList.toggle('hover',ev.clientX>r.left&&ev.clientX<r.right&&ev.clientY>r.top&&ev.clientY<r.bottom)})}};
+      const up=ev=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);if(ghost){ghost.remove();c.style.opacity=1;const b=$('.bin.hover',el);$$('.bin',el).forEach(x=>x.classList.remove('hover'));if(b)drop(c,b);c._dragged=true;setTimeout(()=>c._dragged=false,50)}};
+      addEventListener('pointermove',mv);addEventListener('pointerup',up)})});
+  $$('.bin',el).forEach(b=>b.addEventListener('click',()=>{if(picked)drop(picked,b)}));
+  function drop(c,b){const it=c._it;if(it.c===b.dataset.c){c.classList.remove('picked');c.classList.add('right');$('.chips',b).appendChild(c);obs.className='obs ok';obs.innerHTML='✓ '+(it.why||'Correct!');left--;picked=null;
+      if(!left){obs.innerHTML='✓ All sorted! '+(opts.end||'');confetti();opts.done&&markDone(opts.done)}}
+    else{c.classList.add('shake');setTimeout(()=>c.classList.remove('shake'),400);obs.className='obs bad';obs.innerHTML='✗ Not this group. '+(it.hint||'Look again at its features.')}}
+}
+
+/* Order game: items in correct order [{t,em}] */
+function OrderGame(el,items,opts={}){
+  el.innerHTML=`<div class="order"></div><div class="slots">${items.map((_,i)=>`<div class="slot">${i+1}</div>`).join('')}</div><div class="obs" style="margin-top:10px"></div>`;
+  let n=0;const box=$('.order',el),obs=$('.obs',el);
+  shuffle(items.map((x,i)=>({...x,i}))).forEach(it=>{const b=document.createElement('button');b.className='chip';b.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;
+    b.onclick=()=>{if(it.i===n){const s=$$('.slot',el)[n];s.innerHTML=b.innerHTML;s.classList.add('filled');b.remove();n++;obs.className='obs ok';obs.textContent=opts.say?opts.say(it.i):'✓ Right!';
+        if(n===items.length){obs.textContent='✓ Perfect order! '+(opts.end||'');confetti();opts.done&&markDone(opts.done);opts.onDone&&opts.onDone()}}
+      else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);obs.className='obs bad';obs.textContent='✗ That is not step '+(n+1)+'. Think about what has to happen first.'}};box.appendChild(b)})}
+
+const DARK='#1D2A33';
+function flow(id,i){$$('#'+id+' span').forEach((s,k)=>s.className=k<i?'past':k===i?'on':'')}
+
+/* HERO: winnowing loop */
+(()=>{const x=hiCanvas($('#heroCv'),500,400);let P=[];
+ loop((dt,t)=>{x.fillStyle=DARK;x.fillRect(0,0,500,400);if(Math.random()<.7)P.push({x:130+rand(-8,8),y:120,vx:0,vy:20,h:Math.random()<.4});
+  x.fillStyle='#C9A26A';x.beginPath();x.moveTo(90,110);x.lineTo(170,100);x.lineTo(160,125);x.lineTo(100,130);x.fill();
+  P.forEach(p=>{p.vy+=(p.h?60:300)*dt;p.vx+=(p.h?140:15)*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;if(p.y>350){p.y=350;p.vx=0;p.vy=0}x.fillStyle=p.h?'#E8D9A0':'#C8862E';x.fillRect(p.x,p.y,p.h?5:4,p.h?2:4)});if(P.length>900)P.splice(0,100);
+  x.strokeStyle='rgba(255,255,255,.3)';x.lineWidth=2;for(let k=0;k<4;k++){const xx=(t*160+k*120)%500;x.beginPath();x.moveTo(xx,170+k*30);x.bezierCurveTo(xx+30,160+k*30,xx+60,180+k*30,xx+90,170+k*30);x.stroke()}
+  x.fillStyle='#fff';x.font='800 20px Bricolage Grotesque, sans-serif';x.textAlign='center';x.fillText('Winnowing: wind carries the light husk away',250,385)})})();
+
+/* GRAIN */
+(()=>{const x=hiCanvas($('#grCv'),640,420);let beats,grains,mix,pour,P,stage;
+ function reset(){beats=0;grains=[];P=[];stage=0;flow('grFlow',0);$('#beat').disabled=false;$('#pourBtn').disabled=true;$('#grObs').textContent='Tap “Beat the stalks” several times.';$('#grHud').textContent='Threshing'}
+ reset();$('#grReset').onclick=reset;
+ $('#beat').onclick=()=>{beats++;for(let i=0;i<25;i++)grains.push({x:rand(250,420),y:rand(170,230),vx:rand(-60,60),vy:rand(-150,-30),h:Math.random()<.45});
+  if(beats>=5){stage=1;flow('grFlow',1);$('#beat').disabled=true;$('#pourBtn').disabled=false;$('#grHud').textContent='Winnowing';$('#grObs').innerHTML='<b>Threshing</b> done: the grains are free from the stalks, but mixed with light husk. Now pour from a height in the wind.'}};
+ $('#pourBtn').onclick=()=>{P=[];pour=3.5;stage=2;$('#pourBtn').disabled=true;setTimeout(()=>{const w=+$('#wind').value;$('#grObs').innerHTML=w<15?'Without wind, husk and grain fall in the same heap. Winnowing needs wind!':'<span class="hl">The light husk is blown away</span> and forms a separate heap, while the heavier grains fall straight down near you. This is <b>winnowing</b>.';$('#pourBtn').disabled=false;if(w>=15)markDone('grain')},4500)};
+ loop((dt,t)=>{x.fillStyle=DARK;x.fillRect(0,0,640,420);x.fillStyle='#7A5A32';x.fillRect(0,360,640,60);const w=+$('#wind').value;
+  if(stage<2){// stalks bundle
+   for(let i=0;i<14;i++){x.strokeStyle='#D9B45A';x.lineWidth=3;x.beginPath();x.moveTo(200+i*4,300);x.lineTo(320+i*10+Math.sin(t*3+i)*4,180);x.stroke();if(beats<5){x.fillStyle='#C8862E';for(let k=0;k<5-beats;k++){x.beginPath();x.ellipse(320+i*10+k*6,180-k*3,4,2,0,0,7);x.fill()}}}
+   grains.forEach(g=>{g.vy+=400*dt;g.x+=g.vx*dt;g.y+=g.vy*dt;if(g.y>355){g.y=355;g.vx=0;g.vy=0}x.fillStyle=g.h?'#E8D9A0':'#C8862E';x.fillRect(g.x,g.y,g.h?6:4,g.h?2:4)});
+   x.font='50px serif';x.fillStyle='#000';x.fillText('🧑‍🌾',60,340)}
+  else{pour-=dt;if(pour>0)for(let k=0;k<5;k++)P.push({x:140+rand(-6,6),y:110,vx:0,vy:20,h:Math.random()<.45});
+   x.font='50px serif';x.fillStyle='#000';x.fillText('🧑‍🌾',60,150);x.fillStyle='#C9A26A';x.beginPath();x.moveTo(100,100);x.lineTo(180,92);x.lineTo(168,118);x.lineTo(108,122);x.fill();
+   P.forEach(p=>{p.vy+=(p.h?70:320)*dt;p.vx+=(p.h?w*2.6:w*.15)*dt;p.vx*=.995;p.x+=p.vx*dt;p.y+=p.vy*dt;if(p.y>355){p.y=355+rand(-2,2);p.vx=0;p.vy=0}x.fillStyle=p.h?'#E8D9A0':'#C8862E';x.fillRect(p.x,p.y,p.h?6:4,p.h?2:4)});
+   x.fillStyle='#cde';x.font='14px Atkinson Hyperlegible, sans-serif';x.textAlign='center';x.fillText('grain',150,400);if(w>15)x.fillText('husk',Math.min(600,150+w*4.2),400)}
+  if(w>0){x.strokeStyle=`rgba(255,255,255,${w/300})`;x.lineWidth=2;for(let k=0;k<4;k++){const xx=(t*w*3+k*160)%640;x.beginPath();x.moveTo(xx,140+k*40);x.bezierCurveTo(xx+30,130+k*40,xx+60,150+k*40,xx+90,140+k*40);x.stroke()}}})})();
+
+/* SIEVE */
+(()=>{const cv=$('#svCv'),x=hiCanvas(cv,640,420);let P,sx=320,lastx=320,drag=false,shakeT=0,passed=0;
+ function reset(){P=Array.from({length:260},()=>{const r=Math.random();return{t:r<.75?'f':r<.9?'b':'s',x:rand(230,410),y:rand(140,175),vy:0,thru:false}});passed=0;$('#svObs').textContent='Sieving is used when the parts of a mixture have different sizes.'}
+ reset();$('#svReset').onclick=reset;$('#shake').onclick=()=>shakeT=1.5;
+ cv.addEventListener('pointerdown',e=>{drag=true;cv.setPointerCapture(e.pointerId)});cv.addEventListener('pointermove',e=>{if(drag){sx=clamp(canvasPoint(cv,e,640,420).x,220,420)}});cv.addEventListener('pointerup',()=>drag=false);
+ loop((dt,t)=>{if(shakeT>0){shakeT-=dt;sx=320+Math.sin(t*25)*40}else if(!drag)sx=lerp(sx,320,.1);const mv=Math.abs(sx-lastx);const dx=sx-lastx;lastx=sx;const hole=+$('#hole').value,size={f:1,b:2.6,s:3};
+  x.fillStyle=DARK;x.fillRect(0,0,640,420);x.fillStyle='#E9EEF2';x.beginPath();x.ellipse(320,380,170,24,0,0,7);x.fill();
+  P.forEach(p=>{if(!p.thru){p.x+=dx;if(mv>1.5&&size[p.t]<hole+.5&&Math.random()<(hole===1&&p.t==='f'?.015:.04)){p.thru=true;p.vy=30;passed++}p.x=clamp(p.x,sx-90,sx+90);p.y=175-((p.x*7)%12)}else{p.vy+=300*dt;p.y+=p.vy*dt;if(p.y>372-((p.x*3)%14)){p.y=372-((p.x*3)%14);p.vy=0}}
+   x.fillStyle={f:'#F4F0E4',b:'#B07A44',s:'#7D7D78'}[p.t];const r={f:1.5,b:2.5,s:4}[p.t];x.beginPath();x.arc(p.x,p.y,r,0,7);x.fill()});
+  // sieve
+  x.strokeStyle='#C9A26A';x.lineWidth=8;x.beginPath();x.ellipse(sx,180,110,20,0,0,Math.PI);x.stroke();x.strokeStyle='rgba(220,220,220,.5)';x.lineWidth=1;for(let i=-100;i<=100;i+=6+hole*2){x.beginPath();x.moveTo(sx+i,174);x.lineTo(sx+i,190);x.stroke()}
+  x.strokeStyle='#C9A26A';x.lineWidth=8;x.beginPath();x.ellipse(sx,180,110,20,0,Math.PI,Math.PI*2);x.stroke();
+  const left=P.filter(p=>!p.thru),lf=left.filter(p=>p.t==='f').length;
+  if(passed>120&&lf<15&&!x._said){x._said=1;$('#svObs').innerHTML=hole===1?'Very small holes: the flour passes, but slowly. Bran and stones stay on the sieve.':hole===2?'<span class="hl">Fine flour passed through the holes.</span> The bran and small stones are bigger, so they stay on the sieve.':'With very large holes, even the stones fall through! The holes must be smaller than what you want to keep back.';if(hole<3)markDone('sieve')}
+  if(passed<120)x._said=0})})();
+
+/* MUDDY WATER */
+(()=>{const x=hiCanvas($('#wCv'),640,420);let step,tt,M,filt,dec;
+ function reset(){step=0;tt=0;filt=0;dec=0;M=Array.from({length:300},()=>({x:rand(-70,70),y:rand(170,330),v:rand(10,40)}));flow('wFlow',0);$('#wStep').textContent='Leave it undisturbed';$('#wStep').disabled=false;$('#wObs').textContent='The water is cloudy with mud.';$('#wHud').textContent='Muddy water'}
+ reset();$('#wReset').onclick=reset;
+ $('#wStep').onclick=()=>{$('#wStep').disabled=true;if(step===0){step=1;tt=0;$('#wHud').textContent='Sedimentation';setTimeout(()=>{$('#wObs').innerHTML='<b>Sedimentation:</b> the heavier mud settled at the bottom.';flow('wFlow',1);$('#wStep').textContent='Tilt and pour off the water';$('#wStep').disabled=false},3000)}
+  else if(step===1){step=2;tt=0;$('#wHud').textContent='Decantation';setTimeout(()=>{$('#wObs').innerHTML='<b>Decantation:</b> the water was poured off without disturbing the mud. But it is still a little cloudy.';flow('wFlow',2);$('#wStep').textContent='Pour it through a filter paper cone';$('#wStep').disabled=false},3000)}
+  else if(step===2){step=3;tt=0;$('#wHud').textContent='Filtration';setTimeout(()=>{$('#wObs').innerHTML='<b>Filtration:</b> the clear liquid in the flask is the <span class="hl">filtrate</span>; the mud left on the filter paper is the <b>residue</b>.';flow('wFlow',3);markDone('water')},4200)}};
+ loop((dt,t)=>{tt+=dt;x.fillStyle=DARK;x.fillRect(0,0,640,420);
+  if(step<=1){const cx=320;x.fillStyle=`rgba(150,110,60,${step===0?.75:Math.max(.2,.75-tt*.2)})`;x.fillRect(cx-80,160,160,175);
+   M.forEach(m=>{if(step===1)m.y=Math.min(330-Math.abs(m.x*.2)%10,m.y+m.v*dt*3);x.fillStyle='#6B4A26';x.fillRect(cx+m.x,m.y,3,3)});
+   x.strokeStyle='#fff';x.lineWidth=3;x.beginPath();x.moveTo(cx-85,140);x.lineTo(cx-80,338);x.lineTo(cx+80,338);x.lineTo(cx+85,140);x.stroke()}
+  if(step===2){const a=Math.min(.7,tt*.4);x.save();x.translate(240,330);x.rotate(a);x.fillStyle='rgba(150,110,60,.25)';x.fillRect(-80,-170*(1-Math.min(1,tt/2.5)*.8),160,170*(1-Math.min(1,tt/2.5)*.8));x.fillStyle='#6B4A26';x.fillRect(-78,-14,156,12);x.strokeStyle='#fff';x.lineWidth=3;x.beginPath();x.moveTo(-85,-190);x.lineTo(-80,0);x.lineTo(80,0);x.lineTo(85,-190);x.stroke();x.restore();
+   if(tt>.8&&tt<2.8){x.strokeStyle='rgba(180,150,110,.7)';x.lineWidth=6;x.beginPath();x.moveTo(380,200);x.quadraticCurveTo(440,230,450,330);x.stroke()}
+   const lv=Math.min(1,tt/2.5);x.fillStyle='rgba(180,150,110,.45)';x.fillRect(410,338-lv*90,90,lv*90);x.strokeStyle='#fff';x.beginPath();x.moveTo(405,220);x.lineTo(410,340);x.lineTo(500,340);x.lineTo(505,220);x.stroke()}
+  if(step===3){const f=Math.min(1,tt/3.8);// funnel + flask
+   x.strokeStyle='#fff';x.lineWidth=3;x.beginPath();x.moveTo(240,120);x.lineTo(320,210);x.lineTo(400,120);x.stroke();x.fillStyle='#F4F1E8';x.beginPath();x.moveTo(252,126);x.lineTo(320,200);x.lineTo(388,126);x.fill();
+   x.fillStyle='#6B4A26';x.beginPath();x.moveTo(305,184);x.lineTo(320,200);x.lineTo(335,184);x.fill();x.globalAlpha=f;x.fillRect(290,175,60,8);x.globalAlpha=1;
+   x.beginPath();x.moveTo(316,210);x.lineTo(316,250);x.moveTo(324,210);x.lineTo(324,250);x.stroke();
+   if(f<1){x.fillStyle='rgba(170,210,255,.8)';for(let k=0;k<3;k++){x.beginPath();x.arc(320,215+((t*120+k*15)%60),3,0,7);x.fill()}}
+   x.beginPath();x.moveTo(300,250);x.lineTo(300,280);x.lineTo(240,370);x.lineTo(400,370);x.lineTo(340,280);x.lineTo(340,250);x.stroke();
+   x.fillStyle='rgba(140,200,255,.65)';const h=f*60;x.beginPath();x.moveTo(240+ (370-370)*0,370);const top=370-h,kx=(370-top)/90*60;x.moveTo(242,368);x.lineTo(400-2,368);x.lineTo(398-kx,top);x.lineTo(242+kx,top);x.fill();
+   x.fillStyle='#cde';x.font='14px Atkinson Hyperlegible, sans-serif';x.textAlign='left';x.fillText('residue (mud)',410,180);x.fillText('filtrate (clear water)',410,350)}})})();
+
+/* SALT */
+(()=>{const x=hiCanvas($('#sCv'),640,420);let water,cr,said;function reset(){water=1;cr=[];said=0;$('#flame').value=0;$('#sObs').textContent='Turn up the flame.'}reset();$('#sReset').onclick=reset;
+ loop((dt,t)=>{const f=+$('#flame').value/100;water=Math.max(0,water-f*dt*.12);x.fillStyle=DARK;x.fillRect(0,0,640,420);
+  // stand
+  x.strokeStyle='#8A99A4';x.lineWidth=5;x.beginPath();x.moveTo(220,250);x.lineTo(200,390);x.moveTo(420,250);x.lineTo(440,390);x.stroke();x.strokeStyle='#999';x.lineWidth=2;for(let i=0;i<10;i++){x.beginPath();x.moveTo(220+i*20,250);x.lineTo(230+i*20,256);x.stroke()}x.fillStyle='#777';x.fillRect(210,248,220,6);
+  // dish
+  x.fillStyle='#F4F4F0';x.beginPath();x.ellipse(320,232,120,22,0,0,Math.PI);x.lineTo(200,232);x.fill();x.beginPath();x.ellipse(320,232,120,14,0,0,7);x.fill();
+  if(water>0){x.fillStyle='rgba(140,200,255,.8)';x.beginPath();x.ellipse(320,236,100*Math.sqrt(water)+8,9*water+2,0,0,7);x.fill()}
+  if(water<.4){while(cr.length<(1-water/.4)*120)cr.push({x:rand(-95,95),y:rand(-8,8)});cr.forEach(c=>{x.fillStyle='#fff';x.fillRect(320+c.x,236+c.y*Math.sqrt(1-(c.x/100)**2),3,3)})}
+  if(f>.05&&water>0){for(let k=0;k<6;k++){const ph=(t*.7+k/6)%1;x.fillStyle=`rgba(230,240,255,${.6*(1-ph)*f})`;x.beginPath();x.arc(260+k*24+Math.sin(ph*5+k)*8,220-ph*150,4,0,7);x.fill()}}
+  // lamp
+  x.fillStyle='#9CC8F5';x.globalAlpha=.6;x.beginPath();x.ellipse(320,370,40,25,0,0,7);x.fill();x.globalAlpha=1;x.fillStyle='#ddd';x.fillRect(314,330,12,20);
+  if(f>.02){for(let k=0;k<3;k++){x.fillStyle=`rgba(255,${150+k*40},40,.85)`;x.beginPath();x.ellipse(320,322-f*30,6-k,10+f*40-k*8+Math.sin(t*20)*3,0,0,7);x.fill()}}
+  x.fillStyle='#cde';x.font='14px Atkinson Hyperlegible, sans-serif';x.textAlign='center';x.fillText('china dish',320,200-0);x.fillText('wire gauze',470,255);x.fillText('spirit lamp',320,412);
+  if(water<=0&&!said){said=1;$('#sObs').innerHTML='<span class="hl">All the water evaporated</span> and white salt is left behind in the dish. Evaporation separates a dissolved solid from a liquid.';markDone('salt')}
+  else if(water>0&&water<.9&&!said)$('#sObs').textContent='Water is turning into vapour. The solution is getting more salty…'})})();
+
+/* MAGNET */
+(()=>{const cv=$('#mCv'),x=hiCanvas(cv,640,420);let N,S,mag,drag,stuck;
+ function reset(){N=Array.from({length:12},()=>({x:rand(150,420),y:rand(270,330),a:rand(0,3),st:false,boxed:false}));S=Array.from({length:500},()=>({x:rand(130,440)+rand(-20,20),y:300+rand(-40,40)*Math.random()}));mag={x:520,y:100};drag=false;$('#mObs').textContent='Iron is a magnetic substance; sawdust is not.';$('#mHud').textContent='Nails in the box: 0'}
+ reset();$('#mReset').onclick=reset;
+ cv.addEventListener('pointerdown',e=>{const p=canvasPoint(cv,e,640,420);if(Math.hypot(p.x-mag.x,p.y-mag.y)<80){drag=true;cv.setPointerCapture(e.pointerId)}});cv.addEventListener('pointermove',e=>{if(drag){const p=canvasPoint(cv,e,640,420);mag.x=clamp(p.x,40,600);mag.y=clamp(p.y,40,380)}});cv.addEventListener('pointerup',()=>drag=false);
+ loop((dt,t)=>{x.fillStyle=DARK;x.fillRect(0,0,640,420);x.fillStyle='#8C5C2E';x.fillRect(480,300,130,90);x.fillStyle='#6E4521';x.fillRect(480,300,130,14);x.fillStyle='#fff';x.font='13px Atkinson Hyperlegible, sans-serif';x.textAlign='center';x.fillText('nail box',545,405);
+  S.forEach(s=>{x.fillStyle='#D9B07A';x.fillRect(s.x,s.y,3,2)});
+  const inBox=mag.x>480&&mag.y>230&&mag.x<610;let boxed=0;
+  N.forEach((n,i)=>{const d=Math.hypot(n.x-mag.x,n.y-(mag.y+40));if(!n.st&&!n.boxed&&d<90)n.st=true;
+   if(n.st){if(inBox&&!drag){n.st=false;n.boxed=true;n.x=rand(495,595);n.y=rand(330,380)}else{n.x=lerp(n.x,mag.x-40+(i%6)*16,.2);n.y=lerp(n.y,mag.y+30+((i/6)|0)*8,.2);n.a=1.57}}
+   if(n.boxed)boxed++;x.save();x.translate(n.x,n.y);x.rotate(n.a);x.fillStyle='#B8C2CA';x.fillRect(-14,-1.5,28,3);x.fillRect(-14,-4,4,8);x.restore()});
+  $('#mHud').textContent='Nails in the box: '+boxed+' of 12';if(boxed===12&&!x._d){x._d=1;$('#mObs').innerHTML='<span class="hl">All the iron nails are separated!</span> This is <b>magnetic separation</b>.';markDone('mag')}if(boxed<12)x._d=0;
+  x.save();x.translate(mag.x,mag.y);x.strokeStyle='#E04A55';x.lineWidth=22;x.beginPath();x.arc(0,0,34,Math.PI,0);x.stroke();x.fillStyle='#E04A55';x.fillRect(-45,0,22,30);x.fillStyle='#3D7BE0';x.fillRect(23,0,22,30);x.fillStyle='#ddd';x.fillRect(-45,26,22,8);x.fillRect(23,26,22,8);x.restore()});
+ // churning
+ const c=$('#chCv'),y=hiCanvas(c,300,150);let ch=0,b=0;$('#churnBtn').onclick=()=>ch=2.5;
+ loop((dt,t)=>{if(ch>0){ch-=dt;b=Math.min(1,b+dt*.35)}y.fillStyle=DARK;y.fillRect(0,0,300,150);y.fillStyle='#F7F3E4';y.fillRect(110,50,80,90);y.fillStyle='#F4D35E';for(let i=0;i<b*20;i++){y.beginPath();y.arc(118+(i*13)%64,56+(i%3)*4,5,0,7);y.fill()}
+  y.strokeStyle='#8C5C2E';y.lineWidth=5;y.save();y.translate(150,95);y.rotate(ch>0?Math.sin(t*20)*.5:0);y.beginPath();y.moveTo(0,-90);y.lineTo(0,35);y.stroke();y.fillStyle='#8C5C2E';y.fillRect(-14,30,28,8);y.restore();
+  y.strokeStyle='#fff';y.lineWidth=2;y.strokeRect(110,50,80,90);y.fillStyle='#cde';y.font='12px Atkinson Hyperlegible, sans-serif';y.fillText(b>.5?'butter on top':'curd',200,70)})})();
+
+Sorter($('#matchBox'),[
+ {t:'Separating small stones from pulses',c:'hand',why:'Stones are big and few, so they can be picked by hand.'},
+ {t:'Picking marigolds from a heap of flowers for a garland',c:'hand',why:'Easy to see and pick: handpicking.'},
+ {t:'Taking out green chillies from poha',c:'hand',why:'Handpicking.'},
+ {t:'Removing husk from rice grains using wind',c:'win',why:'Wind carries the lighter husk away: winnowing.'},
+ {t:'Separating bran from wheat flour',c:'sieve',why:'Different sized particles: sieving.'},
+ {t:'Separating tea leaves from tea',c:'filt',why:'A strainer works like a filter.'},
+ {t:'Getting clear water from muddy water',c:'filt',why:'After decantation, filtration removes the remaining mud.'},
+ {t:'Getting salt from sea water',c:'evap',why:'The water evaporates and leaves salt behind.'},
+ {t:'Churning curd to obtain butter',c:'churn',why:'Churning separates the lighter butter.'},
+ {t:'Sorting iron nails from sawdust',c:'mag',why:'Iron nails are attracted to a magnet.'}],
+ [{c:'hand',t:'Handpicking',em:'✋'},{c:'win',t:'Winnowing',em:'🌬️'},{c:'sieve',t:'Sieving',em:'🥣'},{c:'filt',t:'Filtration',em:'🧪'},{c:'evap',t:'Evaporation',em:'☀️'},{c:'churn',t:'Churning',em:'🧈'},{c:'mag',t:'Magnetic separation',em:'🧲'}],{done:'match'});
+
+Quiz($('#quiz'),[
+ {q:'Separating grains from the stalks of the harvested crop is called…',o:['Winnowing','Threshing','Sieving','Churning'],a:1,e:'Beating the stalks to free the grains is threshing.'},
+ {q:'Winnowing works because husk is…',o:['Heavier than grain','Lighter than grain','Magnetic','Soluble in water'],a:1,e:'Wind carries the lighter husk farther away, while heavy grains fall close by.'},
+ {q:'Which method separates particles of different sizes?',o:['Sieving','Evaporation','Magnetic separation','Decantation'],a:0,e:'A sieve lets small particles pass and holds back larger ones.'},
+ {q:'Heavier particles settling at the bottom of a liquid is called…',o:['Decantation','Filtration','Sedimentation','Evaporation'],a:2,e:'This is sedimentation. Pouring off the liquid afterwards is decantation.'},
+ {q:'In filtration, the clear liquid that passes through the filter paper is called the…',o:['Residue','Filtrate','Sediment','Solution'],a:1,e:'The clear liquid is the filtrate; what stays on the paper is the residue.'},
+ {q:'How can we get salt back from salt water?',o:['Filtration','Sieving','Evaporation','Winnowing'],a:2,e:'Heating evaporates the water and leaves the salt behind.'},
+ {q:'Butter is separated from curd by…',o:['Churning','Sieving','Filtration','Handpicking'],a:0,e:'Churning separates the lighter butter.'},
+ {q:'A magnet can separate…',o:['Salt from water','Iron nails from sawdust','Husk from grain','Mud from water'],a:1,e:'Iron is magnetic; sawdust is not.'}
+],'quiz');
+</script>
+
+<a href="../index.html#/class-6" style="position:fixed;right:16px;bottom:16px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;background:rgba(255,255,255,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.95);box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font:900 14px/1 Nunito,'Segoe UI',system-ui,sans-serif;text-decoration:none">🏠 Lab Home</a></body></html>

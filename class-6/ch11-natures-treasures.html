@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Natural Resources Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3F7F4; --grid:#DCE9E3; --ink:#18324A; --ink2:#4B6274; --bench:#1D2A33; --bench2:#26363F;
+  --marker:#FFD84D; --ok:#1E9E6A; --bad:#D64545; --line:#C9D9D2; --card:#FFFFFF;
+  --acc:#2F7DD1; --acc2:#9CC8F5; --accInk:#fff;
+  --r-lg:22px; --r-md:14px; --r-sm:9px;
+  --fh:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --fb:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);font:17px/1.55 var(--fb);background:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;}
+h1,h2,h3,h4{font-family:var(--fh);line-height:1.1;margin:0 0 .4em;letter-spacing:-.01em}
+p{margin:0 0 .8em}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--marker);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* hero */
+.hero{padding:44px 0 26px}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center}
+.chapno{font-family:var(--fh);font-weight:800;font-size:15px;color:var(--acc);display:inline-flex;gap:8px;align-items:center;background:#fff;border:2px solid var(--acc);border-radius:99px;padding:3px 14px 3px 4px}
+.chapno b{background:var(--acc);color:var(--accInk);border-radius:99px;min-width:28px;height:28px;display:grid;place-items:center;font-size:15px}
+.hero h1{font-size:clamp(38px,5.6vw,68px);font-weight:800;margin:16px 0 14px}
+.hero h1 .u{background:linear-gradient(transparent 62%,var(--marker) 62% 92%,transparent 92%)}
+.hero .lede{font-size:19px;color:var(--ink2);max-width:52ch}
+.hero-stage{background:var(--bench);border-radius:var(--r-lg);aspect-ratio:5/4;position:relative;overflow:hidden;box-shadow:0 18px 0 -8px var(--acc2),0 24px 40px -18px rgba(24,50,74,.45)}
+.hero-stage canvas,.hero-stage svg{width:100%;height:100%;display:block}
+.procedure{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:6px;counter-reset:p}
+.procedure li{counter-increment:p;display:flex;gap:10px;align-items:center;font-weight:700}
+.procedure li::before{content:counter(p);width:26px;height:26px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-size:13px;flex:none}
+.procedure li.done::before{content:"✓";background:var(--ok);border-color:var(--ok);color:#fff}
+
+/* tab bar */
+.bar{position:sticky;top:0;z-index:20;background:rgba(243,247,244,.92);backdrop-filter:blur(8px);border-bottom:2px solid var(--line)}
+.bar .wrap{display:flex;gap:8px;align-items:center;overflow-x:auto;padding-top:10px;padding-bottom:10px;scrollbar-width:thin}
+.tab{border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:99px;padding:7px 15px;font-weight:700;font-size:15px;white-space:nowrap;transition:transform .15s}
+.tab:hover{transform:translateY(-2px)}
+.tab[aria-selected=true]{background:var(--ink);color:#fff}
+.tab .tick{display:none;color:var(--ok);margin-left:6px}
+.tab.done .tick{display:inline}
+.tab[aria-selected=true] .tick{color:var(--marker)}
+.meter{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;white-space:nowrap;padding-left:12px}
+.meter i{display:block;width:90px;height:9px;background:#fff;border:2px solid var(--ink);border-radius:9px;overflow:hidden}
+.meter i b{display:block;height:100%;width:0;background:var(--ok);transition:width .5s}
+
+/* panels */
+main{padding:28px 0 60px}
+.panel{display:none;animation:rise .35s ease}
+.panel.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.panel-head{display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.panel-head h2{font-size:clamp(26px,3.4vw,38px);margin:0}
+.panel-head .aim{color:var(--ink2);max-width:62ch;margin:6px 0 0}
+.lab{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:20px;align-items:start}
+.lab.wide{grid-template-columns:1fr}
+.stage{background:var(--bench);border-radius:var(--r-lg);position:relative;overflow:hidden;color:#E8F0F2;min-height:300px}
+.stage canvas,.stage>svg{display:block;width:100%;height:auto}
+.stage .hud{position:absolute;left:14px;top:12px;font-weight:700;font-size:14px;background:rgba(0,0,0,.35);padding:4px 10px;border-radius:8px;pointer-events:none}
+.side{display:grid;gap:14px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:var(--r-md);padding:16px 18px}
+.card h3{font-size:19px}
+.card.note{background:#FFFBE6;border-color:#F1DF8F}
+.card.note h3::before{content:"✎ ";color:#B98B00}
+.card.why{border-left:7px solid var(--acc)}
+.ctrl{display:grid;gap:12px}
+.ctrl label{font-weight:700;font-size:15px;display:grid;gap:4px}
+.ctrl .row{display:flex;gap:8px;flex-wrap:wrap}
+input[type=range]{width:100%;accent-color:var(--acc);height:28px}
+.btn{border:2px solid var(--ink);background:var(--acc);color:var(--accInk);border-radius:12px;padding:9px 16px;font-weight:700;box-shadow:0 4px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn.sm{padding:6px 11px;font-size:14px;border-radius:10px;box-shadow:0 3px 0 var(--ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.sel{background:var(--marker);color:var(--ink)}
+.readout{font-family:var(--fh);font-size:30px;font-weight:800;line-height:1}
+.readout small{font-size:14px;font-weight:600;color:var(--ink2);display:block;margin-top:4px;font-family:var(--fb)}
+.obs{min-height:3em;font-size:16px}
+.obs.ok{color:var(--ok)} .obs.bad{color:var(--bad)}
+.hl{background:linear-gradient(transparent 55%,var(--marker) 55%);font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pill:empty{display:none}
+.pill{display:inline-block;border-radius:99px;padding:2px 10px;font-size:13px;font-weight:700;background:var(--acc2);color:var(--ink)}
+table.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th,.tbl td{border-bottom:1.5px solid var(--line);padding:6px 8px;text-align:left}
+.tbl th{font-family:var(--fh)}
+
+/* sorting game */
+.sorter{display:grid;gap:14px}
+.tray{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:10px;border:2px dashed var(--line);border-radius:var(--r-md);background:#fff}
+.chip{border:2px solid var(--ink);background:#fff;border-radius:12px;padding:7px 12px;font-weight:700;font-size:15px;user-select:none;touch-action:none;display:inline-flex;align-items:center;gap:6px;transition:transform .15s,background .2s}
+.chip .em{font-size:22px;line-height:1}
+.chip.picked{background:var(--marker);transform:scale(1.06) rotate(-2deg)}
+.chip.right{border-color:var(--ok);background:#E3F6EC;cursor:default}
+.chip.dragging{position:fixed;z-index:999;pointer-events:none;box-shadow:0 12px 24px rgba(0,0,0,.25)}
+.bins{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.bin{border:2px solid var(--ink);border-radius:var(--r-md);background:#fff;min-height:140px;padding:10px;display:flex;flex-direction:column;gap:6px;transition:background .2s,transform .2s}
+.bin h4{font-size:17px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.bin.hover{background:#FFF6CC;transform:scale(1.02)}
+.bin .chips{display:flex;flex-wrap:wrap;gap:6px}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+
+/* order game */
+.order{display:flex;flex-wrap:wrap;gap:8px}
+.slots{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.slot{min-width:120px;min-height:44px;border:2px dashed var(--ink2);border-radius:12px;display:grid;place-items:center;padding:6px 10px;font-weight:700;color:var(--ink2);background:#fff}
+.slot.filled{border-style:solid;border-color:var(--ok);color:var(--ink);background:#E3F6EC}
+
+/* quiz */
+.quiz{max-width:760px;margin:0 auto}
+.qcard{background:#fff;border:2px solid var(--ink);border-radius:var(--r-lg);padding:24px;box-shadow:8px 8px 0 var(--acc2)}
+.qtop{display:flex;justify-content:space-between;font-weight:700;color:var(--ink2);margin-bottom:10px;font-size:15px}
+.qtext{font-family:var(--fh);font-size:24px;font-weight:700;margin-bottom:16px}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:11px 14px;font-weight:700;display:flex;gap:12px;align-items:center}
+.opt:hover:not([disabled]){border-color:var(--ink)}
+.opt .k{width:30px;height:30px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;flex:none;font-size:14px}
+.opt.right{border-color:var(--ok);background:#E3F6EC}
+.opt.wrong{border-color:var(--bad);background:#FCE8E8}
+.qexp{margin-top:14px;padding:12px 14px;border-radius:12px;background:#F2F6FA;display:none}
+.qexp.on{display:block;animation:rise .3s}
+.qnav{display:flex;justify-content:flex-end;margin-top:16px}
+.score{text-align:center}
+.score .big{font-family:var(--fh);font-size:72px;font-weight:800;color:var(--acc)}
+
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:22px}
+.fact{background:#fff;border:2px solid var(--line);border-radius:var(--r-md);padding:14px 16px;font-size:15px}
+.fact b{font-family:var(--fh);display:block;font-size:17px;margin-bottom:4px;color:var(--acc)}
+
+footer{padding:24px 0 40px;color:var(--ink2);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:12px;font-weight:700;z-index:1000;transition:transform .35s cubic-bezier(.2,1.4,.4,1);max-width:90vw;text-align:center}
+.toast.on{transform:translate(-50%,0)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:999}
+
+@media (max-width:860px){
+  .hero .wrap,.lab{grid-template-columns:1fr}
+  .hero{padding-top:26px}
+  .meter i{width:60px}
+  .grid2{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+
+:root{--acc:#1F8A70;--acc2:#A8E6CF}
+.stage canvas{touch-action:none}
+.airgrid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;max-width:420px}
+.airgrid i{aspect-ratio:1;border-radius:5px;background:#DDE6E2;transition:background .3s,transform .3s}
+.airgrid i.n{background:#5B9BD5}.airgrid i.o{background:#F2A541}.airgrid i.a{background:#A06CD5}
+.airgrid i.pop{transform:scale(1.15)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-weight:700;font-size:15px;margin-top:10px}
+.legend span::before{content:"";display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:6px;vertical-align:-2px;background:var(--c)}
+.acts{display:grid;gap:8px}
+.acts .row{align-items:center;justify-content:space-between}
+
+</style><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"></head><body>
+
+
+<header class="hero"><div class="wrap">
+  <div>
+    <span class="chapno"><b>11</b>Chapter 11</span>
+    <h1>Nature's <span class="u">Treasures</span></h1>
+    <p class="lede">Air, water, sunlight, forests, soil and fossil fuels: explore what nature gives us, how we use it, and which treasures can run out if we are careless.</p>
+    <ol class="procedure">
+      <li data-t="air">Look inside air</li>
+      <li data-t="wind">Catch the wind</li>
+      <li data-t="water">Save water</li>
+      <li data-t="soil">Explore soil with a lens</li>
+      <li data-t="fossil">Watch fossil fuels form</li>
+      <li data-t="res">Sort the resources</li>
+      <li data-t="quiz">Check what you learnt</li>
+    </ol>
+  </div>
+  <div class="hero-stage"><canvas id="heroCv"></canvas></div>
+</div></header>
+
+<nav class="bar"><div class="wrap">
+  <button class="tab" data-t="air">Air<span class="tick">✓</span></button>
+  <button class="tab" data-t="wind">Wind power<span class="tick">✓</span></button>
+  <button class="tab" data-t="water">Water saver<span class="tick">✓</span></button>
+  <button class="tab" data-t="soil">Soil<span class="tick">✓</span></button>
+  <button class="tab" data-t="fossil">Fossil fuels<span class="tick">✓</span></button>
+  <button class="tab" data-t="res">Renewable or not?<span class="tick">✓</span></button>
+  <button class="tab" data-t="quiz">Quiz<span class="tick">✓</span></button>
+  <div class="meter"><i><b></b></i><span></span></div>
+</div></nav>
+
+<main class="wrap">
+<section class="panel" id="p-air">
+  <div class="panel-head"><div><h2>What is air made of?</h2><p class="aim">Think of air as 100 squares. Fill them in to see its composition. Then try holding your breath.</p></div></div>
+  <div class="lab">
+    <div class="card"><div class="airgrid" id="grid"></div><div class="legend"><span style="--c:#5B9BD5">Nitrogen 78%</span><span style="--c:#F2A541">Oxygen 21%</span><span style="--c:#A06CD5">Argon, carbon dioxide and others 1%</span></div>
+      <div class="row" style="display:flex;gap:8px;margin-top:12px"><button class="btn" id="fillAir">Fill the squares</button></div></div>
+    <div class="side"><div class="card ctrl"><h3>Hold your breath</h3><p>Breathe in deeply, press start, and hold your breath. Press stop when you have to breathe out.</p><div class="readout" id="breath">0.0 s<small>time without breathing</small></div><button class="btn" id="bBtn">Start</button></div>
+      <div class="card why"><p class="obs" id="airObs">We can live without food for days, but we cannot survive without oxygen for more than a few minutes.</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-wind">
+  <div class="panel-head"><div><h2>Catch the wind</h2><p class="aim">Make the wind blow. Moving air turns a paper firki and the blades of a windmill, which generates electricity.</p></div></div>
+  <div class="lab">
+    <div class="stage"><canvas id="wCv"></canvas><div class="hud" id="wHud"></div></div>
+    <div class="side"><div class="card ctrl"><label>Wind speed<input type="range" id="ws" min="0" max="100" value="0"></label><label>Firki colour<input type="color" id="fc" value="#F25C54" style="width:60px;height:36px;border:none"></label></div>
+      <div class="card why"><p class="obs" id="wObs">Air at rest does nothing. Increase the wind speed.</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-water">
+  <div class="panel-head"><div><h2>The water saver</h2><p class="aim">Choose how you do each daily activity and see how much water your family of four uses in one day.</p></div></div>
+  <div class="lab">
+    <div class="stage"><canvas id="wtCv"></canvas></div>
+    <div class="side"><div class="card acts" id="acts"></div><div class="card why"><p class="obs" id="wtObs"></p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-soil">
+  <div class="panel-head"><div><h2>Look closely at soil</h2><p class="aim">Pick a soil sample. Drag the magnifying lens over it to find what the naked eye misses.</p></div></div>
+  <div class="lab">
+    <div class="stage"><canvas id="sCv"></canvas><div class="hud">Drag the lens</div></div>
+    <div class="side"><div class="card ctrl"><label>Soil sample</label><div class="row" id="samples"></div></div><div class="card"><h3>Found so far</h3><p id="found" class="obs">Nothing yet.</p></div>
+      <div class="card note"><p>Plants and animals become part of the soil as they decompose. Earthworms are natural agents that turn and loosen the soil.</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-fossil">
+  <div class="panel-head"><div><h2>How fossil fuels formed</h2><p class="aim">Drag the slider through millions of years and see how coal and petroleum formed deep under the ground.</p></div></div>
+  <div class="lab">
+    <div class="stage"><canvas id="fCv"></canvas><div class="hud" id="fHud"></div></div>
+    <div class="side"><div class="card ctrl"><label>Time<input type="range" id="ft" min="0" max="100" value="0"></label></div><div class="card why"><p class="obs" id="fObs"></p></div>
+      <div class="card note"><p>Coal, petroleum and natural gas are fossil fuels. Petrol and diesel, the most common fuels for vehicles, are made from petroleum.</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-res">
+  <div class="panel-head"><div><h2>Renewable or non-renewable?</h2><p class="aim">Renewable resources are replenished within a reasonable time. Non-renewable ones take millions of years to form, or cannot be replaced, and can run out.</p></div></div>
+  <div id="resSort"></div>
+</section>
+
+<section class="panel" id="p-quiz">
+  <div class="panel-head"><div><h2>Check what you learnt</h2></div></div>
+  <div class="quiz" id="quiz"></div>
+  <div class="facts">
+    <div class="fact"><b>Take only what fell</b>Ajji told Bhoomi and Surya to collect only the nellikai that had fallen, leaving enough fruits for birds and animals.</div>
+    <div class="fact"><b>Van Mahotsav</b>A forest festival celebrated across India in July, when people plant trees.</div>
+    <div class="fact"><b>The Sun powers life</b>Plants use sunlight to make food, and animals depend on plants. The Sun is the main source of energy on Earth.</div>
+  </div>
+</section>
+</main>
+<footer><a href="../index.html#/class-6" style="color:inherit;font-weight:700">← All Grade 6 labs</a><br>Based on NCERT Curiosity, Grade 6, Chapter 11: Nature's Treasures</footer>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LAB={done:new Set(),total:0,key:'lab-'+location.pathname.split('/').pop()};
+function store(get,val){try{if(get)return JSON.parse(localStorage.getItem(LAB.key)||'[]');localStorage.setItem(LAB.key,JSON.stringify(val))}catch(e){return []}}
+function toast(msg,ms=2600){let t=$('.toast');if(!t){t=document.createElement('div');t.className='toast';document.body.appendChild(t)}
+  t.textContent=msg;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),ms)}
+function markDone(id){if(LAB.done.has(id))return;LAB.done.add(id);store(false,[...LAB.done]);paintProgress();
+  if(LAB.done.size===LAB.total){confetti();toast('You completed every experiment in this lab!')}}
+function paintProgress(){$$('.tab[data-t]').forEach(b=>b.classList.toggle('done',LAB.done.has(b.dataset.t)));
+  $$('.procedure li[data-t]').forEach(l=>l.classList.toggle('done',LAB.done.has(l.dataset.t)));
+  const m=$('.meter b'),n=$('.meter span');if(m){m.style.width=(100*LAB.done.size/LAB.total)+'%';n.textContent=LAB.done.size+' of '+LAB.total+' done'}}
+const tabHooks={};
+function onTab(id,fn){(tabHooks[id]=tabHooks[id]||[]).push(fn)}
+function showTab(id,scroll){$$('.tab[data-t]').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===id));
+  $$('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+id));(tabHooks[id]||[]).forEach(f=>f());
+  if(scroll){const bar=$('.bar');window.scrollTo({top:bar.offsetTop,behavior:'smooth'})}}
+function initTabs(){const tabs=$$('.tab[data-t]');LAB.total=tabs.length;store(true).forEach(x=>LAB.done.add(x));
+  tabs.forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.t,true)));
+  $$('.procedure li[data-t]').forEach(l=>{l.style.cursor='pointer';l.addEventListener('click',()=>showTab(l.dataset.t,true))});
+  paintProgress();showTab(tabs[0].dataset.t)}
+document.addEventListener('DOMContentLoaded',()=>{if($('.tab'))initTabs()});
+
+/* confetti */
+function confetti(){let c=$('#confetti');if(!c){c=document.createElement('canvas');c.id='confetti';document.body.appendChild(c)}
+  const x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;const cols=['#FFD84D','#1E9E6A','#2F7DD1','#E8567C','#8A5CF6','#FF8A3D'];
+  const ps=Array.from({length:160},()=>({x:innerWidth/2+(Math.random()-.5)*200,y:innerHeight*.35,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,r:Math.random()*6+4,c:cols[Math.random()*6|0],a:Math.random()*6,va:(Math.random()-.5)*.4}));
+  let f=0;(function tick(){x.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.vx*=.99;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()});
+    if(++f<180)requestAnimationFrame(tick);else x.clearRect(0,0,c.width,c.height)})()}
+
+/* hi-dpi canvas: returns ctx sized to logical w,h */
+function hiCanvas(cv,w,h){const d=Math.min(2,window.devicePixelRatio||1);cv.width=w*d;cv.height=h*d;cv.style.aspectRatio=w+'/'+h;const x=cv.getContext('2d');x.setTransform(d,0,0,d,0,0);x.W=w;x.H=h;return x}
+function canvasPoint(cv,e,w,h){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*w/r.width,y:(e.clientY-r.top)*h/r.height}}
+function loop(fn){let last=performance.now(),run=true;function f(t){if(!run)return;const dt=Math.min(.05,(t-last)/1000);last=t;fn(dt,t/1000);requestAnimationFrame(f)}requestAnimationFrame(f);return()=>run=false}
+const lerp=(a,b,t)=>a+(b-a)*t, clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), rand=(a,b)=>a+Math.random()*(b-a);
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+
+/* Quiz: qs=[{q,o:[..],a:index,e:explain}] */
+function Quiz(el,qs,doneId){let i=0,score=0,order=shuffle(qs);
+  function render(){if(i>=order.length){const pct=Math.round(100*score/order.length);
+      el.innerHTML=`<div class="qcard score"><div class="big">${score}/${order.length}</div><h3>${pct>=80?'Brilliant work, scientist!':pct>=50?'Good effort! Revisit the experiments and try again.':'Keep exploring the experiments, then try again.'}</h3><p>Every question comes from what you tested in this lab.</p><button class="btn">Try the quiz again</button></div>`;
+      $('button',el).onclick=()=>{i=0;score=0;order=shuffle(qs);render()};if(pct>=60){confetti();doneId&&markDone(doneId)}return}
+    const q=order[i];el.innerHTML=`<div class="qcard"><div class="qtop"><span>Question ${i+1} of ${order.length}</span><span>Score ${score}</span></div>
+      <div class="qtext">${q.q}</div><div class="opts">${q.o.map((o,k)=>`<button class="opt" data-k="${k}"><span class="k">${'ABCD'[k]}</span>${o}</button>`).join('')}</div>
+      <div class="qexp"></div><div class="qnav"><button class="btn" disabled>Next question</button></div></div>`;
+    $$('.opt',el).forEach(b=>b.onclick=()=>{const k=+b.dataset.k;$$('.opt',el).forEach(x=>x.disabled=true);
+      $$('.opt',el)[q.a].classList.add('right');if(k===q.a){score++}else{b.classList.add('wrong');b.classList.add('shake')}
+      const ex=$('.qexp',el);ex.innerHTML=(k===q.a?'<b>Correct.</b> ':'<b>Not quite.</b> ')+q.e;ex.classList.add('on');
+      const nb=$('.qnav .btn',el);nb.disabled=false;nb.textContent=i===order.length-1?'See my score':'Next question';nb.focus()});
+    $('.qnav .btn',el).onclick=()=>{i++;render()}}
+  render()}
+
+/* Sorter: items=[{t,em,c,why}], bins=[{c,t,em}] ; click a chip then a bin, or drag */
+function Sorter(el,items,bins,opts={}){
+  el.innerHTML=`<div class="sorter"><div class="tray"></div><div class="bins">${bins.map(b=>`<div class="bin" data-c="${b.c}"><h4>${b.em?`<span class="em">${b.em}</span>`:''}${b.t}</h4><div class="chips"></div></div>`).join('')}</div><div class="obs" aria-live="polite"></div></div>`;
+  const tray=$('.tray',el),obs=$('.obs',el);let picked=null,left=items.length;
+  shuffle(items).forEach(it=>{const c=document.createElement('button');c.className='chip';c.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;c._it=it;tray.appendChild(c);
+    c.addEventListener('click',()=>{if(c.classList.contains('right'))return;$$('.chip.picked',el).forEach(x=>x.classList.remove('picked'));picked=c;c.classList.add('picked');obs.className='obs';obs.textContent='Now choose a group for “'+it.t+'”.'});
+    c.addEventListener('pointerdown',e=>{if(c.classList.contains('right'))return;const sx=e.clientX,sy=e.clientY;let ghost=null;
+      const mv=ev=>{if(!ghost&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>8){ghost=c.cloneNode(true);ghost.classList.add('dragging');document.body.appendChild(ghost);c.style.opacity=.3}
+        if(ghost){ghost.style.left=ev.clientX-30+'px';ghost.style.top=ev.clientY-20+'px';$$('.bin',el).forEach(b=>{const r=b.getBoundingClientRect();b.classList.toggle('hover',ev.clientX>r.left&&ev.clientX<r.right&&ev.clientY>r.top&&ev.clientY<r.bottom)})}};
+      const up=ev=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);if(ghost){ghost.remove();c.style.opacity=1;const b=$('.bin.hover',el);$$('.bin',el).forEach(x=>x.classList.remove('hover'));if(b)drop(c,b);c._dragged=true;setTimeout(()=>c._dragged=false,50)}};
+      addEventListener('pointermove',mv);addEventListener('pointerup',up)})});
+  $$('.bin',el).forEach(b=>b.addEventListener('click',()=>{if(picked)drop(picked,b)}));
+  function drop(c,b){const it=c._it;if(it.c===b.dataset.c){c.classList.remove('picked');c.classList.add('right');$('.chips',b).appendChild(c);obs.className='obs ok';obs.innerHTML='✓ '+(it.why||'Correct!');left--;picked=null;
+      if(!left){obs.innerHTML='✓ All sorted! '+(opts.end||'');confetti();opts.done&&markDone(opts.done)}}
+    else{c.classList.add('shake');setTimeout(()=>c.classList.remove('shake'),400);obs.className='obs bad';obs.innerHTML='✗ Not this group. '+(it.hint||'Look again at its features.')}}
+}
+
+/* Order game: items in correct order [{t,em}] */
+function OrderGame(el,items,opts={}){
+  el.innerHTML=`<div class="order"></div><div class="slots">${items.map((_,i)=>`<div class="slot">${i+1}</div>`).join('')}</div><div class="obs" style="margin-top:10px"></div>`;
+  let n=0;const box=$('.order',el),obs=$('.obs',el);
+  shuffle(items.map((x,i)=>({...x,i}))).forEach(it=>{const b=document.createElement('button');b.className='chip';b.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;
+    b.onclick=()=>{if(it.i===n){const s=$$('.slot',el)[n];s.innerHTML=b.innerHTML;s.classList.add('filled');b.remove();n++;obs.className='obs ok';obs.textContent=opts.say?opts.say(it.i):'✓ Right!';
+        if(n===items.length){obs.textContent='✓ Perfect order! '+(opts.end||'');confetti();opts.done&&markDone(opts.done);opts.onDone&&opts.onDone()}}
+      else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);obs.className='obs bad';obs.textContent='✗ That is not step '+(n+1)+'. Think about what has to happen first.'}};box.appendChild(b)})}
+
+const DARK='#1D2A33';
+function firki(x,cx,cy,r,a,col){x.save();x.translate(cx,cy);x.rotate(a);for(let i=0;i<4;i++){x.rotate(Math.PI/2);x.fillStyle=i%2?col:'#FFD84D';x.beginPath();x.moveTo(0,0);x.lineTo(r,-r*.1);x.quadraticCurveTo(r*.9,-r*.8,0,-r);x.closePath();x.fill()}x.fillStyle='#fff';x.beginPath();x.arc(0,0,r*.1,0,7);x.fill();x.restore()}
+
+/* HERO: earth with orbiting treasures */
+(()=>{const x=hiCanvas($('#heroCv'),500,400);const E=['☀️','💧','🌳','🌬️','🪨','⛽','🌾','🐟'];
+ loop((dt,t)=>{x.fillStyle=DARK;x.fillRect(0,0,500,400);const g=x.createRadialGradient(230,180,10,250,200,90);g.addColorStop(0,'#7FD3A8');g.addColorStop(.6,'#2C8F6B');g.addColorStop(1,'#1B5E4A');x.fillStyle=g;x.beginPath();x.arc(250,200,90,0,7);x.fill();
+  x.fillStyle='rgba(91,155,213,.8)';x.beginPath();x.ellipse(220,170,30,18,.4,0,7);x.ellipse(290,240,26,14,-.3,0,7);x.fill();
+  E.forEach((e,i)=>{const a=t*.3+i*Math.PI/4;x.font='34px serif';x.textAlign='center';x.fillStyle='#000';x.fillText(e,250+Math.cos(a)*165,212+Math.sin(a)*135)})})})();
+
+/* AIR */
+(()=>{const cells=[];for(let i=0;i<100;i++){const c=document.createElement('i');$('#grid').appendChild(c);cells.push(c)}
+ $('#fillAir').onclick=()=>{cells.forEach(c=>c.className='');cells.forEach((c,i)=>setTimeout(()=>{c.className=(i<78?'n':i<99?'o':'a')+' pop';setTimeout(()=>c.classList.remove('pop'),250);if(i===99){$('#airObs').innerHTML='<span class="hl">Most of the air is nitrogen (78 squares).</span> Oxygen fills 21 squares, and just 1 square is argon, carbon dioxide and other gases. Our body needs the oxygen.';markDone('air')}},i*25))};
+ let on=false,t0=0,id;$('#bBtn').onclick=()=>{if(!on){on=true;t0=performance.now();$('#bBtn').textContent='Stop';id=setInterval(()=>$('#breath').innerHTML=((performance.now()-t0)/1000).toFixed(1)+' s<small>time without breathing</small>',100)}
+  else{on=false;clearInterval(id);$('#bBtn').textContent='Start again';$('#airObs').innerHTML='You held your breath for '+((performance.now()-t0)/1000).toFixed(1)+' seconds. It gets hard quickly because your body needs a steady supply of oxygen.'}}})();
+
+/* WIND */
+(()=>{const x=hiCanvas($('#wCv'),640,420);let a=0,b=0,said=false;
+ loop((dt,t)=>{const w=+$('#ws').value/100;a+=w*12*dt;b+=w*5*dt;x.fillStyle=DARK;x.fillRect(0,0,640,420);x.fillStyle='#3E6B4F';x.fillRect(0,350,640,70);
+  $('#wHud').textContent=w<.05?'Still air':w<.4?'Gentle breeze':w<.75?'Windy':'Strong wind';
+  x.strokeStyle=`rgba(255,255,255,${w*.5})`;x.lineWidth=2;for(let k=0;k<6;k++){const xx=(t*w*400+k*130)%700-60;x.beginPath();x.moveTo(xx,60+k*45);x.bezierCurveTo(xx+30,50+k*45,xx+60,70+k*45,xx+90,60+k*45);x.stroke()}
+  // child with firki
+  x.strokeStyle='#8C6B42';x.lineWidth=5;x.beginPath();x.moveTo(140,340);x.lineTo(140,190);x.stroke();firki(x,140,190,46,a,$('#fc').value);x.font='60px serif';x.fillStyle='#000';x.textAlign='center';x.fillText('🧒',100,350);
+  // windmill
+  x.fillStyle='#E9EEF2';x.beginPath();x.moveTo(440,350);x.lineTo(455,140);x.lineTo(465,140);x.lineTo(480,350);x.fill();x.save();x.translate(460,140);x.rotate(b);x.fillStyle='#fff';for(let i=0;i<3;i++){x.rotate(Math.PI*2/3);x.beginPath();x.moveTo(-6,0);x.lineTo(-4,-110);x.lineTo(8,-100);x.lineTo(6,0);x.fill()}x.restore();x.fillStyle='#ccd';x.beginPath();x.arc(460,140,9,0,7);x.fill();
+  // wire + bulbs
+  x.strokeStyle='#666';x.lineWidth=2;x.beginPath();x.moveTo(475,330);x.lineTo(625,330);x.lineTo(625,310);x.stroke();
+  for(let i=0;i<3;i++){const on=w>(.25+i*.2);const bx=565+i*30,by=290;if(on){const g=x.createRadialGradient(bx,by,2,bx,by,30);g.addColorStop(0,'rgba(255,230,120,.8)');g.addColorStop(1,'rgba(255,230,120,0)');x.fillStyle=g;x.beginPath();x.arc(bx,by,30,0,7);x.fill()}
+   x.fillStyle=on?'#FFE066':'#5A6B75';x.beginPath();x.arc(bx,by,10,0,7);x.fill();x.strokeStyle='#666';x.beginPath();x.moveTo(bx,by+10);x.lineTo(bx,310);x.stroke()}
+  if(w>.75&&!said){said=true;$('#wObs').innerHTML='<span class="hl">Moving air has energy.</span> It spins the firki and turns windmill blades to generate electricity. More wind, more bulbs light up. Wind is also used in sailing boats and for drying clothes.';markDone('wind')}
+  else if(!said&&w>.05)$('#wObs').textContent='The firki and windmill start turning. Keep increasing the wind!'})})();
+
+/* WATER SAVER */
+(()=>{const A=[['Brushing teeth (×4)',['Tap running: 24 L','Tap closed, use a mug: 2 L'],[24,2]],['Bathing (×4)',['Shower for 15 min: 200 L','Bucket: 72 L'],[200,72]],['Washing clothes',['Running tap: 120 L','Tub, reuse rinse water for plants: 60 L'],[120,60]],['Washing utensils',['Running tap: 60 L','Fill a basin: 25 L'],[60,25]],['Leaking tap',['Leave it dripping: 30 L','Get it fixed: 0 L'],[30,0]]];
+ const ch=A.map(()=>0);let lvl=0,tried=new Set();
+ $('#acts').innerHTML='<h3>Our day</h3>'+A.map((a,i)=>`<div class="row" style="display:flex;gap:6px;flex-wrap:wrap"><b style="width:100%">${a[0]}</b>${a[1].map((o,k)=>`<button class="btn sm ${k?'ghost':''}" data-a="${i}" data-k="${k}">${o}</button>`).join('')}</div>`).join('');
+ function upd(){$$('#acts .btn').forEach(b=>{const s=ch[b.dataset.a]===+b.dataset.k;b.classList.toggle('sel',s);b.classList.toggle('ghost',!s)});const tot=A.reduce((s,a,i)=>s+a[2][ch[i]],0),worst=A.reduce((s,a)=>s+a[2][0],0);
+  $('#wtObs').innerHTML=`Total: <b>${tot} litres</b> per day.`+(tot<worst?` You save <span class="hl">${worst-tot} litres a day</span>, that is about ${((worst-tot)*365/1000).toFixed(0)} thousand litres a year!`:' Try the water-saving choices.');if(ch.every(c=>c===1))markDone('water');return tot}
+ $$('#acts .btn').forEach(b=>b.onclick=()=>{ch[b.dataset.a]=+b.dataset.k;upd()});upd();
+ const x=hiCanvas($('#wtCv'),640,420);loop((dt,t)=>{const tot=A.reduce((s,a,i)=>s+a[2][ch[i]],0);lvl=lerp(lvl,tot,.06);x.fillStyle=DARK;x.fillRect(0,0,640,420);
+  const X=200,W=240,B=380,H=320,max=450;x.fillStyle='rgba(91,155,213,.8)';const h=H*lvl/max;x.beginPath();x.moveTo(X,B-h);for(let i=0;i<=W;i+=10)x.lineTo(X+i,B-h+Math.sin(i/20+t*3)*3);x.lineTo(X+W,B);x.lineTo(X,B);x.fill();
+  x.strokeStyle='#fff';x.lineWidth=3;x.strokeRect(X,B-H,W,H);x.fillStyle='#fff';x.font='12px Atkinson Hyperlegible, sans-serif';x.textAlign='right';for(let v=0;v<=max;v+=50){const y=B-H*v/max;x.fillRect(X-8,y,8,1.5);x.fillText(v+' L',X-12,y+4)}
+  x.font='800 30px Bricolage Grotesque, sans-serif';x.textAlign='center';x.fillText(Math.round(lvl)+' L',X+W/2,B-h-14);
+  if(ch[4]===0){const dy=(t*120)%60;x.fillStyle='#9CC8F5';x.beginPath();x.arc(520,90+dy,6,0,7);x.fill();x.font='40px serif';x.fillStyle='#000';x.fillText('🚰',520,80)}})})();
+
+/* SOIL */
+(()=>{const cv=$('#sCv'),x=hiCanvas(cv,640,420);const SM={farm:['Farm after ploughing','#6B4A2E',[['earthworm','🪱'],['roots','🌱'],['sand grains','·'],['tiny insect','🐜']]],garden:['Garden','#4E3A28',[['decaying leaf','🍂'],['earthworm','🪱'],['small pebble','🪨'],['fungus','🍄']]],road:['Roadside','#8E7A62',[['pebbles','🪨'],['sand grains','·'],['plastic bit','🧴'],['ant','🐜']]]};
+ let cur='farm',lens={x:320,y:210},drag=false,items=[],found={};
+ $('#samples').innerHTML=Object.entries(SM).map(([k,s])=>`<button class="btn sm ghost" data-s="${k}">${s[0]}</button>`).join('');
+ function sel(k){cur=k;$$('#samples .btn').forEach(b=>b.classList.toggle('sel',b.dataset.s===k));items=SM[k][2].map(it=>({it,x:rand(80,560),y:rand(80,360),got:false}));show()}
+ function show(){const all=Object.values(found).flat();$('#found').innerHTML=all.length?all.join(', '):'Nothing yet.';if(Object.keys(found).length>=2&&Object.values(found).every(a=>a.length>=4))markDone('soil')}
+ $$('#samples .btn').forEach(b=>b.onclick=()=>sel(b.dataset.s));sel('farm');
+ cv.addEventListener('pointerdown',e=>{drag=true;cv.setPointerCapture(e.pointerId);lens=canvasPoint(cv,e,640,420)});cv.addEventListener('pointermove',e=>{if(drag)lens=canvasPoint(cv,e,640,420)});cv.addEventListener('pointerup',()=>drag=false);
+ const grains=Array.from({length:2600},()=>({x:rand(0,640),y:rand(0,420),r:rand(.6,1.8),c:Math.random()}));
+ loop((dt,t)=>{const s=SM[cur];x.fillStyle=s[1];x.fillRect(0,0,640,420);grains.forEach(g=>{x.fillStyle=g.c<.5?'rgba(0,0,0,.25)':'rgba(255,255,255,.12)';x.fillRect(g.x,g.y,g.r,g.r)});
+  x.save();x.beginPath();x.arc(lens.x,lens.y,80,0,7);x.clip();x.translate(lens.x,lens.y);x.scale(2.4,2.4);x.translate(-lens.x,-lens.y);x.fillStyle=s[1];x.fillRect(0,0,640,420);
+  grains.forEach(g=>{x.fillStyle=g.c<.5?'#3A2A1A':'#D9C29A';x.beginPath();x.arc(g.x,g.y,g.r*1.2,0,7);x.fill()});
+  items.forEach(i=>{x.font='16px serif';x.textAlign='center';x.fillStyle=i.it[1]==='·'?'#EADBB8':'#000';if(i.it[1]==='·'){for(let k=0;k<6;k++){x.beginPath();x.arc(i.x+k*3-8,i.y+(k%2)*3,1.6,0,7);x.fill()}}else x.fillText(i.it[1],i.x,i.y+5)});x.restore();
+  items.forEach(i=>{if(!i.got&&Math.hypot(i.x-lens.x,i.y-lens.y)<30){i.got=true;found[cur]=found[cur]||[];found[cur].push(i.it[0]+' ('+s[0].toLowerCase()+')');show();toast('Found: '+i.it[0])}});
+  x.strokeStyle='#C9A24A';x.lineWidth=8;x.beginPath();x.arc(lens.x,lens.y,82,0,7);x.stroke();x.lineWidth=14;x.beginPath();x.moveTo(lens.x+58,lens.y+58);x.lineTo(lens.x+110,lens.y+110);x.stroke()})})();
+
+/* FOSSIL */
+(()=>{const x=hiCanvas($('#fCv'),640,420);const st=[[0,'Hundreds of millions of years ago, huge forests grew and sea creatures lived in oceans.'],[25,'The plants and animals died and were buried under layers of mud and sand.'],[50,'More layers piled up. Deep inside, there was great heat and pressure.'],[80,'Over millions of years, the remains slowly turned into coal, petroleum and natural gas.'],[100,'Today we dig out coal and drill for petroleum. Once used up, they will not form again for millions of years: they are non-renewable.']];
+ loop((dt,t)=>{const v=+$('#ft').value,f=v/100;const s=[...st].reverse().find(q=>v>=q[0]);$('#fObs').textContent=s[1];$('#fHud').textContent=v<100?Math.round(300-f*300)+' million years ago':'Today';if(v>=100)markDone('fossil');
+  x.fillStyle='#6FB3E8';x.fillRect(0,0,640,420);const layers=Math.floor(f*6);const groundY=180-layers*14;
+  x.fillStyle='#5A4632';x.fillRect(0,groundY,640,420-groundY);x.fillStyle='#4A7A4E';x.fillRect(0,groundY-8,640,10);
+  for(let i=0;i<layers;i++){x.fillStyle=['#A88A5E','#8C6B42','#B5966A','#7A5A3A','#9C7B52','#6E5034'][i];x.fillRect(0,groundY+i*14+ (i===0?0:0),640,14)}
+  const depth=Math.min(330,groundY+layers*14+20);const rem=1-clamp((f-.5)/.3,0,1);
+  if(f<.25){for(let i=0;i<8;i++){const tx=40+i*80;x.fillStyle='#6B4A2E';x.fillRect(tx-4,groundY-70,8,70);x.fillStyle='#2F7A3A';x.beginPath();x.arc(tx,groundY-80,26,0,7);x.fill()}}
+  else{x.globalAlpha=rem;for(let i=0;i<10;i++){x.fillStyle='#3E5A2A';x.fillRect(30+i*60,depth,40,8)}x.globalAlpha=1}
+  if(f>.5){const k=clamp((f-.5)/.3,0,1);x.globalAlpha=k;x.fillStyle='#1A1A1A';x.fillRect(20,depth-4,300,22);x.fillStyle='#2B2A20';x.beginPath();x.ellipse(470,depth+30,120,24,0,0,7);x.fill();x.fillStyle='rgba(200,220,255,.3)';x.beginPath();x.ellipse(470,depth+8,100,10,0,0,7);x.fill();x.globalAlpha=1;
+   x.fillStyle='#fff';x.font='700 14px Atkinson Hyperlegible, sans-serif';x.textAlign='center';x.fillText('coal',170,depth+34);x.fillText('petroleum and natural gas',470,depth+70)}
+  if(f>.5&&f<.95){x.strokeStyle='rgba(255,120,60,.5)';x.lineWidth=3;for(let i=0;i<5;i++){const yy=depth-30-((t*30+i*10)%30);x.beginPath();x.moveTo(60+i*120,yy);x.lineTo(60+i*120,yy+12);x.stroke();x.beginPath();x.moveTo(54+i*120,yy+6);x.lineTo(60+i*120,yy+12);x.lineTo(66+i*120,yy+6);x.stroke()}}
+  if(f>=1){x.fillStyle='#555';x.fillRect(460,groundY-80,10,80+depth-groundY);x.fillStyle='#333';x.beginPath();x.moveTo(440,groundY);x.lineTo(465,groundY-100);x.lineTo(490,groundY);x.fill();x.font='30px serif';x.fillText('⛏️',170,groundY-10)}})})();
+
+Sorter($('#resSort'),[{t:'Sunlight',em:'☀️',c:'r'},{t:'Wind',em:'🌬️',c:'r'},{t:'Water',em:'💧',c:'r',why:'Water is renewed by the water cycle, but we must not waste or pollute it.'},{t:'Forests',em:'🌳',c:'r',why:'Forests can regrow if used responsibly, but it takes many years.'},{t:'Air',em:'🌫️',c:'r'},
+ {t:'Coal',em:'🪨',c:'n',why:'Coal took millions of years to form.'},{t:'Petroleum',em:'🛢️',c:'n'},{t:'Natural gas',em:'🔥',c:'n'},{t:'Minerals',em:'💎',c:'n',why:'Minerals form over very long periods.'}],
+ [{c:'r',t:'Renewable',em:'♻️'},{c:'n',t:'Non-renewable',em:'⏳'}],{done:'res'});
+
+Quiz($('#quiz'),[
+ {q:'Which gas makes up the largest part of air?',o:['Oxygen','Nitrogen','Carbon dioxide','Argon'],a:1,e:'Nitrogen is about 78% of air; oxygen is about 21%.'},
+ {q:'Which part of air do we need to breathe for survival?',o:['Nitrogen','Oxygen','Argon','Dust'],a:1,e:'Our body needs oxygen to perform its functions.'},
+ {q:'A windmill uses moving air to…',o:['Make rain','Generate electricity','Make soil','Purify water'],a:1,e:'Wind turns the blades of a windmill, which generates electricity.'},
+ {q:'Which is the main source of energy on Earth?',o:['Coal','The Sun','Petrol','Wind'],a:1,e:'All plants depend on sunlight to make food, and animals depend on plants.'},
+ {q:'Which of these is a fossil fuel?',o:['Wood','Coal','Wind','Sunlight'],a:1,e:'Coal, petroleum and natural gas formed from remains buried millions of years ago.'},
+ {q:'Why are fossil fuels non-renewable?',o:['They are cheap','They take millions of years to form','They are found everywhere','They are liquids'],a:1,e:'Once used up, they cannot be replaced within a reasonable time.'},
+ {q:'Which helps loosen and turn the soil naturally?',o:['Earthworms','Plastic','Stones','Smoke'],a:0,e:'Earthworms are natural agents that loosen the soil.'},
+ {q:'Which is the best way to save water while brushing?',o:['Keep the tap running','Use a mug of water','Brush under a shower','Use hot water'],a:1,e:'A mug uses far less water than a running tap.'}
+],'quiz');
+</script>
+
+<a href="../index.html#/class-6" style="position:fixed;right:16px;bottom:16px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;background:rgba(255,255,255,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.95);box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font:900 14px/1 Nunito,'Segoe UI',system-ui,sans-serif;text-decoration:none">🏠 Lab Home</a></body></html>

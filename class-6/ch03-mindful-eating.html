@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Food Testing Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3F7F4; --grid:#DCE9E3; --ink:#18324A; --ink2:#4B6274; --bench:#1D2A33; --bench2:#26363F;
+  --marker:#FFD84D; --ok:#1E9E6A; --bad:#D64545; --line:#C9D9D2; --card:#FFFFFF;
+  --acc:#2F7DD1; --acc2:#9CC8F5; --accInk:#fff;
+  --r-lg:22px; --r-md:14px; --r-sm:9px;
+  --fh:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --fb:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);font:17px/1.55 var(--fb);background:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;}
+h1,h2,h3,h4{font-family:var(--fh);line-height:1.1;margin:0 0 .4em;letter-spacing:-.01em}
+p{margin:0 0 .8em}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--marker);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* hero */
+.hero{padding:44px 0 26px}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center}
+.chapno{font-family:var(--fh);font-weight:800;font-size:15px;color:var(--acc);display:inline-flex;gap:8px;align-items:center;background:#fff;border:2px solid var(--acc);border-radius:99px;padding:3px 14px 3px 4px}
+.chapno b{background:var(--acc);color:var(--accInk);border-radius:99px;min-width:28px;height:28px;display:grid;place-items:center;font-size:15px}
+.hero h1{font-size:clamp(38px,5.6vw,68px);font-weight:800;margin:16px 0 14px}
+.hero h1 .u{background:linear-gradient(transparent 62%,var(--marker) 62% 92%,transparent 92%)}
+.hero .lede{font-size:19px;color:var(--ink2);max-width:52ch}
+.hero-stage{background:var(--bench);border-radius:var(--r-lg);aspect-ratio:5/4;position:relative;overflow:hidden;box-shadow:0 18px 0 -8px var(--acc2),0 24px 40px -18px rgba(24,50,74,.45)}
+.hero-stage canvas,.hero-stage svg{width:100%;height:100%;display:block}
+.procedure{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:6px;counter-reset:p}
+.procedure li{counter-increment:p;display:flex;gap:10px;align-items:center;font-weight:700}
+.procedure li::before{content:counter(p);width:26px;height:26px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-size:13px;flex:none}
+.procedure li.done::before{content:"✓";background:var(--ok);border-color:var(--ok);color:#fff}
+
+/* tab bar */
+.bar{position:sticky;top:0;z-index:20;background:rgba(243,247,244,.92);backdrop-filter:blur(8px);border-bottom:2px solid var(--line)}
+.bar .wrap{display:flex;gap:8px;align-items:center;overflow-x:auto;padding-top:10px;padding-bottom:10px;scrollbar-width:thin}
+.tab{border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:99px;padding:7px 15px;font-weight:700;font-size:15px;white-space:nowrap;transition:transform .15s}
+.tab:hover{transform:translateY(-2px)}
+.tab[aria-selected=true]{background:var(--ink);color:#fff}
+.tab .tick{display:none;color:var(--ok);margin-left:6px}
+.tab.done .tick{display:inline}
+.tab[aria-selected=true] .tick{color:var(--marker)}
+.meter{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;white-space:nowrap;padding-left:12px}
+.meter i{display:block;width:90px;height:9px;background:#fff;border:2px solid var(--ink);border-radius:9px;overflow:hidden}
+.meter i b{display:block;height:100%;width:0;background:var(--ok);transition:width .5s}
+
+/* panels */
+main{padding:28px 0 60px}
+.panel{display:none;animation:rise .35s ease}
+.panel.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.panel-head{display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.panel-head h2{font-size:clamp(26px,3.4vw,38px);margin:0}
+.panel-head .aim{color:var(--ink2);max-width:62ch;margin:6px 0 0}
+.lab{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:20px;align-items:start}
+.lab.wide{grid-template-columns:1fr}
+.stage{background:var(--bench);border-radius:var(--r-lg);position:relative;overflow:hidden;color:#E8F0F2;min-height:300px}
+.stage canvas,.stage>svg{display:block;width:100%;height:auto}
+.stage .hud{position:absolute;left:14px;top:12px;font-weight:700;font-size:14px;background:rgba(0,0,0,.35);padding:4px 10px;border-radius:8px;pointer-events:none}
+.side{display:grid;gap:14px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:var(--r-md);padding:16px 18px}
+.card h3{font-size:19px}
+.card.note{background:#FFFBE6;border-color:#F1DF8F}
+.card.note h3::before{content:"✎ ";color:#B98B00}
+.card.why{border-left:7px solid var(--acc)}
+.ctrl{display:grid;gap:12px}
+.ctrl label{font-weight:700;font-size:15px;display:grid;gap:4px}
+.ctrl .row{display:flex;gap:8px;flex-wrap:wrap}
+input[type=range]{width:100%;accent-color:var(--acc);height:28px}
+.btn{border:2px solid var(--ink);background:var(--acc);color:var(--accInk);border-radius:12px;padding:9px 16px;font-weight:700;box-shadow:0 4px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn.sm{padding:6px 11px;font-size:14px;border-radius:10px;box-shadow:0 3px 0 var(--ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.sel{background:var(--marker);color:var(--ink)}
+.readout{font-family:var(--fh);font-size:30px;font-weight:800;line-height:1}
+.readout small{font-size:14px;font-weight:600;color:var(--ink2);display:block;margin-top:4px;font-family:var(--fb)}
+.obs{min-height:3em;font-size:16px}
+.obs.ok{color:var(--ok)} .obs.bad{color:var(--bad)}
+.hl{background:linear-gradient(transparent 55%,var(--marker) 55%);font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pill:empty{display:none}
+.pill{display:inline-block;border-radius:99px;padding:2px 10px;font-size:13px;font-weight:700;background:var(--acc2);color:var(--ink)}
+table.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th,.tbl td{border-bottom:1.5px solid var(--line);padding:6px 8px;text-align:left}
+.tbl th{font-family:var(--fh)}
+
+/* sorting game */
+.sorter{display:grid;gap:14px}
+.tray{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:10px;border:2px dashed var(--line);border-radius:var(--r-md);background:#fff}
+.chip{border:2px solid var(--ink);background:#fff;border-radius:12px;padding:7px 12px;font-weight:700;font-size:15px;user-select:none;touch-action:none;display:inline-flex;align-items:center;gap:6px;transition:transform .15s,background .2s}
+.chip .em{font-size:22px;line-height:1}
+.chip.picked{background:var(--marker);transform:scale(1.06) rotate(-2deg)}
+.chip.right{border-color:var(--ok);background:#E3F6EC;cursor:default}
+.chip.dragging{position:fixed;z-index:999;pointer-events:none;box-shadow:0 12px 24px rgba(0,0,0,.25)}
+.bins{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.bin{border:2px solid var(--ink);border-radius:var(--r-md);background:#fff;min-height:140px;padding:10px;display:flex;flex-direction:column;gap:6px;transition:background .2s,transform .2s}
+.bin h4{font-size:17px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.bin.hover{background:#FFF6CC;transform:scale(1.02)}
+.bin .chips{display:flex;flex-wrap:wrap;gap:6px}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+
+/* order game */
+.order{display:flex;flex-wrap:wrap;gap:8px}
+.slots{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.slot{min-width:120px;min-height:44px;border:2px dashed var(--ink2);border-radius:12px;display:grid;place-items:center;padding:6px 10px;font-weight:700;color:var(--ink2);background:#fff}
+.slot.filled{border-style:solid;border-color:var(--ok);color:var(--ink);background:#E3F6EC}
+
+/* quiz */
+.quiz{max-width:760px;margin:0 auto}
+.qcard{background:#fff;border:2px solid var(--ink);border-radius:var(--r-lg);padding:24px;box-shadow:8px 8px 0 var(--acc2)}
+.qtop{display:flex;justify-content:space-between;font-weight:700;color:var(--ink2);margin-bottom:10px;font-size:15px}
+.qtext{font-family:var(--fh);font-size:24px;font-weight:700;margin-bottom:16px}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:11px 14px;font-weight:700;display:flex;gap:12px;align-items:center}
+.opt:hover:not([disabled]){border-color:var(--ink)}
+.opt .k{width:30px;height:30px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;flex:none;font-size:14px}
+.opt.right{border-color:var(--ok);background:#E3F6EC}
+.opt.wrong{border-color:var(--bad);background:#FCE8E8}
+.qexp{margin-top:14px;padding:12px 14px;border-radius:12px;background:#F2F6FA;display:none}
+.qexp.on{display:block;animation:rise .3s}
+.qnav{display:flex;justify-content:flex-end;margin-top:16px}
+.score{text-align:center}
+.score .big{font-family:var(--fh);font-size:72px;font-weight:800;color:var(--acc)}
+
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:22px}
+.fact{background:#fff;border:2px solid var(--line);border-radius:var(--r-md);padding:14px 16px;font-size:15px}
+.fact b{font-family:var(--fh);display:block;font-size:17px;margin-bottom:4px;color:var(--acc)}
+
+footer{padding:24px 0 40px;color:var(--ink2);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:12px;font-weight:700;z-index:1000;transition:transform .35s cubic-bezier(.2,1.4,.4,1);max-width:90vw;text-align:center}
+.toast.on{transform:translate(-50%,0)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:999}
+
+@media (max-width:860px){
+  .hero .wrap,.lab{grid-template-columns:1fr}
+  .hero{padding-top:26px}
+  .meter i{width:60px}
+  .grid2{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+
+:root{--acc:#E2672E;--acc2:#FFC9A8}
+.foods{display:flex;flex-wrap:wrap;gap:6px}
+.foods .btn{background:#fff;color:var(--ink);padding:6px 10px;font-size:14px;box-shadow:0 3px 0 var(--ink)}
+.foods .btn.sel{background:var(--marker)}
+.tests{display:grid;gap:8px}
+.tests .btn{text-align:left}
+.tbl td.y{color:var(--ok);font-weight:700}.tbl td.n{color:#9AA}
+.tblwrap{max-height:260px;overflow:auto}
+.thali-wrap{display:grid;grid-template-columns:1.2fr 1fr;gap:20px}
+.menu{display:flex;flex-wrap:wrap;gap:8px}
+.bars{display:grid;gap:8px}
+.bars .b{display:grid;grid-template-columns:150px 1fr;gap:10px;align-items:center;font-weight:700;font-size:14px}
+.bars .t{height:16px;border:2px solid var(--ink);border-radius:9px;background:#fff;overflow:hidden}
+.bars .t i{display:block;height:100%;width:0;transition:width .5s,background .3s;background:var(--acc)}
+.patient{display:grid;grid-template-columns:110px 1fr;gap:16px;align-items:center}
+.face{font-size:80px;text-align:center;line-height:1}
+.opts2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:12px}
+.label{border:2px solid var(--ink);border-radius:14px;padding:14px;background:#fff}
+.label h4{border-bottom:5px solid var(--ink);padding-bottom:4px}
+@media(max-width:860px){.thali-wrap{grid-template-columns:1fr}.bars .b{grid-template-columns:110px 1fr}}
+
+</style><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"></head><body>
+
+
+<header class="hero"><div class="wrap">
+  <div>
+    <span class="chapno"><b>3</b>Chapter 3</span>
+    <h1>Mindful Eating: A Path to a <span class="u">Healthy Body</span></h1>
+    <p class="lede">What is hidden inside your food? Test foods for starch, fats and proteins, build a balanced thali, and solve health mysteries caused by missing nutrients.</p>
+    <ol class="procedure">
+      <li data-t="test">Test foods for nutrients</li>
+      <li data-t="thali">Build a balanced thali</li>
+      <li data-t="doc">Solve deficiency cases</li>
+      <li data-t="label">Read food labels</li>
+      <li data-t="quiz">Check what you learnt</li>
+    </ol>
+  </div>
+  <div class="hero-stage"><canvas id="heroCv"></canvas></div>
+</div></header>
+
+<nav class="bar"><div class="wrap">
+  <button class="tab" data-t="test">Food tests<span class="tick">✓</span></button>
+  <button class="tab" data-t="thali">Balanced thali<span class="tick">✓</span></button>
+  <button class="tab" data-t="doc">Deficiency detective<span class="tick">✓</span></button>
+  <button class="tab" data-t="label">Read the label<span class="tick">✓</span></button>
+  <button class="tab" data-t="quiz">Quiz<span class="tick">✓</span></button>
+  <div class="meter"><i><b></b></i><span></span></div>
+</div></nav>
+
+<main class="wrap">
+<section class="panel" id="p-test">
+  <div class="panel-head"><div><h2>The food testing bench</h2><p class="aim">Choose a food, then run a test. Every result is written into your table automatically. Test at least 8 foods to finish.</p></div></div>
+  <div class="lab">
+    <div class="stage"><canvas id="benchCv"></canvas><div class="hud" id="benchHud"></div></div>
+    <div class="side">
+      <div class="card ctrl"><label>1. Pick a food</label><div class="foods" id="foods"></div>
+        <label>2. Run a test</label>
+        <div class="tests">
+          <button class="btn" data-k="s">Starch test: add 2–3 drops of dilute iodine</button>
+          <button class="btn" data-k="f">Fat test: press in paper, hold to light</button>
+          <button class="btn" data-k="p">Protein test: copper sulfate + caustic soda</button>
+        </div></div>
+      <div class="card why"><p class="obs" id="benchObs">Blue-black colour = starch. Oily, see-through patch = fat. Violet colour = protein.</p></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:18px"><h3>My results table</h3><div class="tblwrap"><table class="tbl" id="resTbl"><thead><tr><th>Food</th><th>Starch</th><th>Fat</th><th>Protein</th></tr></thead><tbody></tbody></table></div></div>
+</section>
+
+<section class="panel" id="p-thali">
+  <div class="panel-head"><div><h2>Build a balanced thali</h2><p class="aim">A balanced diet has all the nutrients, plus roughage and water, in the right amounts. Tap foods to add them to your plate (tap again on the plate to remove).</p></div>
+  <button class="btn ghost sm" id="thaliClear">Clear the plate</button></div>
+  <div class="thali-wrap">
+    <div class="stage"><canvas id="thaliCv"></canvas></div>
+    <div class="side">
+      <div class="card"><div class="menu" id="menu"></div></div>
+      <div class="card"><div class="bars" id="bars"></div><p class="obs" id="thaliObs" style="margin-top:10px"></p></div>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="p-doc">
+  <div class="panel-head"><div><h2>Deficiency detective</h2><p class="aim">Each person shows symptoms. Which vitamin or mineral is missing from their diet? Then suggest a food that can help.</p></div><span class="pill" id="docCount"></span></div>
+  <div class="lab">
+    <div class="card"><div class="patient"><div class="face" id="face">🧑</div><div><h3 id="pname"></h3><p id="psym"></p></div></div>
+      <div id="step1"><b>What is missing?</b><div class="opts2" id="nutOpts"></div></div>
+      <div id="step2" style="display:none"><b>Which food would help?</b><div class="opts2" id="foodOpts"></div></div>
+      <p class="obs" id="docObs" style="margin-top:12px"></p>
+      <button class="btn" id="nextP" style="display:none">Next patient</button>
+    </div>
+    <div class="card note"><h3>Remember</h3><p>Vitamins (A, B1, C, D) and minerals (calcium, iodine, iron) protect our body from diseases. A disease caused by the lack of a nutrient is a <b>deficiency disease</b>.</p><p>If you notice such symptoms in someone, suggest that they visit a doctor.</p></div>
+  </div>
+</section>
+
+<section class="panel" id="p-label">
+  <div class="panel-head"><div><h2>Which snack would you choose?</h2><p class="aim">These are the nutrition labels (per 100 g) of potato wafers and roasted chana. Compare them nutrient by nutrient.</p></div></div>
+  <div class="lab">
+    <div class="stage"><canvas id="labelCv"></canvas></div>
+    <div class="side">
+      <div class="card ctrl"><label>Compare</label><div class="foods" id="cmpBtns"></div></div>
+      <div class="card why"><p class="obs" id="labelObs">Pick a nutrient to compare.</p>
+        <div id="choose" style="display:none"><b>So which is the healthier snack?</b><div class="row" style="margin-top:8px"><button class="btn sm" data-c="w">Potato wafers</button><button class="btn sm" data-c="c">Roasted chana</button></div></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="p-quiz">
+  <div class="panel-head"><div><h2>Check what you learnt</h2></div></div>
+  <div class="quiz" id="quiz"></div>
+  <div class="facts">
+    <div class="fact"><b>Millets are back</b>Jowar, bajra and ragi are nutrition-rich cereals. They grow with less water and are good for our planet.</div>
+    <div class="fact"><b>Sunshine vitamin</b>Our body can make vitamin D when our skin is exposed to sunlight.</div>
+    <div class="fact"><b>Do not overcook</b>Some nutrients like vitamin C are lost when vegetables are overcooked or washed after cutting.</div>
+  </div>
+</section>
+</main>
+<footer><a href="../index.html#/class-6" style="color:inherit;font-weight:700">← All Grade 6 labs</a><br>Based on NCERT Curiosity, Grade 6, Chapter 3: Mindful Eating: A Path to a Healthy Body</footer>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LAB={done:new Set(),total:0,key:'lab-'+location.pathname.split('/').pop()};
+function store(get,val){try{if(get)return JSON.parse(localStorage.getItem(LAB.key)||'[]');localStorage.setItem(LAB.key,JSON.stringify(val))}catch(e){return []}}
+function toast(msg,ms=2600){let t=$('.toast');if(!t){t=document.createElement('div');t.className='toast';document.body.appendChild(t)}
+  t.textContent=msg;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),ms)}
+function markDone(id){if(LAB.done.has(id))return;LAB.done.add(id);store(false,[...LAB.done]);paintProgress();
+  if(LAB.done.size===LAB.total){confetti();toast('You completed every experiment in this lab!')}}
+function paintProgress(){$$('.tab[data-t]').forEach(b=>b.classList.toggle('done',LAB.done.has(b.dataset.t)));
+  $$('.procedure li[data-t]').forEach(l=>l.classList.toggle('done',LAB.done.has(l.dataset.t)));
+  const m=$('.meter b'),n=$('.meter span');if(m){m.style.width=(100*LAB.done.size/LAB.total)+'%';n.textContent=LAB.done.size+' of '+LAB.total+' done'}}
+const tabHooks={};
+function onTab(id,fn){(tabHooks[id]=tabHooks[id]||[]).push(fn)}
+function showTab(id,scroll){$$('.tab[data-t]').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===id));
+  $$('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+id));(tabHooks[id]||[]).forEach(f=>f());
+  if(scroll){const bar=$('.bar');window.scrollTo({top:bar.offsetTop,behavior:'smooth'})}}
+function initTabs(){const tabs=$$('.tab[data-t]');LAB.total=tabs.length;store(true).forEach(x=>LAB.done.add(x));
+  tabs.forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.t,true)));
+  $$('.procedure li[data-t]').forEach(l=>{l.style.cursor='pointer';l.addEventListener('click',()=>showTab(l.dataset.t,true))});
+  paintProgress();showTab(tabs[0].dataset.t)}
+document.addEventListener('DOMContentLoaded',()=>{if($('.tab'))initTabs()});
+
+/* confetti */
+function confetti(){let c=$('#confetti');if(!c){c=document.createElement('canvas');c.id='confetti';document.body.appendChild(c)}
+  const x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;const cols=['#FFD84D','#1E9E6A','#2F7DD1','#E8567C','#8A5CF6','#FF8A3D'];
+  const ps=Array.from({length:160},()=>({x:innerWidth/2+(Math.random()-.5)*200,y:innerHeight*.35,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,r:Math.random()*6+4,c:cols[Math.random()*6|0],a:Math.random()*6,va:(Math.random()-.5)*.4}));
+  let f=0;(function tick(){x.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.vx*=.99;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()});
+    if(++f<180)requestAnimationFrame(tick);else x.clearRect(0,0,c.width,c.height)})()}
+
+/* hi-dpi canvas: returns ctx sized to logical w,h */
+function hiCanvas(cv,w,h){const d=Math.min(2,window.devicePixelRatio||1);cv.width=w*d;cv.height=h*d;cv.style.aspectRatio=w+'/'+h;const x=cv.getContext('2d');x.setTransform(d,0,0,d,0,0);x.W=w;x.H=h;return x}
+function canvasPoint(cv,e,w,h){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*w/r.width,y:(e.clientY-r.top)*h/r.height}}
+function loop(fn){let last=performance.now(),run=true;function f(t){if(!run)return;const dt=Math.min(.05,(t-last)/1000);last=t;fn(dt,t/1000);requestAnimationFrame(f)}requestAnimationFrame(f);return()=>run=false}
+const lerp=(a,b,t)=>a+(b-a)*t, clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), rand=(a,b)=>a+Math.random()*(b-a);
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+
+/* Quiz: qs=[{q,o:[..],a:index,e:explain}] */
+function Quiz(el,qs,doneId){let i=0,score=0,order=shuffle(qs);
+  function render(){if(i>=order.length){const pct=Math.round(100*score/order.length);
+      el.innerHTML=`<div class="qcard score"><div class="big">${score}/${order.length}</div><h3>${pct>=80?'Brilliant work, scientist!':pct>=50?'Good effort! Revisit the experiments and try again.':'Keep exploring the experiments, then try again.'}</h3><p>Every question comes from what you tested in this lab.</p><button class="btn">Try the quiz again</button></div>`;
+      $('button',el).onclick=()=>{i=0;score=0;order=shuffle(qs);render()};if(pct>=60){confetti();doneId&&markDone(doneId)}return}
+    const q=order[i];el.innerHTML=`<div class="qcard"><div class="qtop"><span>Question ${i+1} of ${order.length}</span><span>Score ${score}</span></div>
+      <div class="qtext">${q.q}</div><div class="opts">${q.o.map((o,k)=>`<button class="opt" data-k="${k}"><span class="k">${'ABCD'[k]}</span>${o}</button>`).join('')}</div>
+      <div class="qexp"></div><div class="qnav"><button class="btn" disabled>Next question</button></div></div>`;
+    $$('.opt',el).forEach(b=>b.onclick=()=>{const k=+b.dataset.k;$$('.opt',el).forEach(x=>x.disabled=true);
+      $$('.opt',el)[q.a].classList.add('right');if(k===q.a){score++}else{b.classList.add('wrong');b.classList.add('shake')}
+      const ex=$('.qexp',el);ex.innerHTML=(k===q.a?'<b>Correct.</b> ':'<b>Not quite.</b> ')+q.e;ex.classList.add('on');
+      const nb=$('.qnav .btn',el);nb.disabled=false;nb.textContent=i===order.length-1?'See my score':'Next question';nb.focus()});
+    $('.qnav .btn',el).onclick=()=>{i++;render()}}
+  render()}
+
+/* Sorter: items=[{t,em,c,why}], bins=[{c,t,em}] ; click a chip then a bin, or drag */
+function Sorter(el,items,bins,opts={}){
+  el.innerHTML=`<div class="sorter"><div class="tray"></div><div class="bins">${bins.map(b=>`<div class="bin" data-c="${b.c}"><h4>${b.em?`<span class="em">${b.em}</span>`:''}${b.t}</h4><div class="chips"></div></div>`).join('')}</div><div class="obs" aria-live="polite"></div></div>`;
+  const tray=$('.tray',el),obs=$('.obs',el);let picked=null,left=items.length;
+  shuffle(items).forEach(it=>{const c=document.createElement('button');c.className='chip';c.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;c._it=it;tray.appendChild(c);
+    c.addEventListener('click',()=>{if(c.classList.contains('right'))return;$$('.chip.picked',el).forEach(x=>x.classList.remove('picked'));picked=c;c.classList.add('picked');obs.className='obs';obs.textContent='Now choose a group for “'+it.t+'”.'});
+    c.addEventListener('pointerdown',e=>{if(c.classList.contains('right'))return;const sx=e.clientX,sy=e.clientY;let ghost=null;
+      const mv=ev=>{if(!ghost&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>8){ghost=c.cloneNode(true);ghost.classList.add('dragging');document.body.appendChild(ghost);c.style.opacity=.3}
+        if(ghost){ghost.style.left=ev.clientX-30+'px';ghost.style.top=ev.clientY-20+'px';$$('.bin',el).forEach(b=>{const r=b.getBoundingClientRect();b.classList.toggle('hover',ev.clientX>r.left&&ev.clientX<r.right&&ev.clientY>r.top&&ev.clientY<r.bottom)})}};
+      const up=ev=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);if(ghost){ghost.remove();c.style.opacity=1;const b=$('.bin.hover',el);$$('.bin',el).forEach(x=>x.classList.remove('hover'));if(b)drop(c,b);c._dragged=true;setTimeout(()=>c._dragged=false,50)}};
+      addEventListener('pointermove',mv);addEventListener('pointerup',up)})});
+  $$('.bin',el).forEach(b=>b.addEventListener('click',()=>{if(picked)drop(picked,b)}));
+  function drop(c,b){const it=c._it;if(it.c===b.dataset.c){c.classList.remove('picked');c.classList.add('right');$('.chips',b).appendChild(c);obs.className='obs ok';obs.innerHTML='✓ '+(it.why||'Correct!');left--;picked=null;
+      if(!left){obs.innerHTML='✓ All sorted! '+(opts.end||'');confetti();opts.done&&markDone(opts.done)}}
+    else{c.classList.add('shake');setTimeout(()=>c.classList.remove('shake'),400);obs.className='obs bad';obs.innerHTML='✗ Not this group. '+(it.hint||'Look again at its features.')}}
+}
+
+/* Order game: items in correct order [{t,em}] */
+function OrderGame(el,items,opts={}){
+  el.innerHTML=`<div class="order"></div><div class="slots">${items.map((_,i)=>`<div class="slot">${i+1}</div>`).join('')}</div><div class="obs" style="margin-top:10px"></div>`;
+  let n=0;const box=$('.order',el),obs=$('.obs',el);
+  shuffle(items.map((x,i)=>({...x,i}))).forEach(it=>{const b=document.createElement('button');b.className='chip';b.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;
+    b.onclick=()=>{if(it.i===n){const s=$$('.slot',el)[n];s.innerHTML=b.innerHTML;s.classList.add('filled');b.remove();n++;obs.className='obs ok';obs.textContent=opts.say?opts.say(it.i):'✓ Right!';
+        if(n===items.length){obs.textContent='✓ Perfect order! '+(opts.end||'');confetti();opts.done&&markDone(opts.done);opts.onDone&&opts.onDone()}}
+      else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);obs.className='obs bad';obs.textContent='✗ That is not step '+(n+1)+'. Think about what has to happen first.'}};box.appendChild(b)})}
+
+const DARK='#1D2A33';
+const FOOD={potato:['Potato slice','🥔','#E8D29A',1,0,0],cucumber:['Cucumber','🥒','#B9E08A',0,0,0],bread:['Bread','🍞','#E9C27E',1,0,0],rice:['Boiled rice','🍚','#F4F1E6',1,0,0],
+ gram:['Boiled gram','🫘','#C9A26A',1,0,1],peanut:['Crushed peanuts','🥜','#D9A35E',0,1,1],oil:['Oil','🫗','#F2D35B',0,1,0],butter:['Butter','🧈','#F8E08E',0,1,0],
+ coconut:['Crushed coconut','🥥','#F7F3EA',0,1,0],soya:['Soya bean','🌰','#E5C890',0,0,1],milk:['Milk','🥛','#FBFBF6',0,1,1],egg:['Boiled egg white','🥚','#FFFFFF',0,0,1]};
+
+/* HERO */
+(()=>{const x=hiCanvas($('#heroCv'),500,400);
+ loop((dt,t)=>{const c=(t%5)/5;x.fillStyle=DARK;x.fillRect(0,0,500,400);
+  x.fillStyle='#E9EEF2';x.beginPath();x.ellipse(250,300,170,40,0,0,7);x.fill();
+  x.fillStyle='#E8D29A';x.beginPath();x.ellipse(250,285,95,32,0,0,7);x.fill();
+  const spot=clamp((c-.45)*3,0,1);x.fillStyle=`rgba(25,30,70,${spot*.92})`;x.beginPath();x.ellipse(250,283,28+spot*36,10+spot*12,0,0,7);x.fill();
+  // dropper
+  const dy=c<.3?lerp(60,120,c/.3):120;x.fillStyle='#C9D6DF';x.fillRect(240,dy-70,20,70);x.fillStyle='#8A5A2B';x.fillRect(236,dy-90,28,26);x.fillStyle='#BFA35A';x.beginPath();x.moveTo(242,dy);x.lineTo(258,dy);x.lineTo(250,dy+20);x.fill();
+  if(c>.3&&c<.48){const p=(c-.3)/.18;x.fillStyle='#9C6A1C';x.beginPath();x.arc(250,dy+20+p*150,6,0,7);x.fill()}
+  x.fillStyle='#fff';x.font='800 22px Bricolage Grotesque, sans-serif';x.textAlign='center';x.fillText(spot>.6?'Blue-black: starch is present!':'Iodine on a potato slice…',250,60)})})();
+
+/* BENCH */
+(()=>{const x=hiCanvas($('#benchCv'),640,440);let cur='potato',anim=null,at=0,res={};
+ $('#foods').innerHTML=Object.entries(FOOD).map(([k,f])=>`<button class="btn" data-f="${k}">${f[1]} ${f[0]}</button>`).join('');
+ function sel(k){cur=k;anim=null;$$('#foods .btn').forEach(b=>b.classList.toggle('sel',b.dataset.f===k));$('#benchHud').textContent=FOOD[k][0];$('#benchObs').innerHTML='Now choose a test for '+FOOD[k][0].toLowerCase()+'.'}
+ $$('#foods .btn').forEach(b=>b.onclick=()=>sel(b.dataset.f));
+ $$('.tests .btn').forEach(b=>b.onclick=()=>{anim=b.dataset.k;at=0;$$('.tests .btn').forEach(z=>z.disabled=true);setTimeout(()=>{$$('.tests .btn').forEach(z=>z.disabled=false);report()},2600)});
+ function report(){const f=FOOD[cur],k=anim,i={s:3,f:4,p:5}[k],pos=f[i];res[cur]=res[cur]||{};res[cur][k]=pos;
+  const msg={s:pos?'The food turned <span class="hl">blue-black</span>. It contains starch.':'No blue-black colour. The iodine stays brown, so no starch.',
+   f:pos?'An <span class="hl">oily patch</span> appeared and light shines faintly through it. It contains fat.':'The paper only got wet and the patch dried away. No fat.',
+   p:pos?'The mixture turned <span class="hl">violet</span>. It contains protein.':'No violet colour appeared. No protein detected.'}[k];
+  $('#benchObs').innerHTML='<b>'+f[0]+':</b> '+msg;table();if(Object.keys(res).length>=8)markDone('test')}
+ function table(){$('#resTbl tbody').innerHTML=Object.entries(res).map(([k,r])=>`<tr><td>${FOOD[k][1]} ${FOOD[k][0]}</td>${['s','f','p'].map(t=>r[t]===undefined?'<td>–</td>':`<td class="${r[t]?'y':'n'}">${r[t]?'Yes':'No'}</td>`).join('')}</tr>`).join('')}
+ sel('potato');
+ loop((dt)=>{at+=dt;const f=FOOD[cur];x.fillStyle=DARK;x.fillRect(0,0,640,440);
+  if(anim==='p'){// test tube
+   const pos=f[5],a=clamp((at-1.4)/1,0,1);x.save();x.translate(320,70);
+   x.strokeStyle='#E3EEF5';x.lineWidth=4;x.beginPath();x.moveTo(-40,0);x.lineTo(-40,260);x.arc(0,260,40,Math.PI,0,true);x.lineTo(40,0);x.stroke();
+   const lvl=120;const base=[200,200,220],blue=[110,170,230],vio=[140,70,200];let c=at<.7?base:at<1.4?blue:pos?blue.map((v,i)=>lerp(v,vio[i],a)):blue;
+   x.fillStyle=`rgb(${c})`;x.beginPath();x.moveTo(-37,300-lvl);x.lineTo(-37,260);x.arc(0,260,37,Math.PI,0,true);x.lineTo(37,300-lvl);x.fill();
+   x.restore();
+   // droppers
+   if(at<.7){x.fillStyle='#4C8FE0';x.beginPath();x.arc(320,40+at*300,6,0,7);x.fill()}
+   else if(at<1.4){x.fillStyle='#ddd';x.beginPath();x.arc(320,40+(at-.7)*300,6,0,7);x.fill()}
+   x.fillStyle='#fff';x.font='16px Atkinson Hyperlegible, sans-serif';x.textAlign='left';x.fillText(at<.7?'Adding copper sulfate…':at<1.4?'Adding caustic soda…':'Shake and wait…',400,120);
+   if(at>2.4){x.font='800 22px Bricolage Grotesque, sans-serif';x.fillText(pos?'Violet!':'Stays blue',400,170)}
+  }else if(anim==='f'){// paper
+   x.fillStyle='#F6F2E6';x.fillRect(160,80,320,250);const pos=f[4],a=clamp(at/1.2,0,1);
+   x.fillStyle=f[2];x.beginPath();x.ellipse(320,205,50*(1-a*.6),30*(1-a*.6),0,0,7);x.fill();
+   if(at>1.2){const light=clamp((at-1.6)/.8,0,1);x.fillStyle=pos?`rgba(255,240,170,${.3+light*.6})`:`rgba(200,200,200,${.6-light*.5})`;x.beginPath();x.ellipse(320,205,70,45,0,0,7);x.fill();
+    if(light>0){const g=x.createRadialGradient(320,205,10,320,205,160);g.addColorStop(0,`rgba(255,255,200,${light*(pos?.5:.1)})`);g.addColorStop(1,'rgba(255,255,200,0)');x.fillStyle=g;x.fillRect(0,0,640,440);
+     x.fillStyle='#FFD84D';x.font='40px serif';x.textAlign='center';x.fillText('💡',320,400)}}
+   x.fillStyle='#fff';x.font='16px Atkinson Hyperlegible, sans-serif';x.textAlign='left';x.fillText(at<1.2?'Pressing the food in paper…':'Holding the paper against light…',20,30);
+  }else{// dish
+   x.fillStyle='#E9EEF2';x.beginPath();x.ellipse(320,300,190,50,0,0,7);x.fill();x.fillStyle='#CBD5DC';x.beginPath();x.ellipse(320,295,160,38,0,0,7);x.fill();
+   x.fillStyle=f[2];x.beginPath();x.ellipse(320,285,90,30,0,0,7);x.fill();x.font='54px serif';x.textAlign='center';x.fillText(f[1],320,200);
+   if(anim==='s'){const pos=f[3],spot=clamp((at-1)/1,0,1);
+    x.fillStyle=pos?`rgba(25,30,70,${spot*.92})`:`rgba(180,110,30,${spot*.8})`;x.beginPath();x.ellipse(320,284,25+spot*30,9+spot*10,0,0,7);x.fill();
+    const dy=at<.6?lerp(40,90,at/.6):90;x.fillStyle='#C9D6DF';x.fillRect(312,dy-70,16,70);x.fillStyle='#8A5A2B';x.fillRect(308,dy-88,24,22);
+    if(at>.5&&at<1.1){x.fillStyle='#9C6A1C';x.beginPath();x.arc(320,dy+(at-.5)*300,6,0,7);x.fill()}}
+  }})})();
+
+/* THALI */
+(()=>{const x=hiCanvas($('#thaliCv'),560,460);
+ const M={roti:['Roti','🫓',{c:3,p:1,r:1}],rice:['Rice','🍚',{c:3}],dal:['Dal','🥣',{p:3,m:1}],paneer:['Paneer','🧀',{p:2,f:1,m:1}],sabzi:['Green sabzi','🥬',{v:3,r:2,m:2}],salad:['Salad','🥗',{v:2,r:2}],fruit:['Fruit','🍊',{v:2,r:1}],curd:['Curd','🍶',{p:1,f:1,m:1}],ghee:['Ghee','🧈',{f:2}],water:['Water','💧',{w:3}],ragi:['Ragi roti','🌾',{c:2,m:2,r:1}],chips:['Chips','🍟',{f:3,c:1,j:1}],cola:['Soft drink','🥤',{j:2,c:1}],sweet:['Jalebi','🍥',{f:1,c:2,j:1}]};
+ const N=[['c','Carbohydrates',4],['p','Proteins',3],['f','Fats',2],['v','Vitamins',3],['m','Minerals',3],['r','Roughage',3],['w','Water',3]];
+ let plate=[],items=[];
+ $('#menu').innerHTML=Object.entries(M).map(([k,m])=>`<button class="chip" data-m="${k}"><span class="em">${m[1]}</span>${m[0]}</button>`).join('');
+ $('#bars').innerHTML=N.map(n=>`<div class="b"><span>${n[1]}</span><div class="t"><i data-n="${n[0]}"></i></div></div>`).join('')+`<div class="b"><span>Junk</span><div class="t"><i data-n="j" style="background:var(--bad)"></i></div></div>`;
+ $$('#menu .chip').forEach(b=>b.onclick=()=>{if(plate.length>=8){toast('Your plate is full!');return}plate.push(b.dataset.m);items.push({k:b.dataset.m,y:-60,a:Math.random()*6.28});upd()});
+ $('#thaliClear').onclick=()=>{plate=[];items=[];upd()};
+ $('#thaliCv').addEventListener('click',e=>{const p=canvasPoint($('#thaliCv'),e,560,460);items.forEach((it,i)=>{if(Math.hypot(p.x-it.px,p.y-it.py)<36){items.splice(i,1);plate.splice(i,1);upd()}})});
+ function upd(){const s={};plate.forEach(k=>Object.entries(M[k][2]).forEach(([n,v])=>s[n]=(s[n]||0)+v));
+  N.forEach(n=>{const el=$(`[data-n="${n[0]}"]`),v=s[n[0]]||0,pc=Math.min(100,100*v/n[2]);el.style.width=pc+'%';el.style.background=v>n[2]*1.8?'#E8A33D':pc>=100?'var(--ok)':'var(--acc)'});
+  const j=s.j||0;$('[data-n="j"]').style.width=Math.min(100,j*34)+'%';
+  const miss=N.filter(n=>(s[n[0]]||0)<n[2]).map(n=>n[1].toLowerCase()),over=N.filter(n=>(s[n[0]]||0)>n[2]*1.8).map(n=>n[1].toLowerCase());
+  let m;if(!plate.length)m='Your plate is empty. Add some food!';else if(j)m='⚠️ Junk food adds lots of fat, sugar and salt but very few nutrients. Too much can make a person obese. Remove it!';
+  else if(miss.length)m='Still missing enough: <b>'+miss.join(', ')+'</b>.';else if(over.length)m='All nutrients are there, but too much '+over.join(', ')+'. Balance means the right amounts.';
+  else{m='<span class="hl">A balanced thali!</span> It has every nutrient, plus roughage and water.';markDone('thali');confetti()}
+  $('#thaliObs').innerHTML=m}
+ upd();
+ loop((dt,t)=>{x.fillStyle=DARK;x.fillRect(0,0,560,460);
+  const g=x.createRadialGradient(280,230,40,280,230,200);g.addColorStop(0,'#F2F4F6');g.addColorStop(.85,'#C9D2D9');g.addColorStop(1,'#9AA8B3');x.fillStyle=g;x.beginPath();x.arc(280,230,200,0,7);x.fill();
+  x.strokeStyle='rgba(255,255,255,.7)';x.lineWidth=3;x.beginPath();x.arc(280,230,170,0,7);x.stroke();
+  items.forEach((it,i)=>{const n=items.length,ang=i/n*6.28-1.57,r=n===1?0:110,tx=280+Math.cos(ang)*r,ty=230+Math.sin(ang)*r;it.px=it.px===undefined?tx:lerp(it.px,tx,.15);it.y=lerp(it.y,ty,.15);it.py=it.y;
+   x.fillStyle='rgba(0,0,0,.12)';x.beginPath();x.ellipse(it.px,it.py+26,34,9,0,0,7);x.fill();x.fillStyle='#000';x.font='58px serif';x.textAlign='center';x.fillText(M[it.k][1],it.px,it.py+20)});
+  if(!items.length){x.fillStyle='#7A8A96';x.font='18px Atkinson Hyperlegible, sans-serif';x.textAlign='center';x.fillText('Tap foods to add them',280,236)}})})();
+
+/* DOCTOR */
+(()=>{const P=[['Asha','🧒','Asha cannot see well in dim light. Her eyes and skin are dry.','Vitamin A',['Papaya','Carrot','Mango']],
+ ['Ravi','👦','Ravi\'s gums are swollen and bleed. His wounds heal slowly.','Vitamin C',['Lemon','Orange','Amla']],
+ ['Meena','👧','Meena\'s bones are soft and her legs are bent.','Vitamin D',['Sunlight with milk','Fish','Butter']],
+ ['Kabir','👨','Kabir feels weak, his muscles are weak and he has little energy to work.','Vitamin B1',['Whole wheat','Rice with husk','Flax seeds']],
+ ['Lata','👩','Lata has a swelling at the front of her neck.','Iodine',['Iodised salt','Water chestnut (singhada)','Sea fish']],
+ ['Sohan','🧑','Sohan looks pale, gets tired easily and is often short of breath.','Iron',['Spinach','Jaggery','Pomegranate']],
+ ['Dada','👴','Dada\'s bones and teeth are weak and break easily.','Calcium',['Milk','Curd','Paneer']]];
+ const all=['Vitamin A','Vitamin B1','Vitamin C','Vitamin D','Calcium','Iodine','Iron'],dis={'Vitamin A':'loss of vision (night blindness)','Vitamin C':'scurvy','Vitamin D':'rickets','Vitamin B1':'beriberi','Iodine':'goitre','Iron':'anaemia','Calcium':'bone and tooth decay'};
+ const junk=['Chips','Cola','Candy','Noodles'];let i=0,order=shuffle(P);
+ function show(){const p=order[i];$('#docCount').textContent='Patient '+(i+1)+' of '+order.length;$('#face').textContent=p[1];$('#pname').textContent=p[0];$('#psym').textContent=p[2];
+  $('#step1').style.display='';$('#step2').style.display='none';$('#nextP').style.display='none';$('#docObs').textContent='';
+  $('#nutOpts').innerHTML=all.map(a=>`<button class="btn ghost sm">${a}</button>`).join('');
+  $$('#nutOpts .btn').forEach(b=>b.onclick=()=>{if(b.textContent===p[3]){b.classList.add('sel');$('#docObs').innerHTML=`Correct! Lack of <b>${p[3]}</b> causes <b>${dis[p[3]]}</b>.`;$$('#nutOpts .btn').forEach(z=>z.disabled=true);
+     const opts=shuffle([p[4][Math.random()*3|0],...shuffle(junk).slice(0,3)]);$('#step2').style.display='';$('#foodOpts').innerHTML=opts.map(o=>`<button class="btn ghost sm">${o}</button>`).join('');
+     $$('#foodOpts .btn').forEach(f=>f.onclick=()=>{if(p[4].includes(f.textContent)){f.classList.add('sel');$('#docObs').innerHTML+=` <span class="hl">${f.textContent}</span> is a good source of ${p[3]}.`;$$('#foodOpts .btn').forEach(z=>z.disabled=true);$('#face').textContent='😊';
+       if(i===order.length-1){markDone('doc');confetti();$('#docObs').innerHTML+=' You solved every case!'}else $('#nextP').style.display=''}else{f.classList.add('shake');setTimeout(()=>f.classList.remove('shake'),400)}})}
+   else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);$('#docObs').textContent='Not this one. Read the symptoms again.'}})}
+ $('#nextP').onclick=()=>{i++;show()};show()})();
+
+/* LABEL */
+(()=>{const x=hiCanvas($('#labelCv'),600,420);const D=[['Energy (kcal)',536,355,600],['Fats (g)',35,6.26,40],['Carbohydrates (g)',53,58.58,70],['Proteins (g)',7,18.64,25],['Dietary fibre (g)',4.8,16.8,20]];let k=-1,a=0,seen=new Set();
+ $('#cmpBtns').innerHTML=D.map((d,i)=>`<button class="btn" data-i="${i}">${d[0].split(' (')[0]}</button>`).join('');
+ const say=['Wafers give much more energy per 100 g, mostly from fat. Extra energy that is not used can make a person obese.','Wafers have about 5 times more fat than roasted chana.','Both have plenty of carbohydrates.','Roasted chana has more than twice the protein. Proteins help the body grow and repair.','Roasted chana has far more dietary fibre (roughage), which helps digestion.'];
+ $$('#cmpBtns .btn').forEach(b=>b.onclick=()=>{k=+b.dataset.i;a=0;seen.add(k);$$('#cmpBtns .btn').forEach(z=>z.classList.toggle('sel',z===b));$('#labelObs').textContent=say[k];if(seen.size>=3)$('#choose').style.display=''});
+ $$('[data-c]').forEach(b=>b.onclick=()=>{if(b.dataset.c==='c'){$('#labelObs').innerHTML='<span class="hl">Roasted chana</span> is healthier: more protein and fibre, much less fat. Foods like wafers, candy bars and carbonated drinks are junk foods.';markDone('label');confetti()}else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);$('#labelObs').textContent='Look at the fat, protein and fibre again.'}});
+ loop(dt=>{a=Math.min(1,a+dt*1.5);x.fillStyle=DARK;x.fillRect(0,0,600,420);x.font='60px serif';x.textAlign='center';x.fillText('🍟',180,90);x.fillText('🫘',420,90);
+  x.fillStyle='#fff';x.font='800 18px Bricolage Grotesque, sans-serif';x.fillText('Potato wafers',180,125);x.fillText('Roasted chana',420,125);
+  if(k<0){x.fillStyle='#9fb';x.font='16px Atkinson Hyperlegible, sans-serif';x.fillText('Choose a nutrient to compare',300,260);return}
+  const d=D[k],e=a<1?1-Math.pow(1-a,3):1;[[180,d[1],'#E8A33D'],[420,d[2],'#3FBF6F']].forEach(([cx,v,c])=>{const h=230*v/d[3]*e;x.fillStyle=c;x.fillRect(cx-55,390-h,110,h);x.fillStyle='#fff';x.font='800 24px Bricolage Grotesque, sans-serif';x.fillText((v*e).toFixed(v%1?1:0),cx,380-h)});
+  x.fillStyle='#cde';x.font='15px Atkinson Hyperlegible, sans-serif';x.fillText(d[0]+' per 100 g',300,150)})})();
+
+Quiz($('#quiz'),[
+ {q:'A few drops of iodine on a food turn it blue-black. The food contains…',o:['Fat','Protein','Starch','Water'],a:2,e:'A blue-black colour with iodine shows the presence of starch.'},
+ {q:'Which test is used for fats?',o:['Iodine solution','Pressing the food in paper and looking for an oily patch','Copper sulfate and caustic soda','Boiling in water'],a:1,e:'Fat leaves an oily patch on paper, and light shines faintly through it.'},
+ {q:'In the protein test, which colour shows that protein is present?',o:['Blue-black','Violet','Green','Red'],a:1,e:'With copper sulfate and caustic soda, food with protein turns violet.'},
+ {q:'Which food showed both fats and proteins?',o:['Potato','Cucumber','Peanuts','Rice'],a:2,e:'Peanuts contain both proteins and fats. One food can have many nutrients.'},
+ {q:'Bleeding gums are a symptom of a lack of…',o:['Vitamin A','Vitamin C','Iron','Iodine'],a:1,e:'Lack of vitamin C causes scurvy. Lemons and oranges help cure it.'},
+ {q:'Goitre (swelling in the neck) is caused by a lack of…',o:['Iodine','Calcium','Vitamin D','Vitamin B1'],a:0,e:'Iodine deficiency causes goitre. Iodised salt is a good source.'},
+ {q:'What does roughage (dietary fibre) do?',o:['Gives a lot of energy','Helps the body get rid of undigested food','Makes bones strong','Helps us see in the dark'],a:1,e:'Roughage does not give nutrients, but it helps the smooth passage of undigested food.'},
+ {q:'Per 100 g, roasted chana has more ______ than potato wafers.',o:['fat','energy','protein','salt'],a:2,e:'Roasted chana has 18.64 g protein compared to 7 g in wafers.'},
+ {q:'Which of these is a millet?',o:['Ragi','Potato','Paneer','Spinach'],a:0,e:'Ragi, jowar and bajra are millets, nutrition-rich cereals.'}
+],'quiz');
+</script>
+
+<a href="../index.html#/class-6" style="position:fixed;right:16px;bottom:16px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;background:rgba(255,255,255,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.95);box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font:900 14px/1 Nunito,'Segoe UI',system-ui,sans-serif;text-decoration:none">🏠 Lab Home</a></body></html>

@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Temperature Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3F7F4; --grid:#DCE9E3; --ink:#18324A; --ink2:#4B6274; --bench:#1D2A33; --bench2:#26363F;
+  --marker:#FFD84D; --ok:#1E9E6A; --bad:#D64545; --line:#C9D9D2; --card:#FFFFFF;
+  --acc:#2F7DD1; --acc2:#9CC8F5; --accInk:#fff;
+  --r-lg:22px; --r-md:14px; --r-sm:9px;
+  --fh:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --fb:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);font:17px/1.55 var(--fb);background:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;}
+h1,h2,h3,h4{font-family:var(--fh);line-height:1.1;margin:0 0 .4em;letter-spacing:-.01em}
+p{margin:0 0 .8em}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--marker);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* hero */
+.hero{padding:44px 0 26px}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center}
+.chapno{font-family:var(--fh);font-weight:800;font-size:15px;color:var(--acc);display:inline-flex;gap:8px;align-items:center;background:#fff;border:2px solid var(--acc);border-radius:99px;padding:3px 14px 3px 4px}
+.chapno b{background:var(--acc);color:var(--accInk);border-radius:99px;min-width:28px;height:28px;display:grid;place-items:center;font-size:15px}
+.hero h1{font-size:clamp(38px,5.6vw,68px);font-weight:800;margin:16px 0 14px}
+.hero h1 .u{background:linear-gradient(transparent 62%,var(--marker) 62% 92%,transparent 92%)}
+.hero .lede{font-size:19px;color:var(--ink2);max-width:52ch}
+.hero-stage{background:var(--bench);border-radius:var(--r-lg);aspect-ratio:5/4;position:relative;overflow:hidden;box-shadow:0 18px 0 -8px var(--acc2),0 24px 40px -18px rgba(24,50,74,.45)}
+.hero-stage canvas,.hero-stage svg{width:100%;height:100%;display:block}
+.procedure{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:6px;counter-reset:p}
+.procedure li{counter-increment:p;display:flex;gap:10px;align-items:center;font-weight:700}
+.procedure li::before{content:counter(p);width:26px;height:26px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-size:13px;flex:none}
+.procedure li.done::before{content:"✓";background:var(--ok);border-color:var(--ok);color:#fff}
+
+/* tab bar */
+.bar{position:sticky;top:0;z-index:20;background:rgba(243,247,244,.92);backdrop-filter:blur(8px);border-bottom:2px solid var(--line)}
+.bar .wrap{display:flex;gap:8px;align-items:center;overflow-x:auto;padding-top:10px;padding-bottom:10px;scrollbar-width:thin}
+.tab{border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:99px;padding:7px 15px;font-weight:700;font-size:15px;white-space:nowrap;transition:transform .15s}
+.tab:hover{transform:translateY(-2px)}
+.tab[aria-selected=true]{background:var(--ink);color:#fff}
+.tab .tick{display:none;color:var(--ok);margin-left:6px}
+.tab.done .tick{display:inline}
+.tab[aria-selected=true] .tick{color:var(--marker)}
+.meter{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;white-space:nowrap;padding-left:12px}
+.meter i{display:block;width:90px;height:9px;background:#fff;border:2px solid var(--ink);border-radius:9px;overflow:hidden}
+.meter i b{display:block;height:100%;width:0;background:var(--ok);transition:width .5s}
+
+/* panels */
+main{padding:28px 0 60px}
+.panel{display:none;animation:rise .35s ease}
+.panel.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.panel-head{display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.panel-head h2{font-size:clamp(26px,3.4vw,38px);margin:0}
+.panel-head .aim{color:var(--ink2);max-width:62ch;margin:6px 0 0}
+.lab{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:20px;align-items:start}
+.lab.wide{grid-template-columns:1fr}
+.stage{background:var(--bench);border-radius:var(--r-lg);position:relative;overflow:hidden;color:#E8F0F2;min-height:300px}
+.stage canvas,.stage>svg{display:block;width:100%;height:auto}
+.stage .hud{position:absolute;left:14px;top:12px;font-weight:700;font-size:14px;background:rgba(0,0,0,.35);padding:4px 10px;border-radius:8px;pointer-events:none}
+.side{display:grid;gap:14px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:var(--r-md);padding:16px 18px}
+.card h3{font-size:19px}
+.card.note{background:#FFFBE6;border-color:#F1DF8F}
+.card.note h3::before{content:"✎ ";color:#B98B00}
+.card.why{border-left:7px solid var(--acc)}
+.ctrl{display:grid;gap:12px}
+.ctrl label{font-weight:700;font-size:15px;display:grid;gap:4px}
+.ctrl .row{display:flex;gap:8px;flex-wrap:wrap}
+input[type=range]{width:100%;accent-color:var(--acc);height:28px}
+.btn{border:2px solid var(--ink);background:var(--acc);color:var(--accInk);border-radius:12px;padding:9px 16px;font-weight:700;box-shadow:0 4px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn.sm{padding:6px 11px;font-size:14px;border-radius:10px;box-shadow:0 3px 0 var(--ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.sel{background:var(--marker);color:var(--ink)}
+.readout{font-family:var(--fh);font-size:30px;font-weight:800;line-height:1}
+.readout small{font-size:14px;font-weight:600;color:var(--ink2);display:block;margin-top:4px;font-family:var(--fb)}
+.obs{min-height:3em;font-size:16px}
+.obs.ok{color:var(--ok)} .obs.bad{color:var(--bad)}
+.hl{background:linear-gradient(transparent 55%,var(--marker) 55%);font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pill:empty{display:none}
+.pill{display:inline-block;border-radius:99px;padding:2px 10px;font-size:13px;font-weight:700;background:var(--acc2);color:var(--ink)}
+table.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th,.tbl td{border-bottom:1.5px solid var(--line);padding:6px 8px;text-align:left}
+.tbl th{font-family:var(--fh)}
+
+/* sorting game */
+.sorter{display:grid;gap:14px}
+.tray{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:10px;border:2px dashed var(--line);border-radius:var(--r-md);background:#fff}
+.chip{border:2px solid var(--ink);background:#fff;border-radius:12px;padding:7px 12px;font-weight:700;font-size:15px;user-select:none;touch-action:none;display:inline-flex;align-items:center;gap:6px;transition:transform .15s,background .2s}
+.chip .em{font-size:22px;line-height:1}
+.chip.picked{background:var(--marker);transform:scale(1.06) rotate(-2deg)}
+.chip.right{border-color:var(--ok);background:#E3F6EC;cursor:default}
+.chip.dragging{position:fixed;z-index:999;pointer-events:none;box-shadow:0 12px 24px rgba(0,0,0,.25)}
+.bins{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.bin{border:2px solid var(--ink);border-radius:var(--r-md);background:#fff;min-height:140px;padding:10px;display:flex;flex-direction:column;gap:6px;transition:background .2s,transform .2s}
+.bin h4{font-size:17px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.bin.hover{background:#FFF6CC;transform:scale(1.02)}
+.bin .chips{display:flex;flex-wrap:wrap;gap:6px}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+
+/* order game */
+.order{display:flex;flex-wrap:wrap;gap:8px}
+.slots{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.slot{min-width:120px;min-height:44px;border:2px dashed var(--ink2);border-radius:12px;display:grid;place-items:center;padding:6px 10px;font-weight:700;color:var(--ink2);background:#fff}
+.slot.filled{border-style:solid;border-color:var(--ok);color:var(--ink);background:#E3F6EC}
+
+/* quiz */
+.quiz{max-width:760px;margin:0 auto}
+.qcard{background:#fff;border:2px solid var(--ink);border-radius:var(--r-lg);padding:24px;box-shadow:8px 8px 0 var(--acc2)}
+.qtop{display:flex;justify-content:space-between;font-weight:700;color:var(--ink2);margin-bottom:10px;font-size:15px}
+.qtext{font-family:var(--fh);font-size:24px;font-weight:700;margin-bottom:16px}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:11px 14px;font-weight:700;display:flex;gap:12px;align-items:center}
+.opt:hover:not([disabled]){border-color:var(--ink)}
+.opt .k{width:30px;height:30px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;flex:none;font-size:14px}
+.opt.right{border-color:var(--ok);background:#E3F6EC}
+.opt.wrong{border-color:var(--bad);background:#FCE8E8}
+.qexp{margin-top:14px;padding:12px 14px;border-radius:12px;background:#F2F6FA;display:none}
+.qexp.on{display:block;animation:rise .3s}
+.qnav{display:flex;justify-content:flex-end;margin-top:16px}
+.score{text-align:center}
+.score .big{font-family:var(--fh);font-size:72px;font-weight:800;color:var(--acc)}
+
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:22px}
+.fact{background:#fff;border:2px solid var(--line);border-radius:var(--r-md);padding:14px 16px;font-size:15px}
+.fact b{font-family:var(--fh);display:block;font-size:17px;margin-bottom:4px;color:var(--acc)}
+
+footer{padding:24px 0 40px;color:var(--ink2);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:12px;font-weight:700;z-index:1000;transition:transform .35s cubic-bezier(.2,1.4,.4,1);max-width:90vw;text-align:center}
+.toast.on{transform:translate(-50%,0)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:999}
+
+@media (max-width:860px){
+  .hero .wrap,.lab{grid-template-columns:1fr}
+  .hero{padding-top:26px}
+  .meter i{width:60px}
+  .grid2{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+
+:root{--acc:#D9452B;--acc2:#FFC2B3}
+.ans{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ans input{font:inherit;width:100px;padding:8px;border:2px solid var(--ink);border-radius:10px}
+.conv3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center}
+.conv3 .readout{font-size:26px}
+.choiceGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.wx input{width:54px;font:inherit;padding:4px;border:1.5px solid var(--line);border-radius:6px;text-align:center}
+
+</style><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"></head><body>
+
+
+<header class="hero"><div class="wrap">
+  <div>
+    <span class="chapno"><b>7</b>Chapter 7</span>
+    <h1>Temperature and Its <span class="u">Measurement</span></h1>
+    <p class="lede">Can we trust our sense of touch to tell hot from cold? Find out, then learn to read a laboratory thermometer, choose the right thermometer, and convert between Celsius and kelvin.</p>
+    <ol class="procedure">
+      <li data-t="touch">Trick your hands</li>
+      <li data-t="lab">Read a lab thermometer</li>
+      <li data-t="which">Choose the right thermometer</li>
+      <li data-t="scales">Convert the scales</li>
+      <li data-t="wx">Analyse the weather</li>
+      <li data-t="quiz">Check what you learnt</li>
+    </ol>
+  </div>
+  <div class="hero-stage"><canvas id="heroCv"></canvas></div>
+</div></header>
+
+<nav class="bar"><div class="wrap">
+  <button class="tab" data-t="touch">Hot or cold?<span class="tick">✓</span></button>
+  <button class="tab" data-t="lab">Lab thermometer<span class="tick">✓</span></button>
+  <button class="tab" data-t="which">Which thermometer?<span class="tick">✓</span></button>
+  <button class="tab" data-t="scales">°C, °F and K<span class="tick">✓</span></button>
+  <button class="tab" data-t="wx">Weather report<span class="tick">✓</span></button>
+  <button class="tab" data-t="quiz">Quiz<span class="tick">✓</span></button>
+  <div class="meter"><i><b></b></i><span></span></div>
+</div></nav>
+
+<main class="wrap">
+<section class="panel" id="p-touch">
+  <div class="panel-head"><div><h2>Can your hands be fooled?</h2><p class="aim">Container A has warm water, B has tap water and C has ice-cold water. Dip your right hand in A and left hand in C. Then put both hands in B.</p></div><button class="btn ghost sm" id="touchReset">Start again</button></div>
+  <div class="lab">
+    <div class="stage"><canvas id="touchCv"></canvas><div class="hud" id="touchHud">Step 1</div></div>
+    <div class="side"><div class="card ctrl"><button class="btn" id="dip1">Right hand in A, left hand in C</button><button class="btn" id="dip2" disabled>Now put both hands in B</button></div>
+      <div class="card" id="predBox" style="display:none"><b>Predict: how will water B feel?</b><div class="choiceGrid" style="margin-top:8px"><button class="btn ghost sm" data-p="same">Same to both hands</button><button class="btn ghost sm" data-p="diff">Different to each hand</button></div></div>
+      <div class="card why"><p class="obs" id="touchObs">Watch the hands get used to the water.</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-lab">
+  <div class="panel-head"><div><h2>Reading a laboratory thermometer</h2><p class="aim">Heat or cool the water and watch the liquid column. Then read the temperature and type it in. Range: −10 °C to 110 °C. Each small division is 1 °C.</p></div><button class="btn ghost sm" id="mystery">Mystery temperature</button></div>
+  <div class="lab">
+    <div class="stage"><canvas id="labCv"></canvas><div class="hud" id="labHud"></div></div>
+    <div class="side"><div class="card ctrl"><label>Burner<input type="range" id="heat" min="0" max="100" value="30"></label><div class="row"><button class="btn sm ghost" id="addIce">Add ice</button><button class="btn sm ghost" id="liftOut">Take the thermometer out</button></div>
+      <div class="ans"><span>Reading:</span><input id="tIn" inputmode="decimal"><span>°C</span><button class="btn sm" id="tChk">Check</button></div><p class="obs" id="labObs"></p></div>
+      <div class="card note"><h3>Rules</h3><p>Keep the thermometer upright. The bulb must be surrounded by water and must not touch the bottom or sides. Read it <b>while it is still in the water</b>, with your eye level with the top of the column.</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-which">
+  <div class="panel-head"><div><h2>Which thermometer should you use?</h2><p class="aim">A clinical thermometer reads from 35 °C to 42 °C. A laboratory thermometer reads from −10 °C to 110 °C. Pick a task, then pick a thermometer.</p></div></div>
+  <div class="lab">
+    <div class="stage"><canvas id="whCv"></canvas></div>
+    <div class="side"><div class="card ctrl"><label>Task</label><div class="row" id="tasks"></div><label>Thermometer</label><div class="row"><button class="btn" data-th="c">Clinical (digital)</button><button class="btn" data-th="l">Laboratory</button></div></div>
+      <div class="card why"><p class="obs" id="whObs"></p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-scales">
+  <div class="panel-head"><div><h2>Celsius, Fahrenheit and kelvin</h2><p class="aim">Drag the slider and watch the same temperature on three scales. Try the landmark buttons.</p></div></div>
+  <div class="stage"><canvas id="scCv"></canvas></div>
+  <div class="card ctrl" style="margin-top:14px"><input type="range" id="tc" min="-50" max="120" step="0.1" value="37">
+    <div class="row" id="marks"></div>
+    <div class="conv3"><div class="readout" id="oC"></div><div class="readout" id="oF"></div><div class="readout" id="oK"></div></div>
+    <p style="margin:0">Temperature in kelvin = temperature in °C + 273.15. &nbsp; °F = (9/5 × °C) + 32.</p></div>
+</section>
+
+<section class="panel" id="p-wx">
+  <div class="panel-head"><div><h2>Maximum and minimum temperature</h2><p class="aim">Record a weather report for 10 days. Sample values are filled in; change any number and the chart updates.</p></div></div>
+  <div class="lab">
+    <div class="stage"><canvas id="wxCv"></canvas></div>
+    <div class="side"><div class="card"><table class="tbl wx"><thead><tr><th>Day</th><th>Max °C</th><th>Min °C</th></tr></thead><tbody id="wxT"></tbody></table></div>
+      <div class="card why"><p class="obs" id="wxObs"></p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-quiz">
+  <div class="panel-head"><div><h2>Check what you learnt</h2></div></div>
+  <div class="quiz" id="quiz"></div>
+  <div class="facts">
+    <div class="fact"><b>Not exactly 37 °C</b>Normal body temperature differs slightly from person to person. The average is taken as 37.0 °C.</div>
+    <div class="fact"><b>Boiling in Shillong</b>Phiban and her classmates in Shillong measured boiling water at about 98 °C, not 100 °C. Water boils at a lower temperature at higher altitudes.</div>
+    <div class="fact"><b>Say no to mercury</b>Mercury is extremely toxic, so mercury thermometers are being replaced by digital ones.</div>
+  </div>
+</section>
+</main>
+<footer><a href="../index.html#/class-6" style="color:inherit;font-weight:700">← All Grade 6 labs</a><br>Based on NCERT Curiosity, Grade 6, Chapter 7: Temperature and its Measurement</footer>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LAB={done:new Set(),total:0,key:'lab-'+location.pathname.split('/').pop()};
+function store(get,val){try{if(get)return JSON.parse(localStorage.getItem(LAB.key)||'[]');localStorage.setItem(LAB.key,JSON.stringify(val))}catch(e){return []}}
+function toast(msg,ms=2600){let t=$('.toast');if(!t){t=document.createElement('div');t.className='toast';document.body.appendChild(t)}
+  t.textContent=msg;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),ms)}
+function markDone(id){if(LAB.done.has(id))return;LAB.done.add(id);store(false,[...LAB.done]);paintProgress();
+  if(LAB.done.size===LAB.total){confetti();toast('You completed every experiment in this lab!')}}
+function paintProgress(){$$('.tab[data-t]').forEach(b=>b.classList.toggle('done',LAB.done.has(b.dataset.t)));
+  $$('.procedure li[data-t]').forEach(l=>l.classList.toggle('done',LAB.done.has(l.dataset.t)));
+  const m=$('.meter b'),n=$('.meter span');if(m){m.style.width=(100*LAB.done.size/LAB.total)+'%';n.textContent=LAB.done.size+' of '+LAB.total+' done'}}
+const tabHooks={};
+function onTab(id,fn){(tabHooks[id]=tabHooks[id]||[]).push(fn)}
+function showTab(id,scroll){$$('.tab[data-t]').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===id));
+  $$('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+id));(tabHooks[id]||[]).forEach(f=>f());
+  if(scroll){const bar=$('.bar');window.scrollTo({top:bar.offsetTop,behavior:'smooth'})}}
+function initTabs(){const tabs=$$('.tab[data-t]');LAB.total=tabs.length;store(true).forEach(x=>LAB.done.add(x));
+  tabs.forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.t,true)));
+  $$('.procedure li[data-t]').forEach(l=>{l.style.cursor='pointer';l.addEventListener('click',()=>showTab(l.dataset.t,true))});
+  paintProgress();showTab(tabs[0].dataset.t)}
+document.addEventListener('DOMContentLoaded',()=>{if($('.tab'))initTabs()});
+
+/* confetti */
+function confetti(){let c=$('#confetti');if(!c){c=document.createElement('canvas');c.id='confetti';document.body.appendChild(c)}
+  const x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;const cols=['#FFD84D','#1E9E6A','#2F7DD1','#E8567C','#8A5CF6','#FF8A3D'];
+  const ps=Array.from({length:160},()=>({x:innerWidth/2+(Math.random()-.5)*200,y:innerHeight*.35,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,r:Math.random()*6+4,c:cols[Math.random()*6|0],a:Math.random()*6,va:(Math.random()-.5)*.4}));
+  let f=0;(function tick(){x.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.vx*=.99;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()});
+    if(++f<180)requestAnimationFrame(tick);else x.clearRect(0,0,c.width,c.height)})()}
+
+/* hi-dpi canvas: returns ctx sized to logical w,h */
+function hiCanvas(cv,w,h){const d=Math.min(2,window.devicePixelRatio||1);cv.width=w*d;cv.height=h*d;cv.style.aspectRatio=w+'/'+h;const x=cv.getContext('2d');x.setTransform(d,0,0,d,0,0);x.W=w;x.H=h;return x}
+function canvasPoint(cv,e,w,h){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*w/r.width,y:(e.clientY-r.top)*h/r.height}}
+function loop(fn){let last=performance.now(),run=true;function f(t){if(!run)return;const dt=Math.min(.05,(t-last)/1000);last=t;fn(dt,t/1000);requestAnimationFrame(f)}requestAnimationFrame(f);return()=>run=false}
+const lerp=(a,b,t)=>a+(b-a)*t, clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), rand=(a,b)=>a+Math.random()*(b-a);
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+
+/* Quiz: qs=[{q,o:[..],a:index,e:explain}] */
+function Quiz(el,qs,doneId){let i=0,score=0,order=shuffle(qs);
+  function render(){if(i>=order.length){const pct=Math.round(100*score/order.length);
+      el.innerHTML=`<div class="qcard score"><div class="big">${score}/${order.length}</div><h3>${pct>=80?'Brilliant work, scientist!':pct>=50?'Good effort! Revisit the experiments and try again.':'Keep exploring the experiments, then try again.'}</h3><p>Every question comes from what you tested in this lab.</p><button class="btn">Try the quiz again</button></div>`;
+      $('button',el).onclick=()=>{i=0;score=0;order=shuffle(qs);render()};if(pct>=60){confetti();doneId&&markDone(doneId)}return}
+    const q=order[i];el.innerHTML=`<div class="qcard"><div class="qtop"><span>Question ${i+1} of ${order.length}</span><span>Score ${score}</span></div>
+      <div class="qtext">${q.q}</div><div class="opts">${q.o.map((o,k)=>`<button class="opt" data-k="${k}"><span class="k">${'ABCD'[k]}</span>${o}</button>`).join('')}</div>
+      <div class="qexp"></div><div class="qnav"><button class="btn" disabled>Next question</button></div></div>`;
+    $$('.opt',el).forEach(b=>b.onclick=()=>{const k=+b.dataset.k;$$('.opt',el).forEach(x=>x.disabled=true);
+      $$('.opt',el)[q.a].classList.add('right');if(k===q.a){score++}else{b.classList.add('wrong');b.classList.add('shake')}
+      const ex=$('.qexp',el);ex.innerHTML=(k===q.a?'<b>Correct.</b> ':'<b>Not quite.</b> ')+q.e;ex.classList.add('on');
+      const nb=$('.qnav .btn',el);nb.disabled=false;nb.textContent=i===order.length-1?'See my score':'Next question';nb.focus()});
+    $('.qnav .btn',el).onclick=()=>{i++;render()}}
+  render()}
+
+/* Sorter: items=[{t,em,c,why}], bins=[{c,t,em}] ; click a chip then a bin, or drag */
+function Sorter(el,items,bins,opts={}){
+  el.innerHTML=`<div class="sorter"><div class="tray"></div><div class="bins">${bins.map(b=>`<div class="bin" data-c="${b.c}"><h4>${b.em?`<span class="em">${b.em}</span>`:''}${b.t}</h4><div class="chips"></div></div>`).join('')}</div><div class="obs" aria-live="polite"></div></div>`;
+  const tray=$('.tray',el),obs=$('.obs',el);let picked=null,left=items.length;
+  shuffle(items).forEach(it=>{const c=document.createElement('button');c.className='chip';c.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;c._it=it;tray.appendChild(c);
+    c.addEventListener('click',()=>{if(c.classList.contains('right'))return;$$('.chip.picked',el).forEach(x=>x.classList.remove('picked'));picked=c;c.classList.add('picked');obs.className='obs';obs.textContent='Now choose a group for “'+it.t+'”.'});
+    c.addEventListener('pointerdown',e=>{if(c.classList.contains('right'))return;const sx=e.clientX,sy=e.clientY;let ghost=null;
+      const mv=ev=>{if(!ghost&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>8){ghost=c.cloneNode(true);ghost.classList.add('dragging');document.body.appendChild(ghost);c.style.opacity=.3}
+        if(ghost){ghost.style.left=ev.clientX-30+'px';ghost.style.top=ev.clientY-20+'px';$$('.bin',el).forEach(b=>{const r=b.getBoundingClientRect();b.classList.toggle('hover',ev.clientX>r.left&&ev.clientX<r.right&&ev.clientY>r.top&&ev.clientY<r.bottom)})}};
+      const up=ev=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);if(ghost){ghost.remove();c.style.opacity=1;const b=$('.bin.hover',el);$$('.bin',el).forEach(x=>x.classList.remove('hover'));if(b)drop(c,b);c._dragged=true;setTimeout(()=>c._dragged=false,50)}};
+      addEventListener('pointermove',mv);addEventListener('pointerup',up)})});
+  $$('.bin',el).forEach(b=>b.addEventListener('click',()=>{if(picked)drop(picked,b)}));
+  function drop(c,b){const it=c._it;if(it.c===b.dataset.c){c.classList.remove('picked');c.classList.add('right');$('.chips',b).appendChild(c);obs.className='obs ok';obs.innerHTML='✓ '+(it.why||'Correct!');left--;picked=null;
+      if(!left){obs.innerHTML='✓ All sorted! '+(opts.end||'');confetti();opts.done&&markDone(opts.done)}}
+    else{c.classList.add('shake');setTimeout(()=>c.classList.remove('shake'),400);obs.className='obs bad';obs.innerHTML='✗ Not this group. '+(it.hint||'Look again at its features.')}}
+}
+
+/* Order game: items in correct order [{t,em}] */
+function OrderGame(el,items,opts={}){
+  el.innerHTML=`<div class="order"></div><div class="slots">${items.map((_,i)=>`<div class="slot">${i+1}</div>`).join('')}</div><div class="obs" style="margin-top:10px"></div>`;
+  let n=0;const box=$('.order',el),obs=$('.obs',el);
+  shuffle(items.map((x,i)=>({...x,i}))).forEach(it=>{const b=document.createElement('button');b.className='chip';b.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;
+    b.onclick=()=>{if(it.i===n){const s=$$('.slot',el)[n];s.innerHTML=b.innerHTML;s.classList.add('filled');b.remove();n++;obs.className='obs ok';obs.textContent=opts.say?opts.say(it.i):'✓ Right!';
+        if(n===items.length){obs.textContent='✓ Perfect order! '+(opts.end||'');confetti();opts.done&&markDone(opts.done);opts.onDone&&opts.onDone()}}
+      else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);obs.className='obs bad';obs.textContent='✗ That is not step '+(n+1)+'. Think about what has to happen first.'}};box.appendChild(b)})}
+
+const DARK='#1D2A33';
+function heatCol(T){const t=clamp((T+10)/110,0,1);return `hsl(${220-t*215},80%,${55}%)`}
+function thermo(x,X,Y,H,lo,hi,val,opts={}){// vertical tube; Y top; bulb at bottom
+ const bw=opts.w||16,col=opts.col||'#E04A55';x.fillStyle='rgba(255,255,255,.92)';x.beginPath();x.roundRect?x.roundRect(X-bw/2,Y,bw,H,bw/2):x.rect(X-bw/2,Y,bw,H);x.fill();x.beginPath();x.arc(X,Y+H+bw*.7,bw*1.1,0,7);x.fill();
+ x.fillStyle=col;x.beginPath();x.arc(X,Y+H+bw*.7,bw*.8,0,7);x.fill();const f=clamp((val-lo)/(hi-lo),0,1.02);const top=Y+H-6-(H-14)*f;x.fillRect(X-bw*.22,top,bw*.44,Y+H+bw*.7-top);
+ if(opts.ticks){x.strokeStyle='#333';x.fillStyle='#fff';x.font='12px Atkinson Hyperlegible, sans-serif';x.textAlign='right';for(let v=lo;v<=hi;v+=opts.minor){const y=Y+H-6-(H-14)*(v-lo)/(hi-lo),maj=v%opts.major===0;x.lineWidth=maj?1.5:1;x.beginPath();x.moveTo(X+bw/2-(maj?bw*.7:bw*.4),y);x.lineTo(X+bw/2,y);x.stroke();if(maj)x.fillText(v,X-bw/2-6,y+4)}}
+ return top}
+
+/* HERO */
+(()=>{const x=hiCanvas($('#heroCv'),500,400);
+ loop((dt,t)=>{const T=50+Math.sin(t*.5)*55;x.fillStyle=DARK;x.fillRect(0,0,500,400);const g=x.createRadialGradient(330,230,10,330,230,220);g.addColorStop(0,heatCol(T).replace('55%','30%'));g.addColorStop(1,DARK);x.fillStyle=g;x.fillRect(0,0,500,400);
+  thermo(x,150,40,280,-10,110,T,{w:22,ticks:true,major:20,minor:5});
+  x.fillStyle='#fff';x.font='800 72px Bricolage Grotesque, sans-serif';x.textAlign='center';x.fillText(T.toFixed(0)+' °C',330,220);x.font='18px Atkinson Hyperlegible, sans-serif';x.fillStyle='#FFC2B3';x.fillText((T+273.15).toFixed(2)+' K',330,256)})})();
+
+/* TOUCH */
+(()=>{const x=hiCanvas($('#touchCv'),640,400);let step,feelR,feelL,t0,hand,pred;
+ function reset(){step=0;feelR=27;feelL=27;hand={r:{x:520,y:60},l:{x:120,y:60}};pred=null;$('#dip1').disabled=false;$('#dip2').disabled=true;$('#predBox').style.display='none';$('#touchObs').textContent='Your hands start at room temperature.';$('#touchHud').textContent='Step 1'}
+ reset();$('#touchReset').onclick=reset;
+ $('#dip1').onclick=()=>{step=1;t0=0;$('#dip1').disabled=true;$('#touchHud').textContent='Hands in A and C…';setTimeout(()=>{$('#predBox').style.display='';$('#touchObs').textContent='Your right hand has warmed up and your left hand has cooled down. Make a prediction.'},2600)};
+ $$('[data-p]').forEach(b=>b.onclick=()=>{pred=b.dataset.p;$$('[data-p]').forEach(z=>z.classList.toggle('sel',z===b));$('#dip2').disabled=false});
+ $('#dip2').onclick=()=>{step=2;$('#dip2').disabled=true;$('#touchHud').textContent='Both hands in B';setTimeout(()=>{$('#touchObs').innerHTML='Water B feels <b>cold</b> to the right hand and <b>warm</b> to the left hand, even though it is the same water! '+(pred==='diff'?'Your prediction was right. ':'')+'<span class="hl">Our sense of touch is not reliable</span> for telling how hot or cold something is. We need a thermometer.';markDone('touch')},1800)};
+ loop((dt,t)=>{x.fillStyle=DARK;x.fillRect(0,0,640,400);const bowls=[['A','Warm',520,'#E8743A',45],['B','Tap',320,'#6FB3E8',27],['C','Ice-cold',120,'#4FA3D9',4]];
+  if(step===1){feelR=lerp(feelR,45,dt);feelL=lerp(feelL,4,dt);hand.r.x=lerp(hand.r.x,520,.1);hand.r.y=lerp(hand.r.y,220,.08);hand.l.x=lerp(hand.l.x,120,.1);hand.l.y=lerp(hand.l.y,220,.08)}
+  if(step===2){hand.r.x=lerp(hand.r.x,365,.08);hand.l.x=lerp(hand.l.x,275,.08);hand.r.y=lerp(hand.r.y,220,.08);hand.l.y=lerp(hand.l.y,220,.08)}
+  bowls.forEach(b=>{x.fillStyle=b[3];x.globalAlpha=.75;x.beginPath();x.moveTo(b[2]-90,250);x.lineTo(b[2]+90,250);x.lineTo(b[2]+70,350);x.lineTo(b[2]-70,350);x.fill();x.globalAlpha=1;
+   x.strokeStyle='#fff';x.lineWidth=3;x.beginPath();x.moveTo(b[2]-95,230);x.lineTo(b[2]-70,352);x.lineTo(b[2]+70,352);x.lineTo(b[2]+95,230);x.stroke();
+   if(b[0]==='A'){for(let k=0;k<3;k++){x.strokeStyle='rgba(255,255,255,.4)';x.beginPath();const sx=b[2]-30+k*30;x.moveTo(sx,225);x.bezierCurveTo(sx-10,205-((t*20)%20),sx+10,195,sx,175);x.stroke()}}
+   if(b[0]==='C'){x.fillStyle='rgba(255,255,255,.8)';x.fillRect(b[2]-40,256+Math.sin(t)*2,24,20);x.fillRect(b[2]+15,258+Math.cos(t)*2,22,18)}
+   x.fillStyle='#fff';x.font='800 20px Bricolage Grotesque, sans-serif';x.textAlign='center';x.fillText(b[0]+': '+b[1],b[2],385)});
+  // hands
+  [['r',feelR,'Right'],['l',feelL,'Left']].forEach(([k,f,n])=>{const h=hand[k];x.font='54px serif';x.save();x.translate(h.x,h.y);if(k==='l')x.scale(-1,1);x.fillStyle='#000';x.textAlign='center';x.fillText('🖐️',0,0);x.restore();
+   if(step===2){const feel=k==='r'?'Feels cold!':'Feels warm!';x.fillStyle=k==='r'?'#9FD8FF':'#FFB38A';x.font='800 17px Bricolage Grotesque, sans-serif';x.fillText(feel,h.x+(k==='r'?50:-50),h.y-92)}
+   x.fillStyle='#cde';x.font='13px Atkinson Hyperlegible, sans-serif';x.textAlign='center';x.fillText(n+' hand',h.x,h.y-56)})})})();
+
+/* LAB THERMOMETER */
+(()=>{const x=hiCanvas($('#labCv'),640,460);let T=30,shown=30,out=0,outT=0,mystery=null,ice=0,bub=[];
+ $('#addIce').onclick=()=>{ice=1};$('#liftOut').onclick=e=>{out=out?0:1;e.target.textContent=out?'Put the thermometer back':'Take the thermometer out';if(out)$('#labObs').innerHTML='Out of the water, the reading quickly changes towards the room temperature. Always read while the bulb is in the water.'};
+ $('#mystery').onclick=()=>{mystery=Math.round(rand(5,95));$('#heat').value=mystery;T=mystery;shown=mystery;$('#labObs').textContent='Read the thermometer and type the temperature.';$('#tIn').value=''};
+ let right=0;$('#tChk').onclick=()=>{const v=parseFloat($('#tIn').value),r=Math.round(shown);if(Math.abs(v-r)<=0.6){right++;$('#labObs').innerHTML='<span class="hl">Correct: '+r+' °C</span>. '+(right<2?'Try another mystery temperature.':'You can read a thermometer!');if(right>=2)markDone('lab');confetti()}else $('#labObs').textContent='Not quite. Find the last big mark below the column, then count the small divisions (1 °C each).'};
+ loop((dt,t)=>{const target=ice>0?Math.max(0,+$('#heat').value-40):+$('#heat').value;ice=Math.max(0,ice-dt*.05);
+  if(mystery===null)T=lerp(T,target,dt*.6);else if(Math.abs(target-mystery)>1){mystery=null}
+  outT=lerp(outT,out?1:0,.05);const goal=out?27:T;shown=lerp(shown,goal,dt*(out?1.5:3));
+  $('#labHud').textContent=mystery!==null?'Mystery temperature':'Water: heating '+(+$('#heat').value>T+1?'up':'');
+  x.fillStyle=DARK;x.fillRect(0,0,640,460);
+  // stand+beaker
+  const bx=320;x.fillStyle=`rgba(111,179,232,${.5})`;{const k=clamp(T/100,0,1);x.fillStyle=`rgb(${lerp(70,220,k)|0},${lerp(140,110,k)|0},${lerp(230,70,k)|0})`}x.globalAlpha=.55;x.fillRect(bx-110,240,220,150);x.globalAlpha=1;
+  x.strokeStyle='#fff';x.lineWidth=3;x.beginPath();x.moveTo(bx-115,200);x.lineTo(bx-115,392);x.lineTo(bx+115,392);x.lineTo(bx+115,200);x.stroke();
+  if(T>90){if(Math.random()<.5)bub.push({x:bx+rand(-100,100),y:390,r:rand(2,6)})}bub.forEach(b=>{b.y-=90*dt;x.strokeStyle='rgba(255,255,255,.7)';x.lineWidth=1;x.beginPath();x.arc(b.x,b.y,b.r,0,7);x.stroke()});bub=bub.filter(b=>b.y>244);
+  if(ice>0){x.fillStyle='rgba(255,255,255,.85)';x.fillRect(bx-80,246,26,22);x.fillRect(bx+50,248,24,20)}
+  // burner flame
+  const fl=+$('#heat').value/100;x.fillStyle='#555';x.fillRect(bx-40,420,80,30);if(fl>.05){for(let k=-2;k<=2;k++){x.fillStyle=`rgba(255,${120+k*20},40,.85)`;x.beginPath();x.ellipse(bx+k*14,410-fl*10,6,fl*18+4+Math.sin(t*20+k)*3,0,0,7);x.fill()}}
+  x.fillStyle='#8A99A4';x.fillRect(bx-125,394,250,8);
+  // thermometer
+  const ty=-outT*190;thermo(x,bx+20,60+ty,320,-10,110,shown,{w:18,ticks:true,major:10,minor:1});
+  // zoom lens
+  const zy=clamp(60+ty+320-6-(320-14)*(shown+10)/120,40,420);x.save();x.beginPath();x.arc(530,200,90,0,7);x.clip();x.fillStyle='#F4F1E8';x.fillRect(440,110,180,180);x.translate(530,200);x.scale(3,3);x.translate(-(bx+20),-zy);
+  thermo(x,bx+20,60+ty,320,-10,110,shown,{w:18,ticks:true,major:10,minor:1});x.restore();x.strokeStyle='#FFD84D';x.lineWidth=4;x.beginPath();x.arc(530,200,90,0,7);x.stroke();
+  x.fillStyle='#FFD84D';x.font='700 13px Atkinson Hyperlegible, sans-serif';x.textAlign='center';x.fillText('magnified',530,308)})})();
+
+/* WHICH */
+(()=>{const x=hiCanvas($('#whCv'),640,380);const T=[['Your body temperature','🤒',38.2,'c'],['Boiling water','♨️',100,'l'],['Ice-cold water','🧊',2,'l'],['Warm water for a bath','🛁',42.5,'l'],['A friend\'s fever check','🧑',37.4,'c']];
+ let task=0,th=null,res=null,seen=new Set();$('#tasks').innerHTML=T.map((t,i)=>`<button class="btn sm ghost" data-i="${i}">${t[1]} ${t[0]}</button>`).join('');
+ $$('#tasks .btn').forEach(b=>b.onclick=()=>{task=+b.dataset.i;th=null;res=null;$$('#tasks .btn').forEach(z=>z.classList.toggle('sel',z===b));$('#whObs').textContent='Now pick a thermometer.'});$$('#tasks .btn')[0].classList.add('sel');
+ $$('[data-th]').forEach(b=>b.onclick=()=>{th=b.dataset.th;const t=T[task],lo=th==='c'?35:-10,hi=th==='c'?42:110,ok=t[2]>=lo&&t[2]<=hi,best=th===t[3];
+  res={ok,v:t[2]};if(best)seen.add(task);
+  $('#whObs').innerHTML=!ok?`✗ ${t[2]} °C is outside the range of this thermometer (${lo} °C to ${hi} °C). It cannot measure it${th==='c'&&t[2]>42?' and could get damaged':''}.`:best?`✓ Good choice! The reading is <b>${t[2]} °C</b>.`:`The reading works (${t[2]} °C), but a ${t[3]==='c'?'clinical thermometer is made for body temperature: it is safer and easier to use.':'laboratory thermometer is the right tool for this.'}`;
+  if(seen.size>=4)markDone('which')});
+ loop((dt,t)=>{x.fillStyle=DARK;x.fillRect(0,0,640,380);const tk=T[task];x.font='80px serif';x.textAlign='center';x.fillStyle='#000';x.fillText(tk[1],170,210);x.fillStyle='#fff';x.font='800 18px Bricolage Grotesque, sans-serif';x.fillText(tk[0],170,270);
+  if(th==='l'){thermo(x,440,40,280,-10,110,res&&res.ok?tk[2]:Math.min(tk[2],112),{w:16,ticks:true,major:20,minor:5})}
+  if(th==='c'){x.fillStyle='#F4F4F4';x.beginPath();x.roundRect?x.roundRect(410,90,70,230,30):x.rect(410,90,70,230);x.fill();x.fillStyle='#9CC8F5';x.fillRect(420,130,50,60);x.fillStyle='#18324A';x.font='800 18px Bricolage Grotesque, sans-serif';
+   x.fillText(res.ok?tk[2].toFixed(1):(tk[2]>42?'Hi':'Lo'),445,168);x.fillStyle='#bbb';x.fillRect(436,290,18,40);x.fillStyle='#18324A';x.font='12px Atkinson Hyperlegible, sans-serif';x.fillText('°C',445,184)}
+  if(!th){x.fillStyle='#cde';x.font='16px Atkinson Hyperlegible, sans-serif';x.fillText('Choose a thermometer →',460,200)}})})();
+
+/* SCALES */
+(()=>{const x=hiCanvas($('#scCv'),1100,360);const M=[['Water freezes',0],['Body (normal)',37],['Hot day',45],['Water boils',100],['Very cold winter',-20]];
+ $('#marks').innerHTML=M.map(m=>`<button class="btn sm ghost" data-v="${m[1]}">${m[0]}</button>`).join('');let tried=new Set();
+ $$('#marks .btn').forEach(b=>b.onclick=()=>{$('#tc').value=b.dataset.v;tried.add(b.dataset.v);if(tried.size>=3)markDone('scales')});
+ let v=37;loop((dt)=>{v=lerp(v,+$('#tc').value,.12);const C=v,F=C*9/5+32,K=C+273.15;
+  $('#oC').innerHTML=C.toFixed(1)+' °C<small>Celsius</small>';$('#oF').innerHTML=F.toFixed(1)+' °F<small>Fahrenheit</small>';$('#oK').innerHTML=K.toFixed(2)+' K<small>kelvin</small>';
+  x.fillStyle=DARK;x.fillRect(0,0,1100,360);const col=heatCol(C);
+  [[220,-50,120,C,'Celsius','°C',[-40,0,40,80,120]],[550,-58,248,F,'Fahrenheit','°F',[-40,32,98.6,212]],[880,223,393,K,'Kelvin','K',[233,273,310,373]]].forEach(([X,lo,hi,val,n,u,tk])=>{
+   thermo(x,X,30,250,lo,hi,val,{w:20,col});x.fillStyle='#fff';x.font='12px Atkinson Hyperlegible, sans-serif';x.textAlign='right';tk.forEach(k=>{const y=30+250-6-(236)*(k-lo)/(hi-lo);x.fillRect(X+12,y,10,1.5);x.textAlign='left';x.fillText(k+' '+u,X+26,y+4)});
+   x.textAlign='center';x.font='800 18px Bricolage Grotesque, sans-serif';x.fillText(n,X,340)})})})();
+
+/* WEATHER */
+(()=>{const x=hiCanvas($('#wxCv'),640,400);const D=[[33,21],[34,22],[35,22],[33,20],[31,19],[32,19],[34,21],[36,23],[37,24],[35,22]];
+ $('#wxT').innerHTML=D.map((d,i)=>`<tr><td>Day ${i+1}</td><td><input data-i="${i}" data-k="0" value="${d[0]}"></td><td><input data-i="${i}" data-k="1" value="${d[1]}"></td></tr>`).join('');
+ let anim=0,edited=0;$$('#wxT input').forEach(inp=>inp.oninput=()=>{const v=parseFloat(inp.value);if(!isNaN(v)){D[inp.dataset.i][inp.dataset.k]=v;edited++;upd();if(edited>=2)markDone('wx')}});
+ function upd(){const mx=D.map(d=>d[0]),mn=D.map(d=>d[1]),hi=Math.max(...mx),lo=Math.min(...mn),hd=mx.indexOf(hi)+1,cd=mn.indexOf(lo)+1,rng=D.map(d=>d[0]-d[1]);
+  $('#wxObs').innerHTML=`Highest maximum: <b>${hi} °C</b> on Day ${hd}.<br>Lowest minimum: <b>${lo} °C</b> on Day ${cd}.<br>Biggest gap between day and night: <b>${Math.max(...rng)} °C</b>.<br><small>Change two values to complete this experiment.</small>`}
+ upd();onTab('wx',()=>anim=0);
+ loop(dt=>{anim=Math.min(1,anim+dt*.8);x.fillStyle=DARK;x.fillRect(0,0,640,400);const L=60,R=600,T=30,B=340,lo=Math.floor(Math.min(...D.map(d=>d[1]))/5)*5-5,hi=Math.ceil(Math.max(...D.map(d=>d[0]))/5)*5+5,Y=v=>B-(v-lo)/(hi-lo)*(B-T),X=i=>L+i*(R-L)/9;
+  x.strokeStyle='rgba(255,255,255,.12)';x.fillStyle='#cde';x.font='12px Atkinson Hyperlegible, sans-serif';x.textAlign='right';for(let v=lo;v<=hi;v+=5){x.beginPath();x.moveTo(L,Y(v));x.lineTo(R,Y(v));x.stroke();x.fillText(v+' °C',L-8,Y(v)+4)}
+  x.textAlign='center';for(let i=0;i<10;i++)x.fillText('D'+(i+1),X(i),B+20);
+  [[0,'#FF8A6B','Max'],[1,'#7FC4FF','Min']].forEach(([k,c,n])=>{x.strokeStyle=c;x.lineWidth=3;x.beginPath();const m=Math.max(1,Math.floor(anim*10));for(let i=0;i<m;i++){i?x.lineTo(X(i),Y(D[i][k])):x.moveTo(X(i),Y(D[i][k]))}x.stroke();
+   for(let i=0;i<m;i++){x.fillStyle=c;x.beginPath();x.arc(X(i),Y(D[i][k]),4,0,7);x.fill()}x.fillStyle=c;x.font='800 14px Bricolage Grotesque, sans-serif';x.textAlign='left';if(m===10)x.fillText(n,X(9)+8,Y(D[9][k])+5)})})})();
+
+Quiz($('#quiz'),[
+ {q:'Your right hand was in warm water and left hand in cold water. In tap water, the right hand feels…',o:['Warm','Cold','Same as the left hand','Nothing'],a:1,e:'The hand from warm water feels the tap water as cold. Touch is not reliable.'},
+ {q:'What is the range of a laboratory thermometer?',o:['35 °C to 42 °C','−10 °C to 110 °C','0 °C to 50 °C','−100 °C to 100 °C'],a:1,e:'A laboratory thermometer usually reads from −10 °C to 110 °C.'},
+ {q:'Between two big marks 10 °C apart there are 10 small divisions. One division reads…',o:['0.1 °C','1 °C','10 °C','5 °C'],a:1,e:'10 °C ÷ 10 divisions = 1 °C per division.'},
+ {q:'Why should a clinical thermometer not be used for boiling water?',o:['It is too long','Its range is only 35 °C to 42 °C','It reads in kelvin','It has no bulb'],a:1,e:'Boiling water is far above 42 °C, the top of its range.'},
+ {q:'The average normal body temperature is taken as…',o:['37.0 °C','42.0 °C','35.0 °C','100 °C'],a:0,e:'37.0 °C (98.6 °F) is the average normal temperature.'},
+ {q:'Convert 27 °C into kelvin.',o:['27 K','300.15 K','246.15 K','273.15 K'],a:1,e:'K = °C + 273.15 = 300.15 K.'},
+ {q:'When should you read a laboratory thermometer?',o:['After taking it out of the liquid','While its bulb is still in the liquid','After shaking it','Next day'],a:1,e:'Once out of the liquid, the reading begins to change.'},
+ {q:'Why are mercury thermometers being replaced?',o:['Mercury is extremely toxic','Mercury is too cheap','They read too fast','They are digital'],a:0,e:'Mercury is toxic and hard to dispose of if a thermometer breaks.'}
+],'quiz');
+</script>
+
+<a href="../index.html#/class-6" style="position:fixed;right:16px;bottom:16px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;background:rgba(255,255,255,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.95);box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font:900 14px/1 Nunito,'Segoe UI',system-ui,sans-serif;text-decoration:none">🏠 Lab Home</a></body></html>

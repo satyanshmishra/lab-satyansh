@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Biodiversity Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3F7F4; --grid:#DCE9E3; --ink:#18324A; --ink2:#4B6274; --bench:#1D2A33; --bench2:#26363F;
+  --marker:#FFD84D; --ok:#1E9E6A; --bad:#D64545; --line:#C9D9D2; --card:#FFFFFF;
+  --acc:#2F7DD1; --acc2:#9CC8F5; --accInk:#fff;
+  --r-lg:22px; --r-md:14px; --r-sm:9px;
+  --fh:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --fb:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);font:17px/1.55 var(--fb);background:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;}
+h1,h2,h3,h4{font-family:var(--fh);line-height:1.1;margin:0 0 .4em;letter-spacing:-.01em}
+p{margin:0 0 .8em}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--marker);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* hero */
+.hero{padding:44px 0 26px}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center}
+.chapno{font-family:var(--fh);font-weight:800;font-size:15px;color:var(--acc);display:inline-flex;gap:8px;align-items:center;background:#fff;border:2px solid var(--acc);border-radius:99px;padding:3px 14px 3px 4px}
+.chapno b{background:var(--acc);color:var(--accInk);border-radius:99px;min-width:28px;height:28px;display:grid;place-items:center;font-size:15px}
+.hero h1{font-size:clamp(38px,5.6vw,68px);font-weight:800;margin:16px 0 14px}
+.hero h1 .u{background:linear-gradient(transparent 62%,var(--marker) 62% 92%,transparent 92%)}
+.hero .lede{font-size:19px;color:var(--ink2);max-width:52ch}
+.hero-stage{background:var(--bench);border-radius:var(--r-lg);aspect-ratio:5/4;position:relative;overflow:hidden;box-shadow:0 18px 0 -8px var(--acc2),0 24px 40px -18px rgba(24,50,74,.45)}
+.hero-stage canvas,.hero-stage svg{width:100%;height:100%;display:block}
+.procedure{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:6px;counter-reset:p}
+.procedure li{counter-increment:p;display:flex;gap:10px;align-items:center;font-weight:700}
+.procedure li::before{content:counter(p);width:26px;height:26px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-size:13px;flex:none}
+.procedure li.done::before{content:"✓";background:var(--ok);border-color:var(--ok);color:#fff}
+
+/* tab bar */
+.bar{position:sticky;top:0;z-index:20;background:rgba(243,247,244,.92);backdrop-filter:blur(8px);border-bottom:2px solid var(--line)}
+.bar .wrap{display:flex;gap:8px;align-items:center;overflow-x:auto;padding-top:10px;padding-bottom:10px;scrollbar-width:thin}
+.tab{border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:99px;padding:7px 15px;font-weight:700;font-size:15px;white-space:nowrap;transition:transform .15s}
+.tab:hover{transform:translateY(-2px)}
+.tab[aria-selected=true]{background:var(--ink);color:#fff}
+.tab .tick{display:none;color:var(--ok);margin-left:6px}
+.tab.done .tick{display:inline}
+.tab[aria-selected=true] .tick{color:var(--marker)}
+.meter{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;white-space:nowrap;padding-left:12px}
+.meter i{display:block;width:90px;height:9px;background:#fff;border:2px solid var(--ink);border-radius:9px;overflow:hidden}
+.meter i b{display:block;height:100%;width:0;background:var(--ok);transition:width .5s}
+
+/* panels */
+main{padding:28px 0 60px}
+.panel{display:none;animation:rise .35s ease}
+.panel.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.panel-head{display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.panel-head h2{font-size:clamp(26px,3.4vw,38px);margin:0}
+.panel-head .aim{color:var(--ink2);max-width:62ch;margin:6px 0 0}
+.lab{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:20px;align-items:start}
+.lab.wide{grid-template-columns:1fr}
+.stage{background:var(--bench);border-radius:var(--r-lg);position:relative;overflow:hidden;color:#E8F0F2;min-height:300px}
+.stage canvas,.stage>svg{display:block;width:100%;height:auto}
+.stage .hud{position:absolute;left:14px;top:12px;font-weight:700;font-size:14px;background:rgba(0,0,0,.35);padding:4px 10px;border-radius:8px;pointer-events:none}
+.side{display:grid;gap:14px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:var(--r-md);padding:16px 18px}
+.card h3{font-size:19px}
+.card.note{background:#FFFBE6;border-color:#F1DF8F}
+.card.note h3::before{content:"✎ ";color:#B98B00}
+.card.why{border-left:7px solid var(--acc)}
+.ctrl{display:grid;gap:12px}
+.ctrl label{font-weight:700;font-size:15px;display:grid;gap:4px}
+.ctrl .row{display:flex;gap:8px;flex-wrap:wrap}
+input[type=range]{width:100%;accent-color:var(--acc);height:28px}
+.btn{border:2px solid var(--ink);background:var(--acc);color:var(--accInk);border-radius:12px;padding:9px 16px;font-weight:700;box-shadow:0 4px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn.sm{padding:6px 11px;font-size:14px;border-radius:10px;box-shadow:0 3px 0 var(--ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.sel{background:var(--marker);color:var(--ink)}
+.readout{font-family:var(--fh);font-size:30px;font-weight:800;line-height:1}
+.readout small{font-size:14px;font-weight:600;color:var(--ink2);display:block;margin-top:4px;font-family:var(--fb)}
+.obs{min-height:3em;font-size:16px}
+.obs.ok{color:var(--ok)} .obs.bad{color:var(--bad)}
+.hl{background:linear-gradient(transparent 55%,var(--marker) 55%);font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pill:empty{display:none}
+.pill{display:inline-block;border-radius:99px;padding:2px 10px;font-size:13px;font-weight:700;background:var(--acc2);color:var(--ink)}
+table.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th,.tbl td{border-bottom:1.5px solid var(--line);padding:6px 8px;text-align:left}
+.tbl th{font-family:var(--fh)}
+
+/* sorting game */
+.sorter{display:grid;gap:14px}
+.tray{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:10px;border:2px dashed var(--line);border-radius:var(--r-md);background:#fff}
+.chip{border:2px solid var(--ink);background:#fff;border-radius:12px;padding:7px 12px;font-weight:700;font-size:15px;user-select:none;touch-action:none;display:inline-flex;align-items:center;gap:6px;transition:transform .15s,background .2s}
+.chip .em{font-size:22px;line-height:1}
+.chip.picked{background:var(--marker);transform:scale(1.06) rotate(-2deg)}
+.chip.right{border-color:var(--ok);background:#E3F6EC;cursor:default}
+.chip.dragging{position:fixed;z-index:999;pointer-events:none;box-shadow:0 12px 24px rgba(0,0,0,.25)}
+.bins{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.bin{border:2px solid var(--ink);border-radius:var(--r-md);background:#fff;min-height:140px;padding:10px;display:flex;flex-direction:column;gap:6px;transition:background .2s,transform .2s}
+.bin h4{font-size:17px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.bin.hover{background:#FFF6CC;transform:scale(1.02)}
+.bin .chips{display:flex;flex-wrap:wrap;gap:6px}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+
+/* order game */
+.order{display:flex;flex-wrap:wrap;gap:8px}
+.slots{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.slot{min-width:120px;min-height:44px;border:2px dashed var(--ink2);border-radius:12px;display:grid;place-items:center;padding:6px 10px;font-weight:700;color:var(--ink2);background:#fff}
+.slot.filled{border-style:solid;border-color:var(--ok);color:var(--ink);background:#E3F6EC}
+
+/* quiz */
+.quiz{max-width:760px;margin:0 auto}
+.qcard{background:#fff;border:2px solid var(--ink);border-radius:var(--r-lg);padding:24px;box-shadow:8px 8px 0 var(--acc2)}
+.qtop{display:flex;justify-content:space-between;font-weight:700;color:var(--ink2);margin-bottom:10px;font-size:15px}
+.qtext{font-family:var(--fh);font-size:24px;font-weight:700;margin-bottom:16px}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:11px 14px;font-weight:700;display:flex;gap:12px;align-items:center}
+.opt:hover:not([disabled]){border-color:var(--ink)}
+.opt .k{width:30px;height:30px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;flex:none;font-size:14px}
+.opt.right{border-color:var(--ok);background:#E3F6EC}
+.opt.wrong{border-color:var(--bad);background:#FCE8E8}
+.qexp{margin-top:14px;padding:12px 14px;border-radius:12px;background:#F2F6FA;display:none}
+.qexp.on{display:block;animation:rise .3s}
+.qnav{display:flex;justify-content:flex-end;margin-top:16px}
+.score{text-align:center}
+.score .big{font-family:var(--fh);font-size:72px;font-weight:800;color:var(--acc)}
+
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:22px}
+.fact{background:#fff;border:2px solid var(--line);border-radius:var(--r-md);padding:14px 16px;font-size:15px}
+.fact b{font-family:var(--fh);display:block;font-size:17px;margin-bottom:4px;color:var(--acc)}
+
+footer{padding:24px 0 40px;color:var(--ink2);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:12px;font-weight:700;z-index:1000;transition:transform .35s cubic-bezier(.2,1.4,.4,1);max-width:90vw;text-align:center}
+.toast.on{transform:translate(-50%,0)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:999}
+
+@media (max-width:860px){
+  .hero .wrap,.lab{grid-template-columns:1fr}
+  .hero{padding-top:26px}
+  .meter i{width:60px}
+  .grid2{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+
+:root{--acc:#1E8F5A;--acc2:#AEE5C6}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg .btn{box-shadow:0 3px 0 var(--ink);padding:6px 11px;font-size:14px;background:#fff;color:var(--ink)}
+.seg .btn.sel{background:var(--marker)}
+.verdict{font-family:var(--fh);font-size:30px;font-weight:800;color:var(--acc)}
+.target{background:#E6F7EE;border-radius:12px;padding:10px 12px;font-weight:700}
+.rule{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:15px}
+.rule div{background:#F2F6FA;border-radius:10px;padding:8px 10px}
+.rule div.got{background:#E3F6EC;outline:2px solid var(--ok)}
+.habs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.hab-scene{position:relative}
+.hab-scene .spot{position:absolute;font-size:46px;background:none;border:none;transform:translate(-50%,-50%);transition:transform .2s;filter:drop-shadow(0 4px 4px rgba(0,0,0,.35));padding:0;line-height:1}
+.hab-scene .spot:hover{transform:translate(-50%,-50%) scale(1.15)}
+.hab-scene .spot::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:3px solid #FFD84D;animation:ping 1.6s infinite}
+.hab-scene .spot.seen::after{display:none}
+@keyframes ping{0%{transform:scale(.7);opacity:1}100%{transform:scale(1.5);opacity:0}}
+
+</style><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"></head><body>
+
+
+<header class="hero"><div class="wrap">
+  <div>
+    <span class="chapno"><b>2</b>Chapter 2</span>
+    <h1>Diversity in the <span class="u">Living World</span></h1>
+    <p class="lede">The variety of plants and animals in a region is its biodiversity. Group plants by their stems, leaves, roots and seeds, and discover how living things are suited to where they live.</p>
+    <ol class="procedure">
+      <li data-t="plants">Build and group plants</li>
+      <li data-t="leaf">Match leaves with roots</li>
+      <li data-t="seed">Open up seeds</li>
+      <li data-t="hab">Explore habitats</li>
+      <li data-t="move">Sort animals by movement</li>
+      <li data-t="quiz">Check what you learnt</li>
+    </ol>
+  </div>
+  <div class="hero-stage"><canvas id="heroCv"></canvas></div>
+</div></header>
+
+<nav class="bar"><div class="wrap">
+  <button class="tab" data-t="plants">Herb, shrub or tree<span class="tick">✓</span></button>
+  <button class="tab" data-t="leaf">Leaves and roots<span class="tick">✓</span></button>
+  <button class="tab" data-t="seed">Seeds<span class="tick">✓</span></button>
+  <button class="tab" data-t="hab">Habitats<span class="tick">✓</span></button>
+  <button class="tab" data-t="move">Movement<span class="tick">✓</span></button>
+  <button class="tab" data-t="quiz">Quiz<span class="tick">✓</span></button>
+  <div class="meter"><i><b></b></i><span></span></div>
+</div></nav>
+
+<main class="wrap">
+<section class="panel" id="p-plants">
+  <div class="panel-head"><div><h2>Plant builder</h2><p class="aim">Change the height, stem and branching of the plant. Compare it with the child standing beside it, then find out which group it belongs to.</p></div></div>
+  <div class="lab">
+    <div class="stage"><canvas id="plantCv"></canvas></div>
+    <div class="side">
+      <div class="card ctrl">
+        <div class="target" id="target"></div>
+        <label>Height</label><div class="seg" data-k="h"><button class="btn" data-v="0">Short</button><button class="btn" data-v="1">Medium</button><button class="btn" data-v="2">Tall</button></div>
+        <label>Stem</label><div class="seg" data-k="s"><button class="btn" data-v="0">Green and tender</button><button class="btn" data-v="1">Brown and hard</button></div>
+        <label>Thickness</label><div class="seg" data-k="t"><button class="btn" data-v="0">Thin</button><button class="btn" data-v="1">Thick</button></div>
+        <label>Branches start</label><div class="seg" data-k="b"><button class="btn" data-v="0">Close to the ground</button><button class="btn" data-v="1">Higher up on the stem</button></div>
+        <button class="btn sm ghost" id="bendBtn">Try to bend the stem</button>
+      </div>
+      <div class="card why"><div class="verdict" id="verdict">Herb</div><p id="vtext" class="obs"></p></div>
+    </div>
+  </div>
+  <div class="panel-head" style="margin-top:26px"><div><h3 style="font-size:26px">Group these plants</h3></div></div>
+  <div id="plantSort"></div>
+</section>
+
+<section class="panel" id="p-leaf">
+  <div class="panel-head"><div><h2>Leaf venation and roots</h2><p class="aim">Pick a plant. Watch its leaf veins appear, then gently pull it out to see its roots. Can you discover the hidden rule?</p></div></div>
+  <div class="lab">
+    <div class="stage"><canvas id="leafCv"></canvas><div class="hud" id="leafHud"></div></div>
+    <div class="side">
+      <div class="card ctrl"><label>Choose a plant</label><div class="seg" id="leafPick"></div>
+        <button class="btn" id="pullBtn">Pull out the plant and wash the roots</button></div>
+      <div class="card"><h3>What I found</h3><div class="rule" id="ruleBox"></div><p class="obs" id="leafObs"></p></div>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="p-seed">
+  <div class="panel-head"><div><h2>Soak and split seeds</h2><p class="aim">Chickpea and maize seeds were soaked in water for two days. Tap a seed to remove its coat and open it. Count the cotyledons (seed leaves).</p></div></div>
+  <div class="lab">
+    <div class="stage"><canvas id="seedCv"></canvas></div>
+    <div class="side"><div class="card ctrl"><div class="row"><button class="btn" data-seed="0">Open the chickpea</button><button class="btn" data-seed="1">Open the maize</button></div><button class="btn ghost sm" id="seedReset">Close both seeds</button></div>
+      <div class="card why"><p class="obs" id="seedObs">Seeds with two cotyledons are called <b>dicots</b>. Seeds with one cotyledon are called <b>monocots</b>.</p></div>
+      <div class="card note"><h3>Link it up</h3><p>Dicot plants like chickpea usually have <b>reticulate venation</b> and a <b>taproot</b>. Monocot plants like maize usually have <b>parallel venation</b> and <b>fibrous roots</b>.</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-hab">
+  <div class="panel-head"><div><h2>Where do they live?</h2><p class="aim">The place where an organism lives is its habitat. Special features that help it survive there are called adaptations. Tap each glowing plant or animal.</p></div></div>
+  <div class="habs" id="habBtns"></div>
+  <div class="lab">
+    <div class="stage hab-scene" id="habScene"><svg id="habSv" viewBox="0 0 700 420"></svg></div>
+    <div class="side"><div class="card why" id="habCard"><h3>Tap a glowing living thing</h3><p>Each one shows a feature that helps it live in this habitat.</p></div>
+      <div class="card note"><h3>Habitats are of two kinds</h3><p><b>Terrestrial</b> (on land): deserts, mountains, forests, grasslands.<br><b>Aquatic</b> (in water): ponds, lakes, rivers, oceans.</p></div></div>
+  </div>
+  <div class="panel-head" style="margin-top:26px"><div><h3 style="font-size:26px">Which habitat?</h3></div></div>
+  <div id="habSort"></div>
+</section>
+
+<section class="panel" id="p-move">
+  <div class="panel-head"><div><h2>How do animals move?</h2><p class="aim">Watch the animals, then sort them by the body part they mainly use to move.</p></div></div>
+  <div class="stage" style="margin-bottom:18px"><canvas id="moveCv"></canvas></div>
+  <div id="moveSort"></div>
+</section>
+
+<section class="panel" id="p-quiz">
+  <div class="panel-head"><div><h2>Check what you learnt</h2></div></div>
+  <div class="quiz" id="quiz"></div>
+  <div class="facts">
+    <div class="fact"><b>Two humps in the cold</b>Camels of the hot desert have one hump; camels of the cold desert have two. Humps store fat for times when food is scarce.</div>
+    <div class="fact"><b>Snow slides off</b>The conical shape and sloping branches of the deodar tree let snow slide off easily.</div>
+    <div class="fact"><b>Saving habitats</b>The Great Indian Bustard has declined because its natural habitat was lost. Protecting habitats protects biodiversity.</div>
+  </div>
+</section>
+</main>
+<footer><a href="../index.html#/class-6" style="color:inherit;font-weight:700">← All Grade 6 labs</a><br>Based on NCERT Curiosity, Grade 6, Chapter 2: Diversity in the Living World</footer>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LAB={done:new Set(),total:0,key:'lab-'+location.pathname.split('/').pop()};
+function store(get,val){try{if(get)return JSON.parse(localStorage.getItem(LAB.key)||'[]');localStorage.setItem(LAB.key,JSON.stringify(val))}catch(e){return []}}
+function toast(msg,ms=2600){let t=$('.toast');if(!t){t=document.createElement('div');t.className='toast';document.body.appendChild(t)}
+  t.textContent=msg;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),ms)}
+function markDone(id){if(LAB.done.has(id))return;LAB.done.add(id);store(false,[...LAB.done]);paintProgress();
+  if(LAB.done.size===LAB.total){confetti();toast('You completed every experiment in this lab!')}}
+function paintProgress(){$$('.tab[data-t]').forEach(b=>b.classList.toggle('done',LAB.done.has(b.dataset.t)));
+  $$('.procedure li[data-t]').forEach(l=>l.classList.toggle('done',LAB.done.has(l.dataset.t)));
+  const m=$('.meter b'),n=$('.meter span');if(m){m.style.width=(100*LAB.done.size/LAB.total)+'%';n.textContent=LAB.done.size+' of '+LAB.total+' done'}}
+const tabHooks={};
+function onTab(id,fn){(tabHooks[id]=tabHooks[id]||[]).push(fn)}
+function showTab(id,scroll){$$('.tab[data-t]').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===id));
+  $$('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+id));(tabHooks[id]||[]).forEach(f=>f());
+  if(scroll){const bar=$('.bar');window.scrollTo({top:bar.offsetTop,behavior:'smooth'})}}
+function initTabs(){const tabs=$$('.tab[data-t]');LAB.total=tabs.length;store(true).forEach(x=>LAB.done.add(x));
+  tabs.forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.t,true)));
+  $$('.procedure li[data-t]').forEach(l=>{l.style.cursor='pointer';l.addEventListener('click',()=>showTab(l.dataset.t,true))});
+  paintProgress();showTab(tabs[0].dataset.t)}
+document.addEventListener('DOMContentLoaded',()=>{if($('.tab'))initTabs()});
+
+/* confetti */
+function confetti(){let c=$('#confetti');if(!c){c=document.createElement('canvas');c.id='confetti';document.body.appendChild(c)}
+  const x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;const cols=['#FFD84D','#1E9E6A','#2F7DD1','#E8567C','#8A5CF6','#FF8A3D'];
+  const ps=Array.from({length:160},()=>({x:innerWidth/2+(Math.random()-.5)*200,y:innerHeight*.35,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,r:Math.random()*6+4,c:cols[Math.random()*6|0],a:Math.random()*6,va:(Math.random()-.5)*.4}));
+  let f=0;(function tick(){x.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.vx*=.99;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()});
+    if(++f<180)requestAnimationFrame(tick);else x.clearRect(0,0,c.width,c.height)})()}
+
+/* hi-dpi canvas: returns ctx sized to logical w,h */
+function hiCanvas(cv,w,h){const d=Math.min(2,window.devicePixelRatio||1);cv.width=w*d;cv.height=h*d;cv.style.aspectRatio=w+'/'+h;const x=cv.getContext('2d');x.setTransform(d,0,0,d,0,0);x.W=w;x.H=h;return x}
+function canvasPoint(cv,e,w,h){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*w/r.width,y:(e.clientY-r.top)*h/r.height}}
+function loop(fn){let last=performance.now(),run=true;function f(t){if(!run)return;const dt=Math.min(.05,(t-last)/1000);last=t;fn(dt,t/1000);requestAnimationFrame(f)}requestAnimationFrame(f);return()=>run=false}
+const lerp=(a,b,t)=>a+(b-a)*t, clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), rand=(a,b)=>a+Math.random()*(b-a);
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+
+/* Quiz: qs=[{q,o:[..],a:index,e:explain}] */
+function Quiz(el,qs,doneId){let i=0,score=0,order=shuffle(qs);
+  function render(){if(i>=order.length){const pct=Math.round(100*score/order.length);
+      el.innerHTML=`<div class="qcard score"><div class="big">${score}/${order.length}</div><h3>${pct>=80?'Brilliant work, scientist!':pct>=50?'Good effort! Revisit the experiments and try again.':'Keep exploring the experiments, then try again.'}</h3><p>Every question comes from what you tested in this lab.</p><button class="btn">Try the quiz again</button></div>`;
+      $('button',el).onclick=()=>{i=0;score=0;order=shuffle(qs);render()};if(pct>=60){confetti();doneId&&markDone(doneId)}return}
+    const q=order[i];el.innerHTML=`<div class="qcard"><div class="qtop"><span>Question ${i+1} of ${order.length}</span><span>Score ${score}</span></div>
+      <div class="qtext">${q.q}</div><div class="opts">${q.o.map((o,k)=>`<button class="opt" data-k="${k}"><span class="k">${'ABCD'[k]}</span>${o}</button>`).join('')}</div>
+      <div class="qexp"></div><div class="qnav"><button class="btn" disabled>Next question</button></div></div>`;
+    $$('.opt',el).forEach(b=>b.onclick=()=>{const k=+b.dataset.k;$$('.opt',el).forEach(x=>x.disabled=true);
+      $$('.opt',el)[q.a].classList.add('right');if(k===q.a){score++}else{b.classList.add('wrong');b.classList.add('shake')}
+      const ex=$('.qexp',el);ex.innerHTML=(k===q.a?'<b>Correct.</b> ':'<b>Not quite.</b> ')+q.e;ex.classList.add('on');
+      const nb=$('.qnav .btn',el);nb.disabled=false;nb.textContent=i===order.length-1?'See my score':'Next question';nb.focus()});
+    $('.qnav .btn',el).onclick=()=>{i++;render()}}
+  render()}
+
+/* Sorter: items=[{t,em,c,why}], bins=[{c,t,em}] ; click a chip then a bin, or drag */
+function Sorter(el,items,bins,opts={}){
+  el.innerHTML=`<div class="sorter"><div class="tray"></div><div class="bins">${bins.map(b=>`<div class="bin" data-c="${b.c}"><h4>${b.em?`<span class="em">${b.em}</span>`:''}${b.t}</h4><div class="chips"></div></div>`).join('')}</div><div class="obs" aria-live="polite"></div></div>`;
+  const tray=$('.tray',el),obs=$('.obs',el);let picked=null,left=items.length;
+  shuffle(items).forEach(it=>{const c=document.createElement('button');c.className='chip';c.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;c._it=it;tray.appendChild(c);
+    c.addEventListener('click',()=>{if(c.classList.contains('right'))return;$$('.chip.picked',el).forEach(x=>x.classList.remove('picked'));picked=c;c.classList.add('picked');obs.className='obs';obs.textContent='Now choose a group for “'+it.t+'”.'});
+    c.addEventListener('pointerdown',e=>{if(c.classList.contains('right'))return;const sx=e.clientX,sy=e.clientY;let ghost=null;
+      const mv=ev=>{if(!ghost&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>8){ghost=c.cloneNode(true);ghost.classList.add('dragging');document.body.appendChild(ghost);c.style.opacity=.3}
+        if(ghost){ghost.style.left=ev.clientX-30+'px';ghost.style.top=ev.clientY-20+'px';$$('.bin',el).forEach(b=>{const r=b.getBoundingClientRect();b.classList.toggle('hover',ev.clientX>r.left&&ev.clientX<r.right&&ev.clientY>r.top&&ev.clientY<r.bottom)})}};
+      const up=ev=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);if(ghost){ghost.remove();c.style.opacity=1;const b=$('.bin.hover',el);$$('.bin',el).forEach(x=>x.classList.remove('hover'));if(b)drop(c,b);c._dragged=true;setTimeout(()=>c._dragged=false,50)}};
+      addEventListener('pointermove',mv);addEventListener('pointerup',up)})});
+  $$('.bin',el).forEach(b=>b.addEventListener('click',()=>{if(picked)drop(picked,b)}));
+  function drop(c,b){const it=c._it;if(it.c===b.dataset.c){c.classList.remove('picked');c.classList.add('right');$('.chips',b).appendChild(c);obs.className='obs ok';obs.innerHTML='✓ '+(it.why||'Correct!');left--;picked=null;
+      if(!left){obs.innerHTML='✓ All sorted! '+(opts.end||'');confetti();opts.done&&markDone(opts.done)}}
+    else{c.classList.add('shake');setTimeout(()=>c.classList.remove('shake'),400);obs.className='obs bad';obs.innerHTML='✗ Not this group. '+(it.hint||'Look again at its features.')}}
+}
+
+/* Order game: items in correct order [{t,em}] */
+function OrderGame(el,items,opts={}){
+  el.innerHTML=`<div class="order"></div><div class="slots">${items.map((_,i)=>`<div class="slot">${i+1}</div>`).join('')}</div><div class="obs" style="margin-top:10px"></div>`;
+  let n=0;const box=$('.order',el),obs=$('.obs',el);
+  shuffle(items.map((x,i)=>({...x,i}))).forEach(it=>{const b=document.createElement('button');b.className='chip';b.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;
+    b.onclick=()=>{if(it.i===n){const s=$$('.slot',el)[n];s.innerHTML=b.innerHTML;s.classList.add('filled');b.remove();n++;obs.className='obs ok';obs.textContent=opts.say?opts.say(it.i):'✓ Right!';
+        if(n===items.length){obs.textContent='✓ Perfect order! '+(opts.end||'');confetti();opts.done&&markDone(opts.done);opts.onDone&&opts.onDone()}}
+      else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);obs.className='obs bad';obs.textContent='✗ That is not step '+(n+1)+'. Think about what has to happen first.'}};box.appendChild(b)})}
+
+const GREEN='#3FBF6F',DARK='#1D2A33';
+function leafPath(x,cx,cy,L,W,ang){x.save();x.translate(cx,cy);x.rotate(ang);x.beginPath();x.moveTo(0,0);x.bezierCurveTo(W,-L*.15,W*.9,-L*.8,0,-L);x.bezierCurveTo(-W*.9,-L*.8,-W,-L*.15,0,0);x.restore()}
+
+/* HERO: leaf whose veins draw in, switching type */
+(()=>{const x=hiCanvas($('#heroCv'),500,400);
+ loop((dt,t)=>{const ph=(t%8)/8,par=Math.floor(t/8)%2===1,p=clamp((ph*8%8)/3,0,1);x.fillStyle=DARK;x.fillRect(0,0,500,400);
+  for(let i=0;i<30;i++){x.fillStyle=`rgba(63,191,111,${.05+.05*Math.sin(i+t)})`;x.beginPath();x.arc((i*97)%500,(i*53)%400,20+i%5*6,0,7);x.fill()}
+  drawLeaf(x,250,350,par?300:260,par?55:120,0,par,p,t);
+  x.fillStyle='#fff';x.font='800 22px Bricolage Grotesque, sans-serif';x.textAlign='left';x.fillText(par?'Parallel venation':'Reticulate venation',24,40);
+  x.font='15px Atkinson Hyperlegible, sans-serif';x.fillStyle='#AEE5C6';x.fillText(par?'like banana, grass, maize':'like hibiscus, peepal, mango',24,64)})})();
+
+function drawLeaf(x,cx,cy,L,W,ang,par,p,t=0){x.save();leafPath(x,cx,cy,L,W,ang);const g=x.createLinearGradient(cx-W,cy-L,cx+W,cy);g.addColorStop(0,'#5BD48A');g.addColorStop(1,'#239A55');x.fillStyle=g;x.fill();x.clip();
+ x.translate(cx,cy);x.rotate(ang);x.strokeStyle='rgba(230,255,235,.85)';x.lineCap='round';
+ if(!par){x.lineWidth=4;x.beginPath();x.moveTo(0,0);x.lineTo(0,-L*p);x.stroke();x.lineWidth=2;
+  for(let i=1;i<9;i++){const y=-L*i/10;if(-y>L*p)break;for(const s of[-1,1]){x.beginPath();x.moveTo(0,y);x.quadraticCurveTo(s*W*.4,y-L*.04,s*W*.85,y-L*.12);x.stroke();
+     x.lineWidth=1;for(let k=1;k<3;k++){x.beginPath();x.moveTo(s*W*.3*k,y-L*.02*k);x.lineTo(s*W*.25*k+s*10,y+L*.05);x.stroke()}x.lineWidth=2}}}
+ else{x.lineWidth=2;x.globalAlpha=Math.min(p,1);for(let i=-4;i<=4;i++){x.beginPath();x.moveTo(i*2,0);const e=1;x.bezierCurveTo(i*W*.22,-L*.3*e,i*W*.2,-L*.7*e,0,-L*e);x.stroke()}}
+ x.restore()}
+
+/* PLANT BUILDER */
+(()=>{const x=hiCanvas($('#plantCv'),640,440);const st={h:0,s:0,t:0,b:0};let bend=0,bendT=0,shown=0;
+ const targets=[['Build a plant like a mango tree.','Tree'],['Build a plant like a rose.','Shrub'],['Build a plant like a tomato.','Herb']];let ti=0,hits=new Set();
+ function classify(){if(st.s===0&&st.t===0&&st.h===0)return['Herb','Small plant with a soft, green, tender stem, like tomato or spinach.'];
+  if(st.s===1&&st.t===1&&st.h===2&&st.b===1)return['Tree','Tall plant with a hard, thick, brown, woody stem. Branches start higher up, like mango or neem.'];
+  if(st.s===1&&st.t===0&&st.h===1&&st.b===0)return['Shrub','Medium plant with many hard, brown stems that branch close to the ground, like rose or hibiscus.'];
+  return['Hmm…','This mix does not match herbs, shrubs or trees well. A plant with a hard, thick, woody stem is usually tall. Adjust one feature at a time.']}
+ function paint(){$$('.seg[data-k]').forEach(sg=>$$('.btn',sg).forEach(b=>b.classList.toggle('sel',+b.dataset.v===st[sg.dataset.k])));
+  const [v,txt]=classify();$('#verdict').textContent=v;$('#vtext').textContent=txt;$('#target').textContent='Challenge: '+targets[ti][0];
+  if(v===targets[ti][1]){hits.add(v);toast('Yes! That is a '+v.toLowerCase()+'.');ti=(ti+1)%3;$('#target').textContent='Challenge: '+targets[ti][0];if(hits.size===3)markDone('plants')}}
+ $$('.seg[data-k] .btn').forEach(b=>b.onclick=()=>{st[b.parentNode.dataset.k]=+b.dataset.v;paint()});
+ $('#bendBtn').onclick=()=>{bendT=1.6;$('#vtext').textContent=st.s===0?'The tender green stem bends easily.':'The hard woody stem is stiff. It hardly bends.'};
+ paint();
+ loop((dt,t)=>{bendT=Math.max(0,bendT-dt);const want=bendT>0?(st.s===0?.5:.05):0;bend=lerp(bend,want,.1);
+  const Ht=[90,190,340][st.h];shown=lerp(shown,Ht,.08);
+  x.fillStyle=DARK;x.fillRect(0,0,640,440);x.fillStyle='#2E4A3A';x.fillRect(0,390,640,50);
+  // child for scale 150px
+  x.fillStyle='#E7C9A9';x.beginPath();x.arc(120,270,16,0,7);x.fill();x.fillStyle='#6A8CFF';x.fillRect(106,288,28,52);x.fillStyle='#334';x.fillRect(108,340,10,50);x.fillRect(122,340,10,50);
+  x.fillStyle='#cde';x.font='14px Atkinson Hyperlegible, sans-serif';x.textAlign='center';x.fillText('You',120,250);
+  const bx=380,by=390,H=shown,col=st.s?'#7A4E2D':'#4FBF5A',w=st.t?24:7;
+  x.strokeStyle=col;x.lineCap='round';
+  const stems=st.b===0&&st.s===1?4:1;
+  for(let k=0;k<stems;k++){const off=(k-(stems-1)/2)*16;x.lineWidth=w;x.beginPath();x.moveTo(bx+off,by);const tipx=bx+off*2.4+Math.sin(t*1.5)*3+bend*H*.8,tipy=by-H*(1-bend*.25);
+   x.quadraticCurveTo(bx+off*1.3+bend*H*.2,by-H*.5,tipx,tipy);x.stroke();
+   // branches
+   const start=st.b===0?.15:.55;x.lineWidth=Math.max(3,w*.45);
+   for(let i=0;i<4;i++){const f=start+(1-start)*i/4,px=lerp(bx+off,tipx,f),py=lerp(by,tipy,f),s=i%2?1:-1,len=H*.22*(1-f*.4);
+    x.beginPath();x.moveTo(px,py);x.lineTo(px+s*len,py-len*.6);x.stroke();
+    for(let j=0;j<3;j++){x.fillStyle=`hsl(${130+j*8},55%,${38+j*7}%)`;x.beginPath();x.ellipse(px+s*len+j*6-6,py-len*.6-j*5,10+st.h*4,6+st.h*2,s*.6,0,7);x.fill()}}
+   if(st.h===2&&st.s){x.fillStyle='#2F8F4E';x.beginPath();x.arc(tipx,tipy+10,70,0,7);x.fill();x.fillStyle='#3FAF5E';x.beginPath();x.arc(tipx-30,tipy+30,45,0,7);x.arc(tipx+35,tipy+25,48,0,7);x.fill()}
+   if(st.s===0&&st.h===0){x.fillStyle='#E44';x.beginPath();x.arc(tipx-14,tipy+30,9,0,7);x.arc(tipx+12,tipy+50,8,0,7);x.fill()}}
+  x.fillStyle='#fff';x.font='800 18px Bricolage Grotesque, sans-serif';x.textAlign='left';x.fillText(['Short: shorter than you','Medium: about your height','Tall: much taller than you'][st.h],20,30)})})();
+Sorter($('#plantSort'),[{t:'Mango',em:'🥭',c:'tree',why:'Mango is tall with a thick woody trunk.'},{t:'Neem',em:'🌳',c:'tree',why:'Neem is a tall tree.'},{t:'Peepal',em:'🌳',c:'tree',why:'Peepal has a thick, hard trunk.'},
+ {t:'Rose',em:'🌹',c:'shrub',why:'Rose has hard stems branching near the ground.'},{t:'Hibiscus',em:'🌺',c:'shrub',why:'Hibiscus is a bushy shrub.'},{t:'Lemon',em:'🍋',c:'shrub',why:'A lemon plant is a shrub with woody stems.'},
+ {t:'Tomato',em:'🍅',c:'herb',why:'Tomato has a soft green stem.'},{t:'Spinach',em:'🥬',c:'herb',why:'Spinach is small with a tender stem.'},{t:'Wheat',em:'🌾',c:'herb',why:'Wheat is a herb with a green stem.'}],
+ [{c:'herb',t:'Herbs',em:'🌱'},{c:'shrub',t:'Shrubs',em:'🌿'},{c:'tree',t:'Trees',em:'🌳'}]);
+
+/* LEAF & ROOT */
+(()=>{const x=hiCanvas($('#leafCv'),640,460);const P=[['Hibiscus',0],['Mango',0],['Mustard',0],['Grass',1],['Banana',1],['Maize',1]];
+ let cur=0,p=0,pull=0,pulling=false,found={};
+ $('#leafPick').innerHTML=P.map((q,i)=>`<button class="btn" data-i="${i}">${q[0]}</button>`).join('');
+ function sel(i){cur=i;p=0;pull=0;pulling=false;$$('#leafPick .btn').forEach((b,k)=>b.classList.toggle('sel',k===i));$('#leafHud').textContent=P[i][0];$('#leafObs').textContent='Look at the pattern of veins. Then pull out the plant.'}
+ $$('#leafPick .btn').forEach(b=>b.onclick=()=>sel(+b.dataset.i));
+ $('#pullBtn').onclick=()=>{pulling=true};
+ function rule(){const r=[['Reticulate venation (net-like)','Taproot (one main root)'],['Parallel venation','Fibrous roots (a bunch)']];
+  $('#ruleBox').innerHTML=r.map((row,k)=>row.map(c=>`<div class="${found[k]?'got':''}">${found[k]?c:'?'}</div>`).join('')).join('')}
+ rule();sel(0);
+ loop((dt,t)=>{p=Math.min(1,p+dt*.6);if(pulling)pull=Math.min(1,pull+dt*.7);const par=P[cur][1];
+  x.fillStyle=DARK;x.fillRect(0,0,640,460);
+  // soil
+  x.fillStyle='#5B4030';x.fillRect(0,300,640,160);for(let i=0;i<70;i++){x.fillStyle='rgba(0,0,0,.15)';x.fillRect((i*137)%640,300+(i*71)%160,4,3)}
+  const up=pull*110,base=300-up;
+  // stem
+  x.strokeStyle='#3E9E52';x.lineWidth=8;x.beginPath();x.moveTo(320,base);x.lineTo(320,base-100);x.stroke();
+  drawLeaf(x,320,base-50,par?150:120,par?28:58,par?-.6:-1,par,p);drawLeaf(x,320,base-85,par?150:120,par?28:58,par?.55:1,par,p);
+  // roots
+  x.strokeStyle='#E8D2A8';x.lineCap='round';const g=Math.min(1,.4+pull);
+  if(!par){x.lineWidth=7;x.beginPath();x.moveTo(320,base);x.quadraticCurveTo(326,base+80*g,318,base+130*g);x.stroke();x.lineWidth=2.5;
+    for(let i=1;i<8;i++){const y=base+i*16*g,s=i%2?1:-1;x.beginPath();x.moveTo(321,y);x.quadraticCurveTo(320+s*30,y+8,320+s*(60-i*5),y+26);x.stroke()}}
+  else{x.lineWidth=2.5;for(let i=-6;i<=6;i++){x.beginPath();x.moveTo(320,base);x.bezierCurveTo(320+i*8,base+40*g,320+i*14,base+90*g,320+i*16+Math.sin(i)*6,base+120*g);x.stroke()}}
+  if(pull>=1&&pulling){pulling=false;found[par]=1;rule();$('#leafObs').innerHTML=P[cur][0]+' has '+(par?'<b>parallel venation</b> and <b>fibrous roots</b>.':'<b>reticulate venation</b> and a <b>taproot</b>.')+(found[0]&&found[1]?' <span class="hl">You found the rule!</span>':' Now try a plant with the other kind of leaf.');
+   if(found[0]&&found[1])markDone('leaf')}
+  x.fillStyle='#fff';x.font='800 17px Bricolage Grotesque, sans-serif';x.textAlign='right';x.fillText(par?'Parallel veins':'Net of veins',620,30)})})();
+
+/* SEEDS */
+(()=>{const x=hiCanvas($('#seedCv'),640,380);let o=[0,0],tg=[0,0],seen=new Set();
+ $$('[data-seed]').forEach(b=>b.onclick=()=>{const i=+b.dataset.seed;tg[i]=1;seen.add(i);
+   $('#seedObs').innerHTML=i===0?'The chickpea splits into <span class="hl">two cotyledons</span>. It is a <b>dicot</b> seed.':'The maize seed has only <span class="hl">one cotyledon</span>. It is a <b>monocot</b> seed.';if(seen.size===2)markDone('seed')});
+ $('#seedReset').onclick=()=>{tg=[0,0]};
+ loop((dt,t)=>{o=o.map((v,i)=>lerp(v,tg[i],.06));x.fillStyle=DARK;x.fillRect(0,0,640,380);x.fillStyle='#fff';x.font='800 20px Bricolage Grotesque, sans-serif';x.textAlign='center';
+  x.fillText('Chickpea',170,40);x.fillText('Maize',470,40);
+  // chickpea: two halves
+  const a=o[0];for(const s of[-1,1]){x.save();x.translate(170+s*a*60,200);x.rotate(s*a*.5);x.fillStyle='#E9C98A';x.beginPath();x.ellipse(0,0,70,85,0,s<0?Math.PI/2:-Math.PI/2,s<0?Math.PI*1.5:Math.PI/2);x.fill();x.strokeStyle='#B8924C';x.lineWidth=2;x.stroke();x.restore()}
+  if(a<.3){x.fillStyle='rgba(160,110,50,'+(1-a*3)+')';x.beginPath();x.ellipse(170,200,74,89,0,0,7);x.fill()}
+  if(a>.5){x.fillStyle='#fff';x.font='15px Atkinson Hyperlegible, sans-serif';x.fillText('cotyledon 1',95,320);x.fillText('cotyledon 2',245,320);x.fillStyle='#8BCB6A';x.beginPath();x.ellipse(170,140,6,14,0,0,7);x.fill()}
+  // maize
+  const b=o[1];x.save();x.translate(470,200);x.fillStyle='#F2C230';x.beginPath();x.moveTo(-60,-70);x.quadraticCurveTo(0,-110,60,-70);x.lineTo(30,90);x.quadraticCurveTo(0,105,-30,90);x.closePath();x.fill();
+  if(b>.05){x.globalAlpha=b;x.fillStyle='#FFF2C2';x.beginPath();x.moveTo(-50,-60);x.quadraticCurveTo(0,-95,50,-60);x.lineTo(24,82);x.quadraticCurveTo(0,94,-24,82);x.closePath();x.fill();
+   x.fillStyle='#E8B24A';x.beginPath();x.ellipse(18,40,18,40,.15,0,7);x.fill();x.fillStyle='#8BCB6A';x.fillRect(14,20,7,30);x.globalAlpha=1;
+   x.fillStyle='#fff';x.font='15px Atkinson Hyperlegible, sans-serif';x.textAlign='left';x.fillText('one cotyledon',60,60);x.strokeStyle='#fff';x.beginPath();x.moveTo(58,55);x.lineTo(32,42);x.stroke()}
+  x.restore()})})();
+
+/* HABITATS */
+(()=>{const H={
+ desert:{n:'Hot desert',bg:['#F7C873','#E39B4A'],sky:'#FFE3A3',items:[['🐪',22,62,'Camel','Long legs keep its body away from the hot sand. Its hump stores fat, which helps when food is scarce.'],['🌵',62,58,'Cactus','A thick stem stores water. Leaves are reduced to spines, so less water is lost.'],['🦎',80,80,'Lizard','Lives in burrows to escape the daytime heat.']]},
+ mount:{n:'Mountains',bg:['#9EB6C8','#56708A'],sky:'#DCEBF5',items:[['🌲',28,58,'Deodar','Conical shape and sloping branches let snow slide off easily.'],['🐐',62,70,'Mountain goat','Strong hooves help it run on rocky slopes.'],['🐂',82,62,'Yak','Long thick hair keeps it warm in the cold.']]},
+ ocean:{n:'Ocean',bg:['#3C8DC8','#123E68'],sky:'#7EC8F0',items:[['🐟',30,55,'Fish','A streamlined body and fins help it move easily through water. It breathes with gills.'],['🐢',65,72,'Sea turtle','Flipper-like limbs help it swim. Its habitat is the sea.'],['🐙',80,40,'Octopus','A soft body lets it squeeze into rock gaps to hide.']]},
+ forest:{n:'Forest',bg:['#3E9E5A','#1F5E35'],sky:'#BFE8C8',items:[['🐅',30,68,'Tiger','Striped coat blends with the grass and shadows while hunting.'],['🐒',65,32,'Monkey','Long arms, legs and tail help it climb and swing on trees.'],['🦜',82,55,'Parrot','A strong curved beak cracks open nuts and fruits.']]}};
+ let cur='desert',seen={};$('#habBtns').innerHTML=Object.entries(H).map(([k,v])=>`<button class="btn ghost" data-h="${k}">${v.n}</button>`).join('');
+ function show(k){cur=k;const h=H[k];$$('#habBtns .btn').forEach(b=>b.classList.toggle('sel',b.dataset.h===k));
+  $('#habSv').innerHTML=`<defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${h.sky}"/><stop offset=".45" stop-color="${h.sky}"/><stop offset=".46" stop-color="${h.bg[0]}"/><stop offset="1" stop-color="${h.bg[1]}"/></linearGradient></defs><rect width="700" height="420" fill="url(#hg)"/>`+
+   (k==='desert'?'<circle cx="600" cy="70" r="40" fill="#FFF3B0"><animate attributeName="r" values="38;44;38" dur="3s" repeatCount="indefinite"/></circle><path d="M0 230 Q150 180 300 230 T700 220 V420 H0Z" fill="#EEB866"/>':'')+
+   (k==='mount'?'<path d="M0 260 L150 90 L260 220 L380 60 L520 230 L620 120 L700 200 V420 H0Z" fill="#7C93A8"/><path d="M130 112 L150 90 L172 116Z M360 84 L380 60 L404 90Z M600 142 L620 120 L640 146Z" fill="#fff"/>':'')+
+   (k==='ocean'?'<g opacity=".35">'+[...Array(8)].map((_,i)=>`<circle cx="${80+i*80}" cy="380" r="5" fill="#fff"><animate attributeName="cy" values="400;180" dur="${3+i%3}s" repeatCount="indefinite"/></circle>`).join('')+'</g>':'')+
+   (k==='forest'?[...Array(7)].map((_,i)=>`<circle cx="${i*110+30}" cy="${150+i%2*30}" r="70" fill="#2D7A45" opacity=".8"/>`).join(''):'');
+  $$('.spot',$('#habScene')).forEach(s=>s.remove());
+  h.items.forEach((it,i)=>{const b=document.createElement('button');b.className='spot'+(seen[k+i]?' seen':'');b.textContent=it[0];b.style.left=it[1]+'%';b.style.top=it[2]+'%';b.setAttribute('aria-label',it[3]);
+   b.onclick=()=>{seen[k+i]=1;b.classList.add('seen');$('#habCard').innerHTML=`<h3>${it[0]} ${it[3]}</h3><p><b>Adaptation:</b> ${it[4]}</p><p><span class="pill">Habitat: ${h.n}</span></p>`;if(Object.keys(seen).length>=8)markDone('hab')};$('#habScene').appendChild(b)})}
+ $$('#habBtns .btn').forEach(b=>b.onclick=()=>show(b.dataset.h));show('desert')})();
+Sorter($('#habSort'),[{t:'Camel',em:'🐪',c:'d'},{t:'Cactus',em:'🌵',c:'d'},{t:'Deodar',em:'🌲',c:'m'},{t:'Yak',em:'🐂',c:'m'},{t:'Rhododendron',em:'🌸',c:'m'},{t:'Fish',em:'🐟',c:'w'},{t:'Sea turtle',em:'🐢',c:'w'},{t:'Lotus',em:'🪷',c:'w'},{t:'Tiger',em:'🐅',c:'f'},{t:'Monkey',em:'🐒',c:'f'}],
+ [{c:'d',t:'Desert',em:'🏜️'},{c:'m',t:'Mountains',em:'🏔️'},{c:'w',t:'Water',em:'🌊'},{c:'f',t:'Forest',em:'🌳'}]);
+
+/* MOVEMENT */
+(()=>{const x=hiCanvas($('#moveCv'),1100,260);const A=[['🐍','crawls with its whole body',0],['🐦','flies with wings',1],['🐟','swims with fins and tail',2],['🐄','walks on legs',3],['🐸','hops with legs',4],['🐌','slides on its muscular foot',5]];
+ loop((dt,t)=>{x.fillStyle=DARK;x.fillRect(0,0,1100,260);x.font='44px serif';x.textAlign='center';
+  A.forEach((a,i)=>{const cx=95+i*182;let px=cx,py=140,r=0;const k=a[2];
+   if(k===0){px=cx+Math.sin(t*2)*30;py=150+Math.sin(t*6)*6;r=Math.sin(t*6)*.2}
+   if(k===1){px=cx+Math.cos(t)*40;py=110+Math.sin(t*2)*25}
+   if(k===2){px=cx+Math.sin(t*1.5)*40;py=140+Math.sin(t*4)*8;r=Math.cos(t*1.5)*.15}
+   if(k===3){px=cx+Math.sin(t*.8)*35;py=150+Math.abs(Math.sin(t*5))*-4}
+   if(k===4){px=cx+Math.sin(t)*35;py=160-Math.abs(Math.sin(t*3))*60}
+   if(k===5){px=cx+Math.sin(t*.4)*30;py=160}
+   x.save();x.translate(px,py);x.rotate(r);x.fillText(a[0],0,15);x.restore();
+   x.fillStyle='#cde';x.font='15px Atkinson Hyperlegible, sans-serif';x.fillText(a[1],cx,235);x.font='44px serif'})})})();
+Sorter($('#moveSort'),[{t:'Cow',em:'🐄',c:'l'},{t:'Frog',em:'🐸',c:'l'},{t:'Horse',em:'🐎',c:'l'},{t:'Sparrow',em:'🐦',c:'w'},{t:'Butterfly',em:'🦋',c:'w'},{t:'Bat',em:'🦇',c:'w'},{t:'Fish',em:'🐟',c:'f'},{t:'Shark',em:'🦈',c:'f'},{t:'Snake',em:'🐍',c:'b'},{t:'Earthworm',em:'🪱',c:'b'}],
+ [{c:'l',t:'Legs',em:'🦵'},{c:'w',t:'Wings',em:'🪽'},{c:'f',t:'Fins',em:'🐠'},{c:'b',t:'Whole body',em:'〰️'}],{done:'move'});
+
+Quiz($('#quiz'),[
+ {q:'A plant is short and has a soft, green, tender stem. It is a…',o:['Tree','Shrub','Herb','Climber'],a:2,e:'Herbs are small plants with soft, green stems, like tomato.'},
+ {q:'Which plant has many hard stems that branch close to the ground?',o:['Mango','Rose','Tomato','Grass'],a:1,e:'Rose is a shrub. Its woody stems branch close to the ground.'},
+ {q:'A leaf has a net-like pattern of veins. What kind of root will the plant most likely have?',o:['Fibrous roots','Taproot','No roots','Floating roots'],a:1,e:'Plants with reticulate venation usually have a taproot.'},
+ {q:'How many cotyledons does a maize seed have?',o:['One','Two','Three','None'],a:0,e:'Maize is a monocot: it has one cotyledon.'},
+ {q:'Why do deodar trees have a conical shape with sloping branches?',o:['To catch more rain','So that snow slides off easily','To look beautiful','To store water'],a:1,e:'The cone shape lets snow slide off, so branches do not break under its weight.'},
+ {q:'What does the hump of a camel store?',o:['Water','Fat','Air','Sand'],a:1,e:'The hump stores fat, which helps the camel survive when food is scarce.'},
+ {q:'The place where a plant or animal lives is called its…',o:['Adaptation','Habitat','Venation','Biodiversity'],a:1,e:'A habitat provides food, water, air, shelter and other needs.'},
+ {q:'Which feature helps a fish move easily through water?',o:['Thick fur','Streamlined body','Long neck','Hump'],a:1,e:'A streamlined body, along with fins, helps fish move easily in water.'},
+ {q:'Grass and banana leaves have…',o:['Reticulate venation','Parallel venation','No veins','Spines'],a:1,e:'In grass and banana leaves, the veins run parallel to each other.'}
+],'quiz');
+</script>
+
+<a href="../index.html#/class-6" style="position:fixed;right:16px;bottom:16px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;background:rgba(255,255,255,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.95);box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font:900 14px/1 Nunito,'Segoe UI',system-ui,sans-serif;text-decoration:none">🏠 Lab Home</a></body></html>

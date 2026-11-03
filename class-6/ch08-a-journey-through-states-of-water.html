@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>States of Water Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3F7F4; --grid:#DCE9E3; --ink:#18324A; --ink2:#4B6274; --bench:#1D2A33; --bench2:#26363F;
+  --marker:#FFD84D; --ok:#1E9E6A; --bad:#D64545; --line:#C9D9D2; --card:#FFFFFF;
+  --acc:#2F7DD1; --acc2:#9CC8F5; --accInk:#fff;
+  --r-lg:22px; --r-md:14px; --r-sm:9px;
+  --fh:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --fb:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);font:17px/1.55 var(--fb);background:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;}
+h1,h2,h3,h4{font-family:var(--fh);line-height:1.1;margin:0 0 .4em;letter-spacing:-.01em}
+p{margin:0 0 .8em}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--marker);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* hero */
+.hero{padding:44px 0 26px}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center}
+.chapno{font-family:var(--fh);font-weight:800;font-size:15px;color:var(--acc);display:inline-flex;gap:8px;align-items:center;background:#fff;border:2px solid var(--acc);border-radius:99px;padding:3px 14px 3px 4px}
+.chapno b{background:var(--acc);color:var(--accInk);border-radius:99px;min-width:28px;height:28px;display:grid;place-items:center;font-size:15px}
+.hero h1{font-size:clamp(38px,5.6vw,68px);font-weight:800;margin:16px 0 14px}
+.hero h1 .u{background:linear-gradient(transparent 62%,var(--marker) 62% 92%,transparent 92%)}
+.hero .lede{font-size:19px;color:var(--ink2);max-width:52ch}
+.hero-stage{background:var(--bench);border-radius:var(--r-lg);aspect-ratio:5/4;position:relative;overflow:hidden;box-shadow:0 18px 0 -8px var(--acc2),0 24px 40px -18px rgba(24,50,74,.45)}
+.hero-stage canvas,.hero-stage svg{width:100%;height:100%;display:block}
+.procedure{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:6px;counter-reset:p}
+.procedure li{counter-increment:p;display:flex;gap:10px;align-items:center;font-weight:700}
+.procedure li::before{content:counter(p);width:26px;height:26px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-size:13px;flex:none}
+.procedure li.done::before{content:"✓";background:var(--ok);border-color:var(--ok);color:#fff}
+
+/* tab bar */
+.bar{position:sticky;top:0;z-index:20;background:rgba(243,247,244,.92);backdrop-filter:blur(8px);border-bottom:2px solid var(--line)}
+.bar .wrap{display:flex;gap:8px;align-items:center;overflow-x:auto;padding-top:10px;padding-bottom:10px;scrollbar-width:thin}
+.tab{border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:99px;padding:7px 15px;font-weight:700;font-size:15px;white-space:nowrap;transition:transform .15s}
+.tab:hover{transform:translateY(-2px)}
+.tab[aria-selected=true]{background:var(--ink);color:#fff}
+.tab .tick{display:none;color:var(--ok);margin-left:6px}
+.tab.done .tick{display:inline}
+.tab[aria-selected=true] .tick{color:var(--marker)}
+.meter{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;white-space:nowrap;padding-left:12px}
+.meter i{display:block;width:90px;height:9px;background:#fff;border:2px solid var(--ink);border-radius:9px;overflow:hidden}
+.meter i b{display:block;height:100%;width:0;background:var(--ok);transition:width .5s}
+
+/* panels */
+main{padding:28px 0 60px}
+.panel{display:none;animation:rise .35s ease}
+.panel.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.panel-head{display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.panel-head h2{font-size:clamp(26px,3.4vw,38px);margin:0}
+.panel-head .aim{color:var(--ink2);max-width:62ch;margin:6px 0 0}
+.lab{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:20px;align-items:start}
+.lab.wide{grid-template-columns:1fr}
+.stage{background:var(--bench);border-radius:var(--r-lg);position:relative;overflow:hidden;color:#E8F0F2;min-height:300px}
+.stage canvas,.stage>svg{display:block;width:100%;height:auto}
+.stage .hud{position:absolute;left:14px;top:12px;font-weight:700;font-size:14px;background:rgba(0,0,0,.35);padding:4px 10px;border-radius:8px;pointer-events:none}
+.side{display:grid;gap:14px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:var(--r-md);padding:16px 18px}
+.card h3{font-size:19px}
+.card.note{background:#FFFBE6;border-color:#F1DF8F}
+.card.note h3::before{content:"✎ ";color:#B98B00}
+.card.why{border-left:7px solid var(--acc)}
+.ctrl{display:grid;gap:12px}
+.ctrl label{font-weight:700;font-size:15px;display:grid;gap:4px}
+.ctrl .row{display:flex;gap:8px;flex-wrap:wrap}
+input[type=range]{width:100%;accent-color:var(--acc);height:28px}
+.btn{border:2px solid var(--ink);background:var(--acc);color:var(--accInk);border-radius:12px;padding:9px 16px;font-weight:700;box-shadow:0 4px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn.sm{padding:6px 11px;font-size:14px;border-radius:10px;box-shadow:0 3px 0 var(--ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.sel{background:var(--marker);color:var(--ink)}
+.readout{font-family:var(--fh);font-size:30px;font-weight:800;line-height:1}
+.readout small{font-size:14px;font-weight:600;color:var(--ink2);display:block;margin-top:4px;font-family:var(--fb)}
+.obs{min-height:3em;font-size:16px}
+.obs.ok{color:var(--ok)} .obs.bad{color:var(--bad)}
+.hl{background:linear-gradient(transparent 55%,var(--marker) 55%);font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pill:empty{display:none}
+.pill{display:inline-block;border-radius:99px;padding:2px 10px;font-size:13px;font-weight:700;background:var(--acc2);color:var(--ink)}
+table.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th,.tbl td{border-bottom:1.5px solid var(--line);padding:6px 8px;text-align:left}
+.tbl th{font-family:var(--fh)}
+
+/* sorting game */
+.sorter{display:grid;gap:14px}
+.tray{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:10px;border:2px dashed var(--line);border-radius:var(--r-md);background:#fff}
+.chip{border:2px solid var(--ink);background:#fff;border-radius:12px;padding:7px 12px;font-weight:700;font-size:15px;user-select:none;touch-action:none;display:inline-flex;align-items:center;gap:6px;transition:transform .15s,background .2s}
+.chip .em{font-size:22px;line-height:1}
+.chip.picked{background:var(--marker);transform:scale(1.06) rotate(-2deg)}
+.chip.right{border-color:var(--ok);background:#E3F6EC;cursor:default}
+.chip.dragging{position:fixed;z-index:999;pointer-events:none;box-shadow:0 12px 24px rgba(0,0,0,.25)}
+.bins{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.bin{border:2px solid var(--ink);border-radius:var(--r-md);background:#fff;min-height:140px;padding:10px;display:flex;flex-direction:column;gap:6px;transition:background .2s,transform .2s}
+.bin h4{font-size:17px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.bin.hover{background:#FFF6CC;transform:scale(1.02)}
+.bin .chips{display:flex;flex-wrap:wrap;gap:6px}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+
+/* order game */
+.order{display:flex;flex-wrap:wrap;gap:8px}
+.slots{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.slot{min-width:120px;min-height:44px;border:2px dashed var(--ink2);border-radius:12px;display:grid;place-items:center;padding:6px 10px;font-weight:700;color:var(--ink2);background:#fff}
+.slot.filled{border-style:solid;border-color:var(--ok);color:var(--ink);background:#E3F6EC}
+
+/* quiz */
+.quiz{max-width:760px;margin:0 auto}
+.qcard{background:#fff;border:2px solid var(--ink);border-radius:var(--r-lg);padding:24px;box-shadow:8px 8px 0 var(--acc2)}
+.qtop{display:flex;justify-content:space-between;font-weight:700;color:var(--ink2);margin-bottom:10px;font-size:15px}
+.qtext{font-family:var(--fh);font-size:24px;font-weight:700;margin-bottom:16px}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:11px 14px;font-weight:700;display:flex;gap:12px;align-items:center}
+.opt:hover:not([disabled]){border-color:var(--ink)}
+.opt .k{width:30px;height:30px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;flex:none;font-size:14px}
+.opt.right{border-color:var(--ok);background:#E3F6EC}
+.opt.wrong{border-color:var(--bad);background:#FCE8E8}
+.qexp{margin-top:14px;padding:12px 14px;border-radius:12px;background:#F2F6FA;display:none}
+.qexp.on{display:block;animation:rise .3s}
+.qnav{display:flex;justify-content:flex-end;margin-top:16px}
+.score{text-align:center}
+.score .big{font-family:var(--fh);font-size:72px;font-weight:800;color:var(--acc)}
+
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:22px}
+.fact{background:#fff;border:2px solid var(--line);border-radius:var(--r-md);padding:14px 16px;font-size:15px}
+.fact b{font-family:var(--fh);display:block;font-size:17px;margin-bottom:4px;color:var(--acc)}
+
+footer{padding:24px 0 40px;color:var(--ink2);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:12px;font-weight:700;z-index:1000;transition:transform .35s cubic-bezier(.2,1.4,.4,1);max-width:90vw;text-align:center}
+.toast.on{transform:translate(-50%,0)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:999}
+
+@media (max-width:860px){
+  .hero .wrap,.lab{grid-template-columns:1fr}
+  .hero{padding-top:26px}
+  .meter i{width:60px}
+  .grid2{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+
+:root{--acc:#2C7FD6;--acc2:#A9D3FF}
+.state{font-family:var(--fh);font-size:34px;font-weight:800;color:var(--acc)}
+.vars{display:grid;gap:8px}
+.vars .row{align-items:center}
+.vars .row b{min-width:110px}
+.lbls{display:flex;flex-wrap:wrap;gap:6px}
+.lbls .chip.used{opacity:.35;pointer-events:none}
+.stage canvas{touch-action:none}
+
+</style><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"></head><body>
+
+
+<header class="hero"><div class="wrap">
+  <div>
+    <span class="chapno"><b>8</b>Chapter 8</span>
+    <h1>A Journey through States of <span class="u">Water</span></h1>
+    <p class="lede">Ice, water and water vapour are the same substance in different states. Melt, boil, evaporate and condense water, then follow it all the way around the water cycle.</p>
+    <ol class="procedure">
+      <li data-t="states">Heat and cool water</li>
+      <li data-t="evap">Race to evaporate</li>
+      <li data-t="cond">Catch water from the air</li>
+      <li data-t="matka">Cool a matka</li>
+      <li data-t="cycle">Label the water cycle</li>
+      <li data-t="quiz">Check what you learnt</li>
+    </ol>
+  </div>
+  <div class="hero-stage"><canvas id="heroCv"></canvas></div>
+</div></header>
+
+<nav class="bar"><div class="wrap">
+  <button class="tab" data-t="states">Three states<span class="tick">✓</span></button>
+  <button class="tab" data-t="evap">Evaporation race<span class="tick">✓</span></button>
+  <button class="tab" data-t="cond">Condensation<span class="tick">✓</span></button>
+  <button class="tab" data-t="matka">Cooling effect<span class="tick">✓</span></button>
+  <button class="tab" data-t="cycle">Water cycle<span class="tick">✓</span></button>
+  <button class="tab" data-t="quiz">Quiz<span class="tick">✓</span></button>
+  <div class="meter"><i><b></b></i><span></span></div>
+</div></nav>
+
+<main class="wrap">
+<section class="panel" id="p-states">
+  <div class="panel-head"><div><h2>Inside ice, water and vapour</h2><p class="aim">Change the temperature and watch the tiny particles of water. Then pour it into a container of a different shape.</p></div></div>
+  <div class="lab">
+    <div class="stage"><canvas id="stCv"></canvas><div class="hud" id="stHud"></div></div>
+    <div class="side"><div class="card ctrl"><label>Temperature <span id="tLbl"></span><input type="range" id="temp" min="-20" max="120" value="-10"></label><button class="btn ghost" id="swap">Move it to a different container</button></div>
+      <div class="card"><div class="state" id="stName">Solid</div><p class="obs" id="stObs"></p></div>
+      <div class="card note"><p>Melting: solid → liquid. Freezing: liquid → solid.<br>Evaporation: liquid → gas. Condensation: gas → liquid.</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-evap">
+  <div class="panel-head"><div><h2>Which dries first?</h2><p class="aim">Set up two dishes with the same amount of water. Change <b>only one thing</b> between them, so the test is fair. Then start the clock.</p></div></div>
+  <div class="stage"><canvas id="evCv"></canvas><div class="hud" id="evHud"></div></div>
+  <div class="lab" style="margin-top:14px">
+    <div class="card vars" id="vars"></div>
+    <div class="side"><div class="card ctrl"><button class="btn" id="evGo">Start the clock</button></div><div class="card why"><p class="obs" id="evObs">Evaporation happens at any temperature, from the surface of the water.</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-cond">
+  <div class="panel-head"><div><h2>Water from thin air</h2><p class="aim">A glass tumbler with ice-cold water stands on a digital balance. Watch its outer surface and the reading for 30 minutes.</p></div><button class="btn ghost sm" id="cdReset">Start again</button></div>
+  <div class="lab">
+    <div class="stage"><canvas id="cdCv"></canvas><div class="hud" id="cdHud">0 min</div></div>
+    <div class="side"><div class="card ctrl"><label><span><input type="checkbox" id="colour"> Use coloured water inside</span></label><div class="row"><button class="btn" id="cdGo">Run for 30 minutes</button></div></div>
+      <div class="card"><table class="tbl"><thead><tr><th>Time</th><th>Mass</th></tr></thead><tbody id="cdTbl"></tbody></table><p class="obs" id="cdObs"></p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-matka">
+  <div class="panel-head"><div><h2>The pot-in-pot cooler</h2><p class="aim">A small pot sits inside a large earthen pot with sand in between. Pour water in the sand and compare it with a dry setup on a hot day.</p></div></div>
+  <div class="lab">
+    <div class="stage"><canvas id="mkCv"></canvas></div>
+    <div class="side"><div class="card ctrl"><div class="row"><button class="btn" id="wetSand">Pour water into the sand</button><button class="btn ghost" id="fanOn">Switch on a fan</button></div><label>Hours passed<input type="range" id="hrs" min="0" max="6" step="0.1" value="0"></label></div>
+      <div class="card why"><p class="obs" id="mkObs">Both pots start at 35 °C.</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-cycle">
+  <div class="panel-head"><div><h2>Label the water cycle</h2><p class="aim">Tap a label, then tap the yellow spot where it belongs.</p></div></div>
+  <div class="lab wide">
+    <div class="stage"><canvas id="wcCv"></canvas></div>
+    <div class="card"><div class="lbls" id="lbls"></div><p class="obs" id="wcObs" style="margin-top:8px"></p></div>
+  </div>
+</section>
+
+<section class="panel" id="p-quiz">
+  <div class="panel-head"><div><h2>Check what you learnt</h2></div></div>
+  <div class="quiz" id="quiz"></div>
+  <div class="facts">
+    <div class="fact"><b>Clouds need dust</b>Water vapour condenses on tiny dust particles in the air. That is how cloud droplets form.</div>
+    <div class="fact"><b>Humidity</b>The amount of water vapour in the air is called humidity. Clothes dry slowly on humid days.</div>
+    <div class="fact"><b>Why sweat cools you</b>As sweat evaporates, it takes heat from your skin. That is the cooling effect of evaporation.</div>
+  </div>
+</section>
+</main>
+<footer><a href="../index.html#/class-6" style="color:inherit;font-weight:700">← All Grade 6 labs</a><br>Based on NCERT Curiosity, Grade 6, Chapter 8: A Journey through States of Water</footer>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LAB={done:new Set(),total:0,key:'lab-'+location.pathname.split('/').pop()};
+function store(get,val){try{if(get)return JSON.parse(localStorage.getItem(LAB.key)||'[]');localStorage.setItem(LAB.key,JSON.stringify(val))}catch(e){return []}}
+function toast(msg,ms=2600){let t=$('.toast');if(!t){t=document.createElement('div');t.className='toast';document.body.appendChild(t)}
+  t.textContent=msg;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),ms)}
+function markDone(id){if(LAB.done.has(id))return;LAB.done.add(id);store(false,[...LAB.done]);paintProgress();
+  if(LAB.done.size===LAB.total){confetti();toast('You completed every experiment in this lab!')}}
+function paintProgress(){$$('.tab[data-t]').forEach(b=>b.classList.toggle('done',LAB.done.has(b.dataset.t)));
+  $$('.procedure li[data-t]').forEach(l=>l.classList.toggle('done',LAB.done.has(l.dataset.t)));
+  const m=$('.meter b'),n=$('.meter span');if(m){m.style.width=(100*LAB.done.size/LAB.total)+'%';n.textContent=LAB.done.size+' of '+LAB.total+' done'}}
+const tabHooks={};
+function onTab(id,fn){(tabHooks[id]=tabHooks[id]||[]).push(fn)}
+function showTab(id,scroll){$$('.tab[data-t]').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===id));
+  $$('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+id));(tabHooks[id]||[]).forEach(f=>f());
+  if(scroll){const bar=$('.bar');window.scrollTo({top:bar.offsetTop,behavior:'smooth'})}}
+function initTabs(){const tabs=$$('.tab[data-t]');LAB.total=tabs.length;store(true).forEach(x=>LAB.done.add(x));
+  tabs.forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.t,true)));
+  $$('.procedure li[data-t]').forEach(l=>{l.style.cursor='pointer';l.addEventListener('click',()=>showTab(l.dataset.t,true))});
+  paintProgress();showTab(tabs[0].dataset.t)}
+document.addEventListener('DOMContentLoaded',()=>{if($('.tab'))initTabs()});
+
+/* confetti */
+function confetti(){let c=$('#confetti');if(!c){c=document.createElement('canvas');c.id='confetti';document.body.appendChild(c)}
+  const x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;const cols=['#FFD84D','#1E9E6A','#2F7DD1','#E8567C','#8A5CF6','#FF8A3D'];
+  const ps=Array.from({length:160},()=>({x:innerWidth/2+(Math.random()-.5)*200,y:innerHeight*.35,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,r:Math.random()*6+4,c:cols[Math.random()*6|0],a:Math.random()*6,va:(Math.random()-.5)*.4}));
+  let f=0;(function tick(){x.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.vx*=.99;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()});
+    if(++f<180)requestAnimationFrame(tick);else x.clearRect(0,0,c.width,c.height)})()}
+
+/* hi-dpi canvas: returns ctx sized to logical w,h */
+function hiCanvas(cv,w,h){const d=Math.min(2,window.devicePixelRatio||1);cv.width=w*d;cv.height=h*d;cv.style.aspectRatio=w+'/'+h;const x=cv.getContext('2d');x.setTransform(d,0,0,d,0,0);x.W=w;x.H=h;return x}
+function canvasPoint(cv,e,w,h){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*w/r.width,y:(e.clientY-r.top)*h/r.height}}
+function loop(fn){let last=performance.now(),run=true;function f(t){if(!run)return;const dt=Math.min(.05,(t-last)/1000);last=t;fn(dt,t/1000);requestAnimationFrame(f)}requestAnimationFrame(f);return()=>run=false}
+const lerp=(a,b,t)=>a+(b-a)*t, clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), rand=(a,b)=>a+Math.random()*(b-a);
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+
+/* Quiz: qs=[{q,o:[..],a:index,e:explain}] */
+function Quiz(el,qs,doneId){let i=0,score=0,order=shuffle(qs);
+  function render(){if(i>=order.length){const pct=Math.round(100*score/order.length);
+      el.innerHTML=`<div class="qcard score"><div class="big">${score}/${order.length}</div><h3>${pct>=80?'Brilliant work, scientist!':pct>=50?'Good effort! Revisit the experiments and try again.':'Keep exploring the experiments, then try again.'}</h3><p>Every question comes from what you tested in this lab.</p><button class="btn">Try the quiz again</button></div>`;
+      $('button',el).onclick=()=>{i=0;score=0;order=shuffle(qs);render()};if(pct>=60){confetti();doneId&&markDone(doneId)}return}
+    const q=order[i];el.innerHTML=`<div class="qcard"><div class="qtop"><span>Question ${i+1} of ${order.length}</span><span>Score ${score}</span></div>
+      <div class="qtext">${q.q}</div><div class="opts">${q.o.map((o,k)=>`<button class="opt" data-k="${k}"><span class="k">${'ABCD'[k]}</span>${o}</button>`).join('')}</div>
+      <div class="qexp"></div><div class="qnav"><button class="btn" disabled>Next question</button></div></div>`;
+    $$('.opt',el).forEach(b=>b.onclick=()=>{const k=+b.dataset.k;$$('.opt',el).forEach(x=>x.disabled=true);
+      $$('.opt',el)[q.a].classList.add('right');if(k===q.a){score++}else{b.classList.add('wrong');b.classList.add('shake')}
+      const ex=$('.qexp',el);ex.innerHTML=(k===q.a?'<b>Correct.</b> ':'<b>Not quite.</b> ')+q.e;ex.classList.add('on');
+      const nb=$('.qnav .btn',el);nb.disabled=false;nb.textContent=i===order.length-1?'See my score':'Next question';nb.focus()});
+    $('.qnav .btn',el).onclick=()=>{i++;render()}}
+  render()}
+
+/* Sorter: items=[{t,em,c,why}], bins=[{c,t,em}] ; click a chip then a bin, or drag */
+function Sorter(el,items,bins,opts={}){
+  el.innerHTML=`<div class="sorter"><div class="tray"></div><div class="bins">${bins.map(b=>`<div class="bin" data-c="${b.c}"><h4>${b.em?`<span class="em">${b.em}</span>`:''}${b.t}</h4><div class="chips"></div></div>`).join('')}</div><div class="obs" aria-live="polite"></div></div>`;
+  const tray=$('.tray',el),obs=$('.obs',el);let picked=null,left=items.length;
+  shuffle(items).forEach(it=>{const c=document.createElement('button');c.className='chip';c.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;c._it=it;tray.appendChild(c);
+    c.addEventListener('click',()=>{if(c.classList.contains('right'))return;$$('.chip.picked',el).forEach(x=>x.classList.remove('picked'));picked=c;c.classList.add('picked');obs.className='obs';obs.textContent='Now choose a group for “'+it.t+'”.'});
+    c.addEventListener('pointerdown',e=>{if(c.classList.contains('right'))return;const sx=e.clientX,sy=e.clientY;let ghost=null;
+      const mv=ev=>{if(!ghost&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>8){ghost=c.cloneNode(true);ghost.classList.add('dragging');document.body.appendChild(ghost);c.style.opacity=.3}
+        if(ghost){ghost.style.left=ev.clientX-30+'px';ghost.style.top=ev.clientY-20+'px';$$('.bin',el).forEach(b=>{const r=b.getBoundingClientRect();b.classList.toggle('hover',ev.clientX>r.left&&ev.clientX<r.right&&ev.clientY>r.top&&ev.clientY<r.bottom)})}};
+      const up=ev=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);if(ghost){ghost.remove();c.style.opacity=1;const b=$('.bin.hover',el);$$('.bin',el).forEach(x=>x.classList.remove('hover'));if(b)drop(c,b);c._dragged=true;setTimeout(()=>c._dragged=false,50)}};
+      addEventListener('pointermove',mv);addEventListener('pointerup',up)})});
+  $$('.bin',el).forEach(b=>b.addEventListener('click',()=>{if(picked)drop(picked,b)}));
+  function drop(c,b){const it=c._it;if(it.c===b.dataset.c){c.classList.remove('picked');c.classList.add('right');$('.chips',b).appendChild(c);obs.className='obs ok';obs.innerHTML='✓ '+(it.why||'Correct!');left--;picked=null;
+      if(!left){obs.innerHTML='✓ All sorted! '+(opts.end||'');confetti();opts.done&&markDone(opts.done)}}
+    else{c.classList.add('shake');setTimeout(()=>c.classList.remove('shake'),400);obs.className='obs bad';obs.innerHTML='✗ Not this group. '+(it.hint||'Look again at its features.')}}
+}
+
+/* Order game: items in correct order [{t,em}] */
+function OrderGame(el,items,opts={}){
+  el.innerHTML=`<div class="order"></div><div class="slots">${items.map((_,i)=>`<div class="slot">${i+1}</div>`).join('')}</div><div class="obs" style="margin-top:10px"></div>`;
+  let n=0;const box=$('.order',el),obs=$('.obs',el);
+  shuffle(items.map((x,i)=>({...x,i}))).forEach(it=>{const b=document.createElement('button');b.className='chip';b.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;
+    b.onclick=()=>{if(it.i===n){const s=$$('.slot',el)[n];s.innerHTML=b.innerHTML;s.classList.add('filled');b.remove();n++;obs.className='obs ok';obs.textContent=opts.say?opts.say(it.i):'✓ Right!';
+        if(n===items.length){obs.textContent='✓ Perfect order! '+(opts.end||'');confetti();opts.done&&markDone(opts.done);opts.onDone&&opts.onDone()}}
+      else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);obs.className='obs bad';obs.textContent='✗ That is not step '+(n+1)+'. Think about what has to happen first.'}};box.appendChild(b)})}
+
+const DARK='#1D2A33';
+
+/* HERO: ice cube melting into puddle, evaporating, cloud, rain */
+(()=>{const x=hiCanvas($('#heroCv'),500,400);
+ loop((dt,t)=>{const c=(t%12)/12;x.fillStyle=DARK;x.fillRect(0,0,500,400);x.fillStyle='#2E4A3A';x.fillRect(0,330,500,70);
+  const melt=clamp(c/.3,0,1),ev=clamp((c-.3)/.35,0,1),rain=clamp((c-.7)/.3,0,1);
+  if(melt<1){const s=60*(1-melt);x.fillStyle='rgba(220,240,255,.9)';x.fillRect(250-s/2,330-s,s,s)}
+  const pw=40+melt*90*(1-ev);x.fillStyle='rgba(90,160,240,.8)';x.beginPath();x.ellipse(250,332,pw,8*(1-ev*.8),0,0,7);x.fill();
+  for(let i=0;i<12;i++){const ph=(t*.6+i/12)%1;if(ev>0&&ev<1){x.fillStyle=`rgba(200,230,255,${.6*(1-ph)})`;x.beginPath();x.arc(250+Math.sin(i*3+t)*60*ph,330-ph*220,3,0,7);x.fill()}}
+  const cs=ev*1;x.fillStyle=`rgba(230,240,250,${cs*.9})`;[[-50,0,40],[0,-15,50],[50,0,40]].forEach(([dx,dy,r])=>{x.beginPath();x.arc(250+dx,90+dy,r*cs,0,7);x.fill()});
+  if(rain>0){x.strokeStyle='rgba(140,190,255,.8)';x.lineWidth=2;for(let i=0;i<20;i++){const yy=(t*300+i*53)%200+130;x.beginPath();x.moveTo(190+i*6,yy);x.lineTo(186+i*6,yy+12);x.stroke()}}
+  x.fillStyle='#fff';x.font='800 20px Bricolage Grotesque, sans-serif';x.textAlign='center';x.fillText(melt<1?'Melting':ev<1?'Evaporating':'Condensing and raining',250,380)})})();
+
+/* STATES */
+(()=>{const x=hiCanvas($('#stCv'),640,440);const N=64;let P=[],shape=0,seen=new Set();
+ for(let i=0;i<N;i++){const gx=i%8,gy=Math.floor(i/8);P.push({x:260+gx*16,y:300+gy*16,vx:0,vy:0,hx:gx,hy:gy})}
+ $('#swap').onclick=()=>{shape=1-shape;const T=+$('#temp').value;$('#stObs').innerHTML+=T<0?' <b>The ice keeps its own shape</b> in the new container.':T<100?' <b>The water flows and takes the shape</b> of the new container.':' <b>The vapour spreads out to fill</b> the whole container.';if(seen.size>=3)markDone('states')};
+ function cont(){return shape===0?{l:140,r:500,b:400,t:60,w:(y)=>[140,500]}:{l:120,r:520,b:400,t:60,w:(y)=>{const k=clamp((y-60)/340,0,1);const half=lerp(40,200,Math.sqrt(k));return[320-half,320+half]}}}
+ loop((dt,t)=>{const T=+$('#temp').value,st=T<0?0:T<100?1:2;seen.add(st);$('#tLbl').textContent=T+' °C';
+  $('#stName').textContent=['Solid: ice','Liquid: water','Gas: water vapour'][st];$('#stHud').textContent=['Particles packed tightly, just vibrating','Particles close together, sliding past each other','Particles far apart, moving fast'][st];
+  if(!$('#stObs').dataset.s||+$('#stObs').dataset.s!==st){$('#stObs').dataset.s=st;$('#stObs').textContent=['Ice has a fixed shape. Its particles only vibrate in place.','Water has no fixed shape. It flows and takes the shape of its container.','Water vapour has no fixed shape or volume. It spreads to fill the whole container. We cannot see it!'][st]}
+  const C=cont();x.fillStyle=DARK;x.fillRect(0,0,640,440);
+  x.strokeStyle='rgba(255,255,255,.6)';x.lineWidth=3;x.beginPath();for(let y=C.t;y<=C.b;y+=10){x.lineTo(C.w(y)[0],y)}for(let y=C.b;y>=C.t;y-=10){x.lineTo(C.w(y)[1],y)}x.stroke();
+  const speed=st===0?.0:st===1?60:260,g=st===1?400:st===2?0:0;
+  P.forEach((p,i)=>{if(st===0){const tx=320-64+p.hx*16+8,ty=C.b-8-(7-p.hy)*16-8;p.x=lerp(p.x,tx+Math.sin(t*20+i)*1.5*(1+(T+20)/20),.15);p.y=lerp(p.y,ty+Math.cos(t*23+i)*1.5*(1+(T+20)/20),.15);p.vx=0;p.vy=0}
+   else{p.vy+=g*dt;p.vx+=rand(-1,1)*speed*dt*3;p.vy+=rand(-1,1)*speed*dt*3;const vmax=st===1?120:300;const v=Math.hypot(p.vx,p.vy);if(v>vmax){p.vx*=vmax/v;p.vy*=vmax/v}
+    if(st===2&&v<200){p.vx*=1.05;p.vy*=1.05}
+    p.x+=p.vx*dt;p.y+=p.vy*dt;if(p.y>C.b-7){p.y=C.b-7;p.vy*=-.5}if(p.y<C.t+7){p.y=C.t+7;p.vy*=-1}const w=C.w(p.y);if(p.x<w[0]+7){p.x=w[0]+7;p.vx=Math.abs(p.vx)}if(p.x>w[1]-7){p.x=w[1]-7;p.vx=-Math.abs(p.vx)}
+    if(st===1){P.forEach(q=>{if(q===p)return;const dx=q.x-p.x,dy=q.y-p.y,d=Math.hypot(dx,dy);if(d<14&&d>0){const f=(14-d)/2;p.x-=dx/d*f;p.y-=dy/d*f}})}}
+   x.fillStyle=['#CDEBFF','#4E9BEA','rgba(200,225,255,.85)'][st];x.beginPath();x.arc(p.x,p.y,6.5,0,7);x.fill();if(st===0){x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=1;x.stroke()}});
+  if(T>=95&&T<100){x.fillStyle='#FFD84D';x.font='16px Atkinson Hyperlegible, sans-serif';x.textAlign='center';x.fillText('Close to boiling (100 °C)!',320,40)}
+  if(T>=-2&&T<=2){x.fillStyle='#FFD84D';x.font='16px Atkinson Hyperlegible, sans-serif';x.textAlign='center';x.fillText('Melting point of ice: 0 °C',320,40)}})})();
+
+/* EVAPORATION */
+(()=>{const x=hiCanvas($('#evCv'),1100,340);const V=[['area','Surface area',['Bottle cap','Plate']],['sun','Place',['Shade','Sunlight']],['wind','Air',['Still','Windy']],['hum','Weather',['Humid','Dry']]];
+ const S=[{area:0,sun:0,wind:0,hum:0},{area:0,sun:0,wind:0,hum:0}];let run=false,tm=0,w=[1,1],done=[null,null],learned=new Set();
+ $('#vars').innerHTML='<h3>Set up the two dishes</h3>'+V.map(v=>`<div class="row"><b>${v[1]}</b>${[0,1].map(d=>`<select data-d="${d}" data-k="${v[0]}" style="font:inherit;padding:6px;border:2px solid var(--ink);border-radius:8px">${v[2].map((o,i)=>`<option value="${i}">Dish ${'AB'[d]}: ${o}</option>`).join('')}</select>`).join('')}</div>`).join('');
+ $$('#vars select').forEach(s=>s.onchange=()=>{S[s.dataset.d][s.dataset.k]=+s.value;reset()});
+ function reset(){run=false;tm=0;w=[1,1];done=[null,null];$('#evObs').textContent='Change only one thing between dish A and dish B, then start.'}
+ function rate(s){return .05*(s.area?3:1)*(s.sun?2.2:1)*(s.wind?1.8:1)*(s.hum?.6:1.3)}
+ $('#evGo').onclick=()=>{const diff=V.filter(v=>S[0][v[0]]!==S[1][v[0]]);if(diff.length!==1){$('#evObs').innerHTML=diff.length?'<b>Not a fair test:</b> you changed '+diff.length+' things. Change only one so you know what caused the difference.':'Both dishes are the same. Change one thing so you can compare!';return}reset();run=true;$('#evObs').textContent='Watching…'};
+ loop((dt,t)=>{if(run){tm+=dt*1.2;[0,1].forEach(i=>{if(w[i]>0){w[i]-=rate(S[i])*dt*1.2;if(w[i]<=0){w[i]=0;done[i]=tm}}});
+   if(done[0]!==null&&done[1]!==null){run=false;const v=V.find(v=>S[0][v[0]]!==S[1][v[0]]),f=done[0]<done[1]?0:1,mins=d=>Math.round(d*12);learned.add(v[0]);
+    $('#evObs').innerHTML=`Dish ${'AB'[f]} (${v[2][S[f][v[0]]].toLowerCase()}) dried first: ${mins(done[f])} min vs ${mins(done[1-f])} min. <span class="hl">${{area:'A larger surface area',sun:'Higher temperature (sunlight)',wind:'Wind',hum:'Less humidity'}[v[0]]} makes water evaporate faster.</span> `+(learned.size<3?`(Test ${3-learned.size} more factor${learned.size===2?'':'s'}.)`:'');if(learned.size>=3)markDone('evap')}}
+  $('#evHud').textContent='Time: '+Math.round(tm*12)+' min';x.fillStyle=DARK;x.fillRect(0,0,1100,340);
+  [0,1].forEach(i=>{const s=S[i],cx=275+i*550;x.save();x.beginPath();x.rect(cx-275,0,550,340);x.clip();
+   if(s.sun){x.fillStyle='#FFE27A';x.beginPath();x.arc(cx+200,50,30,0,7);x.fill();x.fillStyle='rgba(255,226,122,.08)';x.fillRect(cx-275,0,550,340)}else{x.fillStyle='rgba(0,0,0,.25)';x.fillRect(cx-275,0,550,340);x.fillStyle='#4A6A55';x.beginPath();x.arc(cx+200,20,70,0,7);x.fill()}
+   if(s.wind){x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=2;for(let k=0;k<5;k++){const yy=80+k*30,xx=(t*200+k*90)%600+cx-300;x.beginPath();x.moveTo(xx,yy);x.bezierCurveTo(xx+30,yy-10,xx+60,yy+10,xx+90,yy);x.stroke()}}
+   if(s.hum){x.fillStyle='rgba(200,215,230,.18)';x.fillRect(cx-275,0,550,340)}
+   const wid=s.area?180:45,depth=s.area?14:40;x.fillStyle='#C9D3DA';x.beginPath();x.ellipse(cx,262,wid+10,s.area?16:10,0,0,7);x.fill();
+   if(!s.area){x.fillStyle='#E9566A';x.fillRect(cx-wid,222,wid*2,40)}
+   x.fillStyle='rgba(90,160,240,.85)';const h=depth*w[i];if(s.area){x.beginPath();x.ellipse(cx,258,wid*Math.sqrt(Math.max(w[i],0)),h*.6,0,0,7);x.fill()}else{x.fillRect(cx-wid+4,262-h,wid*2-8,h)}
+   if(w[i]>0&&run){for(let k=0;k<(s.area?6:2);k++){const ph=(t*.8+k/6)%1;x.fillStyle=`rgba(220,235,255,${.5*(1-ph)})`;x.beginPath();x.arc(cx+Math.sin(k*2.3)*wid*.7+(s.wind?ph*60:0),250-ph*120,3,0,7);x.fill()}}
+   if(done[i]!==null){x.fillStyle='#7BE0AE';x.font='800 18px Bricolage Grotesque, sans-serif';x.textAlign='center';x.fillText('Dry after '+Math.round(done[i]*12)+' min',cx,140)}
+   x.fillStyle='#fff';x.font='800 22px Bricolage Grotesque, sans-serif';x.textAlign='left';x.fillText('Dish '+'AB'[i],cx-255,36);x.restore()});
+  x.fillStyle='rgba(255,255,255,.3)';x.fillRect(549,0,2,340)})})();
+
+/* CONDENSATION */
+(()=>{const x=hiCanvas($('#cdCv'),640,420);let m,drops,run,tmin,rows;
+ function reset(){m=412.0;drops=[];run=false;tmin=0;rows=[[0,m]];tbl();$('#cdObs').textContent='Predict: will the mass increase, decrease or stay the same?';$('#cdGo').disabled=false}
+ function tbl(){$('#cdTbl').innerHTML=rows.map(r=>`<tr><td>${r[0]} min</td><td>${r[1].toFixed(1)} g</td></tr>`).join('')}
+ reset();$('#cdReset').onclick=reset;$('#cdGo').onclick=()=>{run=true;$('#cdGo').disabled=true};
+ loop((dt,t)=>{if(run){tmin+=dt*3;m+=dt*3*.06;if(Math.random()<dt*20)drops.push({x:rand(-78,78),y:rand(140,330),r:rand(1.5,4),v:0});
+   if(Math.floor(tmin/5)*5>rows[rows.length-1][0]&&tmin<=30.2){rows.push([Math.floor(tmin/5)*5,m]);tbl()}
+   if(tmin>=30){run=false;$('#cdObs').innerHTML='Droplets formed on the outside and the mass <span class="hl">increased</span>. Water vapour from the air condensed on the cold surface.'+($('#colour').checked?' The droplets are <b>colourless</b> even though the water inside is coloured, so they did not seep through the glass!':' Try again with coloured water inside to check that the water is not seeping through.');
+    if($('#colour').checked)markDone('cond')}}
+  $('#cdHud').textContent=Math.min(30,Math.floor(tmin))+' min';x.fillStyle=DARK;x.fillRect(0,0,640,420);
+  // balance
+  x.fillStyle='#C9D3DA';x.fillRect(180,350,280,40);x.fillStyle='#10202A';x.fillRect(250,362,140,22);x.fillStyle='#7BE0AE';x.font='800 18px Bricolage Grotesque, sans-serif';x.textAlign='center';x.fillText(m.toFixed(1)+' g',320,380);
+  // glass
+  const col=$('#colour').checked?'rgba(200,60,160,.65)':'rgba(120,180,240,.45)';x.fillStyle=col;x.beginPath();x.moveTo(234,200);x.lineTo(240,345);x.lineTo(400,345);x.lineTo(406,200);x.fill();
+  x.fillStyle='rgba(235,248,255,.9)';x.fillRect(260,206,30,26);x.fillRect(330,210,28,24);x.fillStyle='#B8C4CC';x.fillRect(220,128,200,8);
+  x.strokeStyle='rgba(255,255,255,.8)';x.lineWidth=3;x.beginPath();x.moveTo(228,136);x.lineTo(238,348);x.lineTo(402,348);x.lineTo(412,136);x.stroke();
+  drops.forEach(d=>{if(d.r>3.4){d.v+=dt*30;d.y+=d.v*dt}const k=(d.y-136)/212;const ex=lerp(228,238,k),wx=lerp(412,402,k);const px=d.x<0?ex+d.x*.02:wx+d.x*.02;
+   x.fillStyle='rgba(220,240,255,.9)';x.beginPath();x.arc(d.x<0?ex-1:wx+1,d.y,d.r,0,7);x.fill();if(run)d.r=Math.min(4.5,d.r+dt*.08)});drops=drops.filter(d=>d.y<346);
+  // vapour particles
+  for(let i=0;i<20;i++){const a=t*.5+i,px=320+Math.cos(a*1.3+i)*250,py=200+Math.sin(a+i*2)*140;x.fillStyle='rgba(200,225,255,.35)';x.beginPath();x.arc(px,py,2.5,0,7);x.fill()}})})();
+
+/* MATKA */
+(()=>{const x=hiCanvas($('#mkCv'),640,420);let wet=false,fan=false,seen=new Set();
+ $('#wetSand').onclick=()=>{wet=true;$('#wetSand').disabled=true};$('#fanOn').onclick=e=>{fan=!fan;e.target.textContent=fan?'Switch off the fan':'Switch on a fan'};
+ loop((dt,t)=>{const h=+$('#hrs').value,k=1-Math.exp(-h/1.6);const dry=35,cool=wet?35-k*(fan?11:7):35;x.fillStyle=DARK;x.fillRect(0,0,640,420);
+  if(wet&&h>0)seen.add(fan?'f':'w');if(seen.has('w')&&h>3){markDone('matka')}
+  $('#mkObs').innerHTML=wet?`After ${h.toFixed(1)} hours: dry setup <b>${dry.toFixed(1)} °C</b>, wet setup <b>${cool.toFixed(1)} °C</b>. Water in the wet sand evaporates through the pores of the earthen pot and takes heat away. <span class="hl">Evaporation causes cooling.</span>`+(fan?' The fan speeds up evaporation, so it cools even more.':''):'Both pots start at 35 °C. Pour water into the sand of the right-hand setup.';
+  [[170,false],[470,true]].forEach(([cx,isWet])=>{const w=isWet&&wet;x.fillStyle='#B5653A';x.beginPath();x.ellipse(cx,320,120,80,0,0,7);x.fill();x.fillStyle=w?'#8C6B42':'#D9B26A';x.beginPath();x.ellipse(cx,290,98,46,0,0,7);x.fill();
+   x.fillStyle='#C97A48';x.beginPath();x.ellipse(cx,300,60,48,0,0,7);x.fill();x.fillStyle='#6FB3E8';x.beginPath();x.ellipse(cx,268,44,12,0,0,7);x.fill();
+   if(w&&h>0){for(let i=0;i<6;i++){const ph=(t*.5+i/6)%1;x.fillStyle=`rgba(220,235,255,${.5*(1-ph)})`;x.beginPath();x.arc(cx-100+i*40+(fan?ph*50:0),240-ph*120,3,0,7);x.fill()}}
+   const T=isWet?cool:dry;const f=clamp((T-15)/25,0,1);x.fillStyle='#fff';x.fillRect(cx+130,150,10,140);x.fillStyle=f>.7?'#E04A55':'#3D7BE0';x.fillRect(cx+132,290-136*f,6,136*f);x.beginPath();x.arc(cx+135,296,9,0,7);x.fill();
+   x.fillStyle='#fff';x.font='800 20px Bricolage Grotesque, sans-serif';x.textAlign='center';x.fillText(T.toFixed(1)+' °C',cx,160);x.font='14px Atkinson Hyperlegible, sans-serif';x.fillText(isWet?(wet?'Wet sand':'Dry sand (pour water)'):'Dry sand',cx,412)});
+  if(fan){x.save();x.translate(600,80);x.rotate(t*12);x.fillStyle='#ccd';for(let i=0;i<3;i++){x.rotate(2.09);x.beginPath();x.ellipse(0,-16,7,16,0,0,7);x.fill()}x.restore()}
+  x.font='38px serif';x.fillStyle='#000';x.fillText('☀️',40,50)})})();
+
+/* WATER CYCLE */
+(()=>{const cv=$('#wcCv'),x=hiCanvas(cv,1100,520);const L=[['Ocean',190,450],['Evaporation',300,300],['Cloud',560,90],['Condensation',430,140],['Rain',640,250],['Snow',890,150],['River',760,380],['Lake',560,440],['Groundwater',880,490]];
+ let pick=null,placed={};$('#lbls').innerHTML=L.map((l,i)=>`<button class="chip" data-i="${i}">${l[0]}</button>`).join('');
+ $$('#lbls .chip').forEach(b=>b.onclick=()=>{pick=+b.dataset.i;$$('#lbls .chip').forEach(z=>z.classList.toggle('picked',z===b));$('#wcObs').textContent='Now tap the spot for “'+L[pick][0]+'”.'});
+ cv.addEventListener('click',e=>{if(pick===null)return;const p=canvasPoint(cv,e,1100,520);let best=-1,bd=50;L.forEach((l,i)=>{if(placed[i])return;const d=Math.hypot(p.x-l[1],p.y-l[2]);if(d<bd){bd=d;best=i}});
+  if(best===pick){placed[pick]=1;$$('#lbls .chip')[pick].classList.add('used');$('#wcObs').innerHTML='✓ '+L[pick][0]+' is in the right place.';pick=null;if(Object.keys(placed).length===L.length){$('#wcObs').innerHTML='<span class="hl">The water cycle is complete!</span> Water keeps moving between oceans, air, land and back, changing its state on the way.';markDone('cycle');confetti()}}
+  else if(best>=0){$('#wcObs').textContent='That spot is for something else. Think about where '+L[pick][0].toLowerCase()+' happens.'}});
+ loop((dt,t)=>{const g=x.createLinearGradient(0,0,0,520);g.addColorStop(0,'#5FA8DB');g.addColorStop(.55,'#BFE1F5');x.fillStyle=g;x.fillRect(0,0,1100,520);
+  x.fillStyle='#FFE27A';x.beginPath();x.arc(90,80,42,0,7);x.fill();
+  // mountains
+  x.fillStyle='#6E8B6B';x.beginPath();x.moveTo(600,420);x.lineTo(860,120);x.lineTo(1100,360);x.lineTo(1100,520);x.lineTo(600,520);x.fill();x.fillStyle='#fff';x.beginPath();x.moveTo(820,166);x.lineTo(860,120);x.lineTo(900,166);x.lineTo(880,160);x.lineTo(860,175);x.lineTo(840,160);x.fill();
+  x.fillStyle='#5E8A55';x.fillRect(380,400,720,120);x.fillStyle='#8C6B42';x.fillRect(600,470,500,50);
+  x.fillStyle='#2F72B8';x.beginPath();x.moveTo(0,400);x.lineTo(400,400);x.quadraticCurveTo(380,470,420,520);x.lineTo(0,520);x.fill();
+  x.strokeStyle='#3F8AD8';x.lineWidth=12;x.beginPath();x.moveTo(860,200);x.quadraticCurveTo(780,330,700,420);x.quadraticCurveTo(560,440,420,440);x.stroke();
+  x.fillStyle='#3F8AD8';x.beginPath();x.ellipse(560,445,60,14,0,0,7);x.fill();
+  x.strokeStyle='rgba(63,138,216,.45)';x.lineWidth=4;x.setLineDash([6,6]);x.beginPath();x.moveTo(980,480);x.lineTo(700,500);x.lineTo(420,490);x.stroke();x.setLineDash([]);
+  // vapour
+  for(let i=0;i<14;i++){const ph=(t*.25+i/14)%1;x.fillStyle=`rgba(255,255,255,${.7*(1-ph)})`;x.beginPath();x.arc(200+i*14+Math.sin(ph*6+i)*10,400-ph*280,3,0,7);x.fill()}
+  // clouds
+  [[560,90],[660,110],[880,90]].forEach(([cx,cy],k)=>{x.fillStyle='rgba(255,255,255,.95)';const dx=Math.sin(t*.3+k)*10;[[-40,8,30],[0,-6,40],[40,8,30]].forEach(([a,b,r])=>{x.beginPath();x.arc(cx+a+dx,cy+b,r,0,7);x.fill()})});
+  x.strokeStyle='rgba(40,90,170,.7)';x.lineWidth=2;for(let i=0;i<14;i++){const yy=(t*240+i*41)%170+140;x.beginPath();x.moveTo(620+i*5,yy);x.lineTo(616+i*5,yy+12);x.stroke()}
+  x.fillStyle='#fff';for(let i=0;i<10;i++){const yy=(t*60+i*31)%60+120;x.beginPath();x.arc(860+i*7-30,yy,2.5,0,7);x.fill()}
+  // arrows
+  x.strokeStyle='#FFD84D';x.fillStyle='#FFD84D';x.lineWidth=3;const arr=(a,b,c,d)=>{x.beginPath();x.moveTo(a,b);x.lineTo(c,d);x.stroke();const an=Math.atan2(d-b,c-a);x.beginPath();x.moveTo(c,d);x.lineTo(c-12*Math.cos(an-.4),d-12*Math.sin(an-.4));x.lineTo(c-12*Math.cos(an+.4),d-12*Math.sin(an+.4));x.fill()};
+  arr(250,380,250,180);arr(330,120,480,95);arr(700,130,700,330);
+  L.forEach((l,i)=>{if(placed[i]){x.fillStyle='#18324A';const w=x.measureText?0:0;x.font='800 16px Bricolage Grotesque, sans-serif';const tw=x.measureText(l[0]).width+18;x.beginPath();x.roundRect?x.roundRect(l[1]-tw/2,l[2]-14,tw,28,8):x.rect(l[1]-tw/2,l[2]-14,tw,28);x.fill();x.fillStyle='#fff';x.textAlign='center';x.fillText(l[0],l[1],l[2]+6)}
+   else{x.fillStyle='#FFD84D';x.strokeStyle='#18324A';x.lineWidth=3;x.beginPath();x.arc(l[1],l[2],12+Math.sin(t*4+i)*2,0,7);x.fill();x.stroke()}})})})();
+
+Quiz($('#quiz'),[
+ {q:'Ice, water and water vapour are…',o:['Three different substances','Three states of the same substance','All liquids','All gases'],a:1,e:'They are the solid, liquid and gaseous states of water.'},
+ {q:'The change of water vapour into liquid water is called…',o:['Evaporation','Melting','Condensation','Freezing'],a:2,e:'Condensation changes a gas into a liquid.'},
+ {q:'Which of these makes water evaporate faster?',o:['A smaller surface area','Keeping it in the shade','Wind blowing over it','High humidity'],a:2,e:'Wind, higher temperature, larger surface area and lower humidity all increase evaporation.'},
+ {q:'Droplets appear on the outside of a glass of ice-cold water because…',o:['Water seeps through the glass','Water vapour in the air condenses on the cold surface','Ice melts outside','The glass sweats'],a:1,e:'Water vapour from the air condenses on the cold surface.'},
+ {q:'Water kept in a matka stays cool because…',o:['Clay is cold','Water evaporates through its pores, causing cooling','It is kept in the dark','Clay contains ice'],a:1,e:'Evaporation through the pores takes away heat: the cooling effect.'},
+ {q:'Which state of water has a fixed shape?',o:['Solid','Liquid','Gas','None'],a:0,e:'Ice (solid) keeps its shape. Liquids and gases take the shape of their container.'},
+ {q:'Water vapour condenses on tiny ______ to form clouds.',o:['Ice blocks','Dust particles','Fish','Salt crystals only'],a:1,e:'Dust particles in the air help water vapour condense into cloud droplets.'},
+ {q:'The amount of water vapour in the air is called…',o:['Humidity','Temperature','Pressure','Volume'],a:0,e:'More humidity means water evaporates more slowly.'}
+],'quiz');
+</script>
+
+<a href="../index.html#/class-6" style="position:fixed;right:16px;bottom:16px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;background:rgba(255,255,255,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.95);box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font:900 14px/1 Nunito,'Segoe UI',system-ui,sans-serif;text-decoration:none">🏠 Lab Home</a></body></html>

@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scientific Method Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3F7F4; --grid:#DCE9E3; --ink:#18324A; --ink2:#4B6274; --bench:#1D2A33; --bench2:#26363F;
+  --marker:#FFD84D; --ok:#1E9E6A; --bad:#D64545; --line:#C9D9D2; --card:#FFFFFF;
+  --acc:#2F7DD1; --acc2:#9CC8F5; --accInk:#fff;
+  --r-lg:22px; --r-md:14px; --r-sm:9px;
+  --fh:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --fb:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);font:17px/1.55 var(--fb);background:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;}
+h1,h2,h3,h4{font-family:var(--fh);line-height:1.1;margin:0 0 .4em;letter-spacing:-.01em}
+p{margin:0 0 .8em}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--marker);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* hero */
+.hero{padding:44px 0 26px}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center}
+.chapno{font-family:var(--fh);font-weight:800;font-size:15px;color:var(--acc);display:inline-flex;gap:8px;align-items:center;background:#fff;border:2px solid var(--acc);border-radius:99px;padding:3px 14px 3px 4px}
+.chapno b{background:var(--acc);color:var(--accInk);border-radius:99px;min-width:28px;height:28px;display:grid;place-items:center;font-size:15px}
+.hero h1{font-size:clamp(38px,5.6vw,68px);font-weight:800;margin:16px 0 14px}
+.hero h1 .u{background:linear-gradient(transparent 62%,var(--marker) 62% 92%,transparent 92%)}
+.hero .lede{font-size:19px;color:var(--ink2);max-width:52ch}
+.hero-stage{background:var(--bench);border-radius:var(--r-lg);aspect-ratio:5/4;position:relative;overflow:hidden;box-shadow:0 18px 0 -8px var(--acc2),0 24px 40px -18px rgba(24,50,74,.45)}
+.hero-stage canvas,.hero-stage svg{width:100%;height:100%;display:block}
+.procedure{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:6px;counter-reset:p}
+.procedure li{counter-increment:p;display:flex;gap:10px;align-items:center;font-weight:700}
+.procedure li::before{content:counter(p);width:26px;height:26px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-size:13px;flex:none}
+.procedure li.done::before{content:"✓";background:var(--ok);border-color:var(--ok);color:#fff}
+
+/* tab bar */
+.bar{position:sticky;top:0;z-index:20;background:rgba(243,247,244,.92);backdrop-filter:blur(8px);border-bottom:2px solid var(--line)}
+.bar .wrap{display:flex;gap:8px;align-items:center;overflow-x:auto;padding-top:10px;padding-bottom:10px;scrollbar-width:thin}
+.tab{border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:99px;padding:7px 15px;font-weight:700;font-size:15px;white-space:nowrap;transition:transform .15s}
+.tab:hover{transform:translateY(-2px)}
+.tab[aria-selected=true]{background:var(--ink);color:#fff}
+.tab .tick{display:none;color:var(--ok);margin-left:6px}
+.tab.done .tick{display:inline}
+.tab[aria-selected=true] .tick{color:var(--marker)}
+.meter{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;white-space:nowrap;padding-left:12px}
+.meter i{display:block;width:90px;height:9px;background:#fff;border:2px solid var(--ink);border-radius:9px;overflow:hidden}
+.meter i b{display:block;height:100%;width:0;background:var(--ok);transition:width .5s}
+
+/* panels */
+main{padding:28px 0 60px}
+.panel{display:none;animation:rise .35s ease}
+.panel.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.panel-head{display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.panel-head h2{font-size:clamp(26px,3.4vw,38px);margin:0}
+.panel-head .aim{color:var(--ink2);max-width:62ch;margin:6px 0 0}
+.lab{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:20px;align-items:start}
+.lab.wide{grid-template-columns:1fr}
+.stage{background:var(--bench);border-radius:var(--r-lg);position:relative;overflow:hidden;color:#E8F0F2;min-height:300px}
+.stage canvas,.stage>svg{display:block;width:100%;height:auto}
+.stage .hud{position:absolute;left:14px;top:12px;font-weight:700;font-size:14px;background:rgba(0,0,0,.35);padding:4px 10px;border-radius:8px;pointer-events:none}
+.side{display:grid;gap:14px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:var(--r-md);padding:16px 18px}
+.card h3{font-size:19px}
+.card.note{background:#FFFBE6;border-color:#F1DF8F}
+.card.note h3::before{content:"✎ ";color:#B98B00}
+.card.why{border-left:7px solid var(--acc)}
+.ctrl{display:grid;gap:12px}
+.ctrl label{font-weight:700;font-size:15px;display:grid;gap:4px}
+.ctrl .row{display:flex;gap:8px;flex-wrap:wrap}
+input[type=range]{width:100%;accent-color:var(--acc);height:28px}
+.btn{border:2px solid var(--ink);background:var(--acc);color:var(--accInk);border-radius:12px;padding:9px 16px;font-weight:700;box-shadow:0 4px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn.sm{padding:6px 11px;font-size:14px;border-radius:10px;box-shadow:0 3px 0 var(--ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.sel{background:var(--marker);color:var(--ink)}
+.readout{font-family:var(--fh);font-size:30px;font-weight:800;line-height:1}
+.readout small{font-size:14px;font-weight:600;color:var(--ink2);display:block;margin-top:4px;font-family:var(--fb)}
+.obs{min-height:3em;font-size:16px}
+.obs.ok{color:var(--ok)} .obs.bad{color:var(--bad)}
+.hl{background:linear-gradient(transparent 55%,var(--marker) 55%);font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pill:empty{display:none}
+.pill{display:inline-block;border-radius:99px;padding:2px 10px;font-size:13px;font-weight:700;background:var(--acc2);color:var(--ink)}
+table.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th,.tbl td{border-bottom:1.5px solid var(--line);padding:6px 8px;text-align:left}
+.tbl th{font-family:var(--fh)}
+
+/* sorting game */
+.sorter{display:grid;gap:14px}
+.tray{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:10px;border:2px dashed var(--line);border-radius:var(--r-md);background:#fff}
+.chip{border:2px solid var(--ink);background:#fff;border-radius:12px;padding:7px 12px;font-weight:700;font-size:15px;user-select:none;touch-action:none;display:inline-flex;align-items:center;gap:6px;transition:transform .15s,background .2s}
+.chip .em{font-size:22px;line-height:1}
+.chip.picked{background:var(--marker);transform:scale(1.06) rotate(-2deg)}
+.chip.right{border-color:var(--ok);background:#E3F6EC;cursor:default}
+.chip.dragging{position:fixed;z-index:999;pointer-events:none;box-shadow:0 12px 24px rgba(0,0,0,.25)}
+.bins{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.bin{border:2px solid var(--ink);border-radius:var(--r-md);background:#fff;min-height:140px;padding:10px;display:flex;flex-direction:column;gap:6px;transition:background .2s,transform .2s}
+.bin h4{font-size:17px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.bin.hover{background:#FFF6CC;transform:scale(1.02)}
+.bin .chips{display:flex;flex-wrap:wrap;gap:6px}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+
+/* order game */
+.order{display:flex;flex-wrap:wrap;gap:8px}
+.slots{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.slot{min-width:120px;min-height:44px;border:2px dashed var(--ink2);border-radius:12px;display:grid;place-items:center;padding:6px 10px;font-weight:700;color:var(--ink2);background:#fff}
+.slot.filled{border-style:solid;border-color:var(--ok);color:var(--ink);background:#E3F6EC}
+
+/* quiz */
+.quiz{max-width:760px;margin:0 auto}
+.qcard{background:#fff;border:2px solid var(--ink);border-radius:var(--r-lg);padding:24px;box-shadow:8px 8px 0 var(--acc2)}
+.qtop{display:flex;justify-content:space-between;font-weight:700;color:var(--ink2);margin-bottom:10px;font-size:15px}
+.qtext{font-family:var(--fh);font-size:24px;font-weight:700;margin-bottom:16px}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:11px 14px;font-weight:700;display:flex;gap:12px;align-items:center}
+.opt:hover:not([disabled]){border-color:var(--ink)}
+.opt .k{width:30px;height:30px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;flex:none;font-size:14px}
+.opt.right{border-color:var(--ok);background:#E3F6EC}
+.opt.wrong{border-color:var(--bad);background:#FCE8E8}
+.qexp{margin-top:14px;padding:12px 14px;border-radius:12px;background:#F2F6FA;display:none}
+.qexp.on{display:block;animation:rise .3s}
+.qnav{display:flex;justify-content:flex-end;margin-top:16px}
+.score{text-align:center}
+.score .big{font-family:var(--fh);font-size:72px;font-weight:800;color:var(--acc)}
+
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:22px}
+.fact{background:#fff;border:2px solid var(--line);border-radius:var(--r-md);padding:14px 16px;font-size:15px}
+.fact b{font-family:var(--fh);display:block;font-size:17px;margin-bottom:4px;color:var(--acc)}
+
+footer{padding:24px 0 40px;color:var(--ink2);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:12px;font-weight:700;z-index:1000;transition:transform .35s cubic-bezier(.2,1.4,.4,1);max-width:90vw;text-align:center}
+.toast.on{transform:translate(-50%,0)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:999}
+
+@media (max-width:860px){
+  .hero .wrap,.lab{grid-template-columns:1fr}
+  .hero{padding-top:26px}
+  .meter i{width:60px}
+  .grid2{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+
+:root{--acc:#6A4CE0;--acc2:#C9BCFF}
+.notebook{font-size:15px;max-height:230px;overflow:auto;display:grid;gap:6px}
+.notebook div{padding:6px 10px;border-radius:8px;background:#F4F1FF;animation:rise .3s}
+.notebook div b{color:var(--acc)}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.steps span{padding:4px 10px;border-radius:99px;border:2px solid var(--line);font-weight:700;font-size:13px;color:var(--ink2)}
+.steps span.on{border-color:var(--acc);background:var(--acc);color:#fff}
+.steps span.past{border-color:var(--ok);color:var(--ok)}
+.choices{display:grid;gap:8px}
+.choices .btn{text-align:left}
+.world{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.place{border:2px solid var(--ink);border-radius:16px;height:150px;position:relative;overflow:hidden;color:#fff;text-align:left;padding:0;background:#333}
+.place .lbl{position:absolute;left:10px;bottom:8px;font-family:var(--fh);font-weight:800;font-size:19px;text-shadow:0 2px 6px rgba(0,0,0,.5)}
+.place .q{position:absolute;inset:0;background:rgba(24,50,74,.93);padding:12px;font-size:15px;font-weight:700;display:flex;flex-direction:column;justify-content:center;gap:6px;transform:translateY(100%);transition:transform .35s}
+.place.open .q{transform:none}
+.place .q small{color:var(--acc2);font-weight:700}
+.planout{display:grid;gap:6px;margin-top:10px}
+.planout div{padding:8px 12px;border-left:5px solid var(--acc);background:#fff;border-radius:6px;animation:rise .4s both}
+
+</style><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"></head><body>
+
+
+<header class="hero"><div class="wrap">
+  <div>
+    <span class="chapno"><b>1</b>Chapter 1</span>
+    <h1>The Wonderful World of <span class="u">Science</span></h1>
+    <p class="lede">Science is a way of thinking, observing and doing things. In this lab you will solve mysteries the way scientists do: observe, ask, guess, test and analyse.</p>
+    <ol class="procedure">
+      <li data-t="pen">Solve the pen mystery</li>
+      <li data-t="fix">Think like a repair expert</li>
+      <li data-t="steps">Put the method in order</li>
+      <li data-t="why">Become a “whys” person</li>
+      <li data-t="quiz">Check what you learnt</li>
+    </ol>
+  </div>
+  <div class="hero-stage"><canvas id="heroCv"></canvas></div>
+</div></header>
+
+<nav class="bar"><div class="wrap">
+  <button class="tab" data-t="pen">Pen mystery<span class="tick">✓</span></button>
+  <button class="tab" data-t="fix">Repair detective<span class="tick">✓</span></button>
+  <button class="tab" data-t="steps">Method in order<span class="tick">✓</span></button>
+  <button class="tab" data-t="why">Ask why<span class="tick">✓</span></button>
+  <button class="tab" data-t="quiz">Quiz<span class="tick">✓</span></button>
+  <div class="meter"><i><b></b></i><span></span></div>
+</div></nav>
+
+<main class="wrap">
+
+<section class="panel" id="p-pen">
+  <div class="panel-head"><div><h2>Why did my pen stop writing?</h2><p class="aim">Your pen suddenly stops writing. Find the real reason by guessing and testing, one guess at a time. The cause is hidden and changes every round.</p></div>
+  <button class="btn ghost sm" id="penNew">New mystery</button></div>
+  <div class="lab">
+    <div class="stage"><canvas id="penCv"></canvas><div class="hud" id="penHud">Step 1: Observe</div></div>
+    <div class="side">
+      <div class="card"><div class="steps" id="penSteps"><span>Observe</span><span>Question</span><span>Guess</span><span>Test</span><span>Analyse</span></div>
+        <div id="penBox" class="choices"></div></div>
+      <div class="card note"><h3>My science notebook</h3><div class="notebook" id="penLog"></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="p-fix">
+  <div class="panel-head"><div><h2>Everyday scientists</h2><p class="aim">A bicycle repair person and an electrician follow the scientific method too. Solve both problems.</p></div></div>
+  <div class="lab">
+    <div class="stage"><canvas id="tyreCv"></canvas><div class="hud">Flat tyre: where is the leak?</div></div>
+    <div class="side">
+      <div class="card"><h3>Find the puncture</h3>
+        <p><b>Guess:</b> air is leaking from a tiny hole in the tube.<br><b>Test:</b> dip the pumped tube in water and turn it slowly. Bubbles will show the hole.</p>
+        <div class="ctrl"><label>Turn the tube <input type="range" id="tyreRot" min="0" max="360" value="0"></label>
+        <div class="row"><button class="btn sm" id="tyrePump">Pump air in</button><button class="btn ghost sm" id="tyreNew">New tube</button></div></div>
+        <p class="obs" id="tyreObs">Pump some air in first.</p></div>
+    </div>
+  </div>
+  <div class="lab" style="margin-top:20px">
+    <div class="stage"><svg id="bulbSv" viewBox="0 0 600 370"></svg><div class="hud">The light does not switch on</div></div>
+    <div class="side">
+      <div class="card"><h3>Bulb or switch?</h3><p>Make a guess, then run a test that checks it.</p>
+        <div class="choices">
+          <button class="btn ghost" data-test="bulb">Test 1: fix this bulb in a lamp that works</button>
+          <button class="btn ghost" data-test="good">Test 2: put a new bulb in this holder and press the switch</button>
+        </div>
+        <p class="obs" id="bulbObs"></p>
+        <div class="row" id="bulbAns" style="display:none;gap:8px"><b style="width:100%">So what is faulty?</b><button class="btn sm" data-a="bulb">The bulb</button><button class="btn sm" data-a="switch">The switch</button></div>
+        <button class="btn ghost sm" id="bulbNew" style="margin-top:10px">New problem</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="p-steps">
+  <div class="panel-head"><div><h2>Put the scientific method in order</h2><p class="aim">Tap the steps in the order a scientist follows them.</p></div></div>
+  <div class="card" id="orderBox"></div>
+  <div class="panel-head" style="margin-top:28px"><div><h3 style="font-size:26px">Which step is this?</h3><p class="aim">Each sentence comes from someone solving a problem. Drag it (or tap it, then tap a box) into the right step.</p></div></div>
+  <div id="stepSort"></div>
+</section>
+
+<section class="panel" id="p-why">
+  <div class="panel-head"><div><h2>Become a “whys” person</h2><p class="aim">Science is everywhere, from the depths of the ocean to the kitchen. Tap a place to reveal a question worth asking.</p></div></div>
+  <div class="world" id="world"></div>
+  <div class="lab" style="margin-top:24px">
+    <div class="card"><h3>Plan your own investigation</h3>
+      <div class="ctrl">
+        <label>My “Why?” question<input id="myQ" style="font:inherit;padding:9px;border:2px solid var(--ink);border-radius:10px" placeholder="Why does a ball bounce higher on a hard floor?"></label>
+        <label>My guess<input id="myG" style="font:inherit;padding:9px;border:2px solid var(--ink);border-radius:10px" placeholder="Because the hard floor does not squash"></label>
+        <button class="btn" id="planBtn">Make my plan</button>
+      </div>
+      <div class="planout" id="planOut"></div>
+    </div>
+    <div class="card why"><h3>Remember</h3><p>Science is rarely done alone. Scientists across the world work together in teams. If you cannot find an answer yourself, ask your friends to help you out!</p><p>Sometimes a piece of the science “jigsaw puzzle” is put in the wrong place. New discoveries can change what we understand.</p></div>
+  </div>
+</section>
+
+<section class="panel" id="p-quiz">
+  <div class="panel-head"><div><h2>Check what you learnt</h2></div></div>
+  <div class="quiz" id="quiz"></div>
+  <div class="facts">
+    <div class="fact"><b>Curiosity</b>The title of your science book comes from the most important thing in science: being curious.</div>
+    <div class="fact"><b>Anyone can be a scientist</b>Anyone who follows the scientific method is working like a scientist, from a cook to an electrician.</div>
+    <div class="fact"><b>Unending puzzle</b>Every new piece of knowledge leads to more questions and more things to find out.</div>
+  </div>
+</section>
+</main>
+<footer><a href="../index.html#/class-6" style="color:inherit;font-weight:700">← All Grade 6 labs</a><br>Based on NCERT Curiosity, Grade 6, Chapter 1: The Wonderful World of Science</footer>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LAB={done:new Set(),total:0,key:'lab-'+location.pathname.split('/').pop()};
+function store(get,val){try{if(get)return JSON.parse(localStorage.getItem(LAB.key)||'[]');localStorage.setItem(LAB.key,JSON.stringify(val))}catch(e){return []}}
+function toast(msg,ms=2600){let t=$('.toast');if(!t){t=document.createElement('div');t.className='toast';document.body.appendChild(t)}
+  t.textContent=msg;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),ms)}
+function markDone(id){if(LAB.done.has(id))return;LAB.done.add(id);store(false,[...LAB.done]);paintProgress();
+  if(LAB.done.size===LAB.total){confetti();toast('You completed every experiment in this lab!')}}
+function paintProgress(){$$('.tab[data-t]').forEach(b=>b.classList.toggle('done',LAB.done.has(b.dataset.t)));
+  $$('.procedure li[data-t]').forEach(l=>l.classList.toggle('done',LAB.done.has(l.dataset.t)));
+  const m=$('.meter b'),n=$('.meter span');if(m){m.style.width=(100*LAB.done.size/LAB.total)+'%';n.textContent=LAB.done.size+' of '+LAB.total+' done'}}
+const tabHooks={};
+function onTab(id,fn){(tabHooks[id]=tabHooks[id]||[]).push(fn)}
+function showTab(id,scroll){$$('.tab[data-t]').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===id));
+  $$('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+id));(tabHooks[id]||[]).forEach(f=>f());
+  if(scroll){const bar=$('.bar');window.scrollTo({top:bar.offsetTop,behavior:'smooth'})}}
+function initTabs(){const tabs=$$('.tab[data-t]');LAB.total=tabs.length;store(true).forEach(x=>LAB.done.add(x));
+  tabs.forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.t,true)));
+  $$('.procedure li[data-t]').forEach(l=>{l.style.cursor='pointer';l.addEventListener('click',()=>showTab(l.dataset.t,true))});
+  paintProgress();showTab(tabs[0].dataset.t)}
+document.addEventListener('DOMContentLoaded',()=>{if($('.tab'))initTabs()});
+
+/* confetti */
+function confetti(){let c=$('#confetti');if(!c){c=document.createElement('canvas');c.id='confetti';document.body.appendChild(c)}
+  const x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;const cols=['#FFD84D','#1E9E6A','#2F7DD1','#E8567C','#8A5CF6','#FF8A3D'];
+  const ps=Array.from({length:160},()=>({x:innerWidth/2+(Math.random()-.5)*200,y:innerHeight*.35,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,r:Math.random()*6+4,c:cols[Math.random()*6|0],a:Math.random()*6,va:(Math.random()-.5)*.4}));
+  let f=0;(function tick(){x.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.vx*=.99;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()});
+    if(++f<180)requestAnimationFrame(tick);else x.clearRect(0,0,c.width,c.height)})()}
+
+/* hi-dpi canvas: returns ctx sized to logical w,h */
+function hiCanvas(cv,w,h){const d=Math.min(2,window.devicePixelRatio||1);cv.width=w*d;cv.height=h*d;cv.style.aspectRatio=w+'/'+h;const x=cv.getContext('2d');x.setTransform(d,0,0,d,0,0);x.W=w;x.H=h;return x}
+function canvasPoint(cv,e,w,h){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*w/r.width,y:(e.clientY-r.top)*h/r.height}}
+function loop(fn){let last=performance.now(),run=true;function f(t){if(!run)return;const dt=Math.min(.05,(t-last)/1000);last=t;fn(dt,t/1000);requestAnimationFrame(f)}requestAnimationFrame(f);return()=>run=false}
+const lerp=(a,b,t)=>a+(b-a)*t, clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), rand=(a,b)=>a+Math.random()*(b-a);
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+
+/* Quiz: qs=[{q,o:[..],a:index,e:explain}] */
+function Quiz(el,qs,doneId){let i=0,score=0,order=shuffle(qs);
+  function render(){if(i>=order.length){const pct=Math.round(100*score/order.length);
+      el.innerHTML=`<div class="qcard score"><div class="big">${score}/${order.length}</div><h3>${pct>=80?'Brilliant work, scientist!':pct>=50?'Good effort! Revisit the experiments and try again.':'Keep exploring the experiments, then try again.'}</h3><p>Every question comes from what you tested in this lab.</p><button class="btn">Try the quiz again</button></div>`;
+      $('button',el).onclick=()=>{i=0;score=0;order=shuffle(qs);render()};if(pct>=60){confetti();doneId&&markDone(doneId)}return}
+    const q=order[i];el.innerHTML=`<div class="qcard"><div class="qtop"><span>Question ${i+1} of ${order.length}</span><span>Score ${score}</span></div>
+      <div class="qtext">${q.q}</div><div class="opts">${q.o.map((o,k)=>`<button class="opt" data-k="${k}"><span class="k">${'ABCD'[k]}</span>${o}</button>`).join('')}</div>
+      <div class="qexp"></div><div class="qnav"><button class="btn" disabled>Next question</button></div></div>`;
+    $$('.opt',el).forEach(b=>b.onclick=()=>{const k=+b.dataset.k;$$('.opt',el).forEach(x=>x.disabled=true);
+      $$('.opt',el)[q.a].classList.add('right');if(k===q.a){score++}else{b.classList.add('wrong');b.classList.add('shake')}
+      const ex=$('.qexp',el);ex.innerHTML=(k===q.a?'<b>Correct.</b> ':'<b>Not quite.</b> ')+q.e;ex.classList.add('on');
+      const nb=$('.qnav .btn',el);nb.disabled=false;nb.textContent=i===order.length-1?'See my score':'Next question';nb.focus()});
+    $('.qnav .btn',el).onclick=()=>{i++;render()}}
+  render()}
+
+/* Sorter: items=[{t,em,c,why}], bins=[{c,t,em}] ; click a chip then a bin, or drag */
+function Sorter(el,items,bins,opts={}){
+  el.innerHTML=`<div class="sorter"><div class="tray"></div><div class="bins">${bins.map(b=>`<div class="bin" data-c="${b.c}"><h4>${b.em?`<span class="em">${b.em}</span>`:''}${b.t}</h4><div class="chips"></div></div>`).join('')}</div><div class="obs" aria-live="polite"></div></div>`;
+  const tray=$('.tray',el),obs=$('.obs',el);let picked=null,left=items.length;
+  shuffle(items).forEach(it=>{const c=document.createElement('button');c.className='chip';c.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;c._it=it;tray.appendChild(c);
+    c.addEventListener('click',()=>{if(c.classList.contains('right'))return;$$('.chip.picked',el).forEach(x=>x.classList.remove('picked'));picked=c;c.classList.add('picked');obs.className='obs';obs.textContent='Now choose a group for “'+it.t+'”.'});
+    c.addEventListener('pointerdown',e=>{if(c.classList.contains('right'))return;const sx=e.clientX,sy=e.clientY;let ghost=null;
+      const mv=ev=>{if(!ghost&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>8){ghost=c.cloneNode(true);ghost.classList.add('dragging');document.body.appendChild(ghost);c.style.opacity=.3}
+        if(ghost){ghost.style.left=ev.clientX-30+'px';ghost.style.top=ev.clientY-20+'px';$$('.bin',el).forEach(b=>{const r=b.getBoundingClientRect();b.classList.toggle('hover',ev.clientX>r.left&&ev.clientX<r.right&&ev.clientY>r.top&&ev.clientY<r.bottom)})}};
+      const up=ev=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);if(ghost){ghost.remove();c.style.opacity=1;const b=$('.bin.hover',el);$$('.bin',el).forEach(x=>x.classList.remove('hover'));if(b)drop(c,b);c._dragged=true;setTimeout(()=>c._dragged=false,50)}};
+      addEventListener('pointermove',mv);addEventListener('pointerup',up)})});
+  $$('.bin',el).forEach(b=>b.addEventListener('click',()=>{if(picked)drop(picked,b)}));
+  function drop(c,b){const it=c._it;if(it.c===b.dataset.c){c.classList.remove('picked');c.classList.add('right');$('.chips',b).appendChild(c);obs.className='obs ok';obs.innerHTML='✓ '+(it.why||'Correct!');left--;picked=null;
+      if(!left){obs.innerHTML='✓ All sorted! '+(opts.end||'');confetti();opts.done&&markDone(opts.done)}}
+    else{c.classList.add('shake');setTimeout(()=>c.classList.remove('shake'),400);obs.className='obs bad';obs.innerHTML='✗ Not this group. '+(it.hint||'Look again at its features.')}}
+}
+
+/* Order game: items in correct order [{t,em}] */
+function OrderGame(el,items,opts={}){
+  el.innerHTML=`<div class="order"></div><div class="slots">${items.map((_,i)=>`<div class="slot">${i+1}</div>`).join('')}</div><div class="obs" style="margin-top:10px"></div>`;
+  let n=0;const box=$('.order',el),obs=$('.obs',el);
+  shuffle(items.map((x,i)=>({...x,i}))).forEach(it=>{const b=document.createElement('button');b.className='chip';b.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;
+    b.onclick=()=>{if(it.i===n){const s=$$('.slot',el)[n];s.innerHTML=b.innerHTML;s.classList.add('filled');b.remove();n++;obs.className='obs ok';obs.textContent=opts.say?opts.say(it.i):'✓ Right!';
+        if(n===items.length){obs.textContent='✓ Perfect order! '+(opts.end||'');confetti();opts.done&&markDone(opts.done);opts.onDone&&opts.onDone()}}
+      else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);obs.className='obs bad';obs.textContent='✗ That is not step '+(n+1)+'. Think about what has to happen first.'}};box.appendChild(b)})}
+
+
+/* HERO: rotating method wheel */
+(()=>{const cv=$('#heroCv'),x=hiCanvas(cv,500,400);const st=['Observe','Question','Guess','Test','Analyse'],cols=['#FFD84D','#7FD1FF','#C9BCFF','#7BE0AE','#FF9FB2'];
+ const qs=Array.from({length:18},()=>({a:rand(0,6.28),r:rand(150,230),s:rand(.1,.3),z:rand(14,30)}));
+ loop((dt,t)=>{x.clearRect(0,0,500,400);x.fillStyle='#1D2A33';x.fillRect(0,0,500,400);
+  qs.forEach(q=>{q.a+=q.s*dt;x.fillStyle='rgba(201,188,255,.25)';x.font=`700 ${q.z}px Bricolage Grotesque, sans-serif`;x.fillText('?',250+Math.cos(q.a)*q.r,200+Math.sin(q.a)*q.r*.8)});
+  const act=Math.floor(t/1.4)%5;
+  for(let i=0;i<5;i++){const a=-Math.PI/2+i*2*Math.PI/5+Math.sin(t*.5)*.03,px=250+Math.cos(a)*120,py=200+Math.sin(a)*120;
+   const b=-Math.PI/2+(i+1)*2*Math.PI/5;x.strokeStyle='rgba(255,255,255,.25)';x.lineWidth=3;x.beginPath();x.arc(250,200,120,a+.33,b-.33);x.stroke();
+   const r=i===act?46:38;x.fillStyle=cols[i];x.globalAlpha=i===act?1:.75;x.beginPath();x.arc(px,py,r,0,7);x.fill();x.globalAlpha=1;
+   x.fillStyle='#18324A';x.font=`800 ${i===act?15:13}px Bricolage Grotesque, sans-serif`;x.textAlign='center';x.fillText(st[i],px,py+5)}
+  x.fillStyle='#fff';x.font='800 22px Bricolage Grotesque, sans-serif';x.fillText('Scientific',250,195);x.fillText('method',250,222);
+  // arrowhead travelling
+  const a2=-Math.PI/2+(t/1.4%5)*2*Math.PI/5;x.fillStyle='#fff';x.beginPath();x.arc(250+Math.cos(a2)*120,200+Math.sin(a2)*120,6,0,7);x.fill()})})();
+
+/* PEN MYSTERY */
+(()=>{const cv=$('#penCv'),x=hiCanvas(cv,640,420);const causes={ink:'The refill had no ink left.',dry:'The ink had dried at the tip.',dust:'The tip was clogged with paper dust.'};
+ const H=[{k:'ink',g:'The ink is finished.',t:'Open the pen and look at the refill.'},{k:'dry',g:'The ink has dried up at the tip.',t:'Dip the tip in warm water, then scribble.'},{k:'dust',g:'The tip is blocked by dust.',t:'Wipe the tip on a soft cloth, then scribble.'}];
+ let cause,step,writing,pts,penX,anim,inkLvl,tried,showRefill,fixed;
+ const box=$('#penBox'),log=$('#penLog'),hud=$('#penHud');
+ function note(h){const d=document.createElement('div');d.innerHTML=h;log.prepend(d)}
+ function setStep(n){step=n;$$('#penSteps span').forEach((s,i)=>{s.className=i<n?'past':i===n?'on':''});hud.textContent='Step '+(n+1)+': '+['Observe','Question','Guess','Test','Analyse'][n]}
+ function reset(){cause=['ink','dry','dust'][Math.random()*3|0];pts=[];penX=40;writing=true;inkLvl=cause==='ink'?0:.6;tried=new Set();showRefill=false;fixed=false;log.innerHTML='';setStep(0);
+   box.innerHTML='<p>Watch the pen write across the page…</p>';anim='write'}
+ function stopped(){anim='stopped';box.innerHTML='<p><b>Observation:</b> the pen moves, but no line appears any more.</p><button class="btn">Record this observation</button>';
+   $('button',box).onclick=()=>{note('<b>Observe:</b> My pen stopped writing in the middle of a line.');askQ()}}
+ function askQ(){setStep(1);box.innerHTML='<p>Which is the best <b>question</b> to ask?</p>'+['Why did my pen stop writing?','What colour is my pen?','Who gave me this pen?'].map((q,i)=>`<button class="btn ghost" data-i="${i}">${q}</button>`).join('');
+   $$('button',box).forEach(b=>b.onclick=()=>{if(b.dataset.i==='0'){note('<b>Question:</b> Why did my pen stop writing?');guess()}else{b.classList.add('shake');toast('That question will not help us find why the pen stopped.')}})}
+ function guess(){setStep(2);showRefill=false;box.innerHTML='<p>Make a <b>guess</b> (a possible answer):</p>'+H.map((h,i)=>`<button class="btn ghost" data-i="${i}" ${tried.has(h.k)?'disabled':''}>${h.g}${tried.has(h.k)?' (tested, wrong)':''}</button>`).join('');
+   $$('button',box).forEach(b=>b.onclick=()=>{const h=H[b.dataset.i];note('<b>Guess:</b> '+h.g);test(h)})}
+ function test(h){setStep(3);box.innerHTML=`<p>Now <b>test</b> your guess:</p><button class="btn">${h.t}</button>`;
+   $('button',box).onclick=()=>{note('<b>Test:</b> '+h.t);anim='test:'+h.k;let t0=performance.now();box.innerHTML='<p>Testing…</p>';
+     setTimeout(()=>analyse(h),1800)}}
+ function analyse(h){setStep(4);const right=h.k===cause;
+   let res;if(h.k==='ink'){showRefill=true;res=right?'The refill is empty!':'The refill still has plenty of ink.'}
+   else res=right?'The pen writes again!':'The pen still does not write.';
+   if(right){if(h.k==='ink'){res+=' After putting in a new refill, the pen writes again.';inkLvl=.9}fixed=true;pts=[];penX=40;anim='write2'}
+   else anim='stopped';
+   box.innerHTML=`<p><b>Result:</b> ${res}</p><p>${right?'<span class="hl">Your guess was correct.</span> You solved it like a scientist!':'Your guess was <b>not correct</b>. That is useful too: now you can make another guess.'}</p>`+
+     (right?'<button class="btn">Solve another mystery</button>':'<button class="btn">Make another guess</button>');
+   note('<b>Analyse:</b> '+res+(right?' My guess was correct.':' My guess was wrong, so I will make a new guess.'));
+   if(!right)tried.add(h.k);else{markDone('pen');confetti()}
+   $('button',box).onclick=()=>right?reset():guess()}
+ $('#penNew').onclick=reset;
+ function drawPen(px,py,tilt){x.save();x.translate(px,py);x.rotate(-.6+tilt);x.fillStyle='#E9EEF2';x.fillRect(-9,-170,18,150);x.fillStyle=getComputedStyle(document.body).getPropertyValue('--acc');x.fillRect(-10,-175,20,40);
+   x.fillStyle='#9AA7B2';x.beginPath();x.moveTo(-9,-20);x.lineTo(9,-20);x.lineTo(2,0);x.lineTo(-2,0);x.fill();
+   if(showRefill){x.fillStyle='rgba(255,255,255,.2)';x.fillRect(-4,-160,8,138);x.fillStyle='#2F5BD1';const h=138*inkLvl;x.fillRect(-4,-22-h,8,h)}
+   x.restore()}
+ let wob=0;
+ loop((dt,t)=>{x.fillStyle='#1D2A33';x.fillRect(0,0,640,420);
+  // paper
+  x.save();x.translate(60,70);x.rotate(-.03);x.fillStyle='#FDFDF7';x.fillRect(0,0,520,300);x.strokeStyle='#BFD7EA';x.lineWidth=1;for(let y=40;y<300;y+=34){x.beginPath();x.moveTo(0,y);x.lineTo(520,y);x.stroke()}
+  x.strokeStyle='#F4A3A3';x.beginPath();x.moveTo(50,0);x.lineTo(50,300);x.stroke();x.restore();
+  let py=200;
+  if(anim==='write'||anim==='write2'){penX+=110*dt;const y=py+Math.sin(penX/14)*14*Math.sin(penX/45);const inkOK=anim==='write2'||penX<300;
+    pts.push({x:penX,y,ink:inkOK});if(anim==='write'&&penX>420){stopped()}if(anim==='write2'&&penX>520)anim='done'}
+  x.lineWidth=3;x.lineCap='round';x.strokeStyle=fixed?'#1E9E6A':'#2F5BD1';x.beginPath();let on=false;pts.forEach(p=>{if(p.ink){on?x.lineTo(p.x,p.y):x.moveTo(p.x,p.y);on=true}else on=false});x.stroke();
+  const last=pts[pts.length-1]||{x:penX,y:py};let tilt=0,px=last.x,pyy=last.y;
+  if(anim==='stopped'){wob+=dt*6;px=last.x+Math.sin(wob)*16;}
+  if(anim&&anim.startsWith('test')){const k=anim.split(':')[1];
+    if(k==='dry'){x.fillStyle='rgba(120,180,255,.35)';x.fillRect(px-40,pyy-10,80,70);x.fillStyle='#fff';x.font='700 15px Atkinson Hyperlegible, sans-serif';x.fillText('warm water',px-36,pyy+75);pyy+=20+Math.sin(t*8)*4}
+    if(k==='dust'){tilt=Math.sin(t*10)*.15;x.fillStyle='#C9BCFF';x.fillRect(px-50,pyy-4,100,22)}
+    if(k==='ink'){showRefill=true;tilt=-.3+Math.sin(t*2)*.05}}
+  drawPen(px,pyy,tilt);
+  if(anim==='stopped'){x.fillStyle='#FFD84D';x.font='800 40px Bricolage Grotesque, sans-serif';x.fillText('?',px+30,pyy-80)}
+ });
+ reset()})();
+
+/* TYRE */
+(()=>{const cv=$('#tyreCv'),x=hiCanvas(cv,640,400);let hole,air=0,found=false,bub=[];
+ function nw(){hole=rand(30,330);air=0;found=false;bub=[];$('#tyreRot').value=0;$('#tyreObs').textContent='Pump some air in first.'}
+ $('#tyreNew').onclick=nw;$('#tyrePump').onclick=()=>{air=1;$('#tyreObs').textContent='Tube is full of air. Now turn it slowly in the water and watch closely.'};
+ nw();
+ loop((dt,t)=>{const rot=+$('#tyreRot').value*Math.PI/180;x.fillStyle='#1D2A33';x.fillRect(0,0,640,400);
+  // tub
+  x.fillStyle='#3B5260';x.beginPath();x.moveTo(90,200);x.lineTo(550,200);x.lineTo(520,380);x.lineTo(120,380);x.fill();
+  const cx=320,cy=175,R=108+air*6;
+  x.lineWidth=22+air*8;x.strokeStyle='#22262A';x.beginPath();x.arc(cx,cy,R,0,7);x.stroke();
+  x.lineWidth=2;x.strokeStyle='#555';for(let i=0;i<24;i++){const a=i*Math.PI/12+rot;x.beginPath();x.moveTo(cx+Math.cos(a)*(R-14),cy+Math.sin(a)*(R-14));x.lineTo(cx+Math.cos(a)*(R+14),cy+Math.sin(a)*(R+14));x.stroke()}
+  // valve
+  const va=rot-Math.PI/2;x.fillStyle='#999';x.save();x.translate(cx+Math.cos(va)*(R-20),cy+Math.sin(va)*(R-20));x.rotate(va+Math.PI/2);x.fillRect(-5,0,10,24);x.restore();
+  // water
+  x.fillStyle='rgba(90,170,230,.55)';x.beginPath();x.moveTo(97,245);for(let i=0;i<=453;i+=10)x.lineTo(97+i,245+Math.sin(i/30+t*2)*4);x.lineTo(523,375);x.lineTo(118,375);x.fill();
+  const ha=hole*Math.PI/180+rot,hx=cx+Math.cos(ha)*R,hy=cy+Math.sin(ha)*R;
+  if(air&&hy>255){if(Math.random()<.5)bub.push({x:hx+rand(-4,4),y:hy,r:rand(3,7)});if(!found){found=true;$('#tyreObs').innerHTML='<span class="hl">Bubbles!</span> Air is escaping from the hole here. The guess is confirmed and the puncture is found.';markDone('fix')}}
+  bub.forEach(b=>{b.y-=60*dt;b.x+=Math.sin(b.y/9)*.5;x.strokeStyle='rgba(255,255,255,.8)';x.lineWidth=1.5;x.beginPath();x.arc(b.x,b.y,b.r,0,7);x.stroke()});bub=bub.filter(b=>b.y>245);
+  if(found&&hy>255){x.strokeStyle='#FFD84D';x.lineWidth=3;x.beginPath();x.arc(hx,hy,16+Math.sin(t*6)*3,0,7);x.stroke()}
+ })})();
+
+/* BULB */
+(()=>{const sv=$('#bulbSv');let fault,tests=new Set();
+ function draw(state){// state: {lit1, lit2}
+  sv.innerHTML=`<rect width="600" height="370" fill="#1D2A33"/>
+  <text x="150" y="70" fill="#cfe" font-size="17" text-anchor="middle" font-weight="700">Room lamp (problem)</text>
+  <text x="450" y="70" fill="#cfe" font-size="17" text-anchor="middle" font-weight="700">Working lamp</text>
+  <g transform="translate(0,40)">${lamp(150,state.l1,state.b1)}${lamp(450,state.l2,state.b2)}</g>
+  <rect x="50" y="290" width="60" height="44" rx="8" fill="#E9EEF2"/><rect x="70" y="${state.sw?298:312}" width="20" height="22" rx="4" fill="#6A4CE0"/><text x="80" y="352" fill="#cfe" font-size="13" text-anchor="middle">switch</text>`}
+ function lamp(cx,lit,label){return `<line x1="${cx}" y1="50" x2="${cx}" y2="110" stroke="#9aa" stroke-width="4"/>
+   ${lit?`<circle cx="${cx}" cy="160" r="80" fill="url(#g${cx})" opacity=".9"><animate attributeName="r" values="70;86;70" dur="1.6s" repeatCount="indefinite"/></circle><defs><radialGradient id="g${cx}"><stop offset="0" stop-color="#FFE98A"/><stop offset="1" stop-color="#FFE98A" stop-opacity="0"/></radialGradient></defs>`:''}
+   <rect x="${cx-18}" y="108" width="36" height="22" fill="#777"/>
+   <path d="M${cx-30} 160a30 30 0 1 1 60 0c0 18-12 22-14 38h-32c-2-16-14-20-14-38z" fill="${lit?'#FFE066':'#5A6B75'}" stroke="#ccd" stroke-width="2"/>
+   <text x="${cx}" y="235" fill="#ccd" font-size="13" text-anchor="middle">${label||''}</text>`}
+ function nw(){fault=Math.random()<.5?'bulb':'switch';tests.clear();$('#bulbObs').textContent='Press a test button. Each test checks one guess.';$('#bulbAns').style.display='none';draw({l1:false,l2:false,b1:'old bulb',b2:'',sw:1})}
+ $$('[data-test]').forEach(b=>b.onclick=()=>{const k=b.dataset.test;tests.add(k);
+   if(k==='bulb'){const glows=fault!=='bulb';draw({l1:false,l2:glows,b1:'empty',b2:'old bulb',sw:1});$('#bulbObs').innerHTML='The old bulb in the working lamp '+(glows?'<b>glows</b>. So the bulb is fine.':'<b>does not glow</b>. The bulb is fused!')}
+   else{const glows=fault!=='switch';draw({l1:glows,l2:false,b1:'new bulb',b2:'',sw:0});$('#bulbObs').innerHTML='With a new bulb, the room lamp '+(glows?'<b>glows</b>. The switch works.':'<b>still does not glow</b>. Something is wrong with the switch.')}
+   $('#bulbAns').style.display='flex'});
+ $$('[data-a]').forEach(b=>b.onclick=()=>{if(b.dataset.a===fault){$('#bulbObs').innerHTML='<span class="hl">Correct!</span> Your test gave the evidence. That is analysing the result.';confetti()}else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);$('#bulbObs').innerHTML='Look at the test result again. What did it show?'}});
+ $('#bulbNew').onclick=nw;nw()})();
+
+/* ORDER + SORT */
+OrderGame($('#orderBox'),[{t:'Observe something interesting',em:'👀'},{t:'Ask a question',em:'❓'},{t:'Guess a possible answer',em:'💭'},{t:'Test the guess',em:'🧪'},{t:'Analyse the results',em:'📊'}],{end:'If the guess is wrong, go back and make a new guess.'});
+Sorter($('#stepSort'),[
+ {t:'The dal spilled out of the cooker.',c:'o',why:'This is something we noticed: an observation.'},
+ {t:'The tyre of my bicycle is flat.',c:'o',why:'Noticing a flat tyre is an observation.'},
+ {t:'Why did the dal spill out?',c:'q',why:'A “why” sentence is a question.'},
+ {t:'Why is the bulb not glowing?',c:'q',why:'This is a question.'},
+ {t:'Maybe there was too much water.',c:'g',why:'“Maybe…” is a guess: a possible answer.'},
+ {t:'Perhaps the switch is broken.',c:'g',why:'This is a guess that can be tested.'},
+ {t:'Cook the same dal with less water.',c:'t',why:'Doing it again with one change is a test.'},
+ {t:'Dip the tube in water to look for bubbles.',c:'t',why:'This is a test of the leak guess.'},
+ {t:'With less water it did not spill, so the guess was right.',c:'a',why:'Using the result to decide is analysis.'},
+ {t:'The new bulb glowed, so the old bulb was fused.',c:'a',why:'This sentence analyses a result.'}],
+ [{c:'o',t:'Observe',em:'👀'},{c:'q',t:'Question',em:'❓'},{c:'g',t:'Guess',em:'💭'},{c:'t',t:'Test',em:'🧪'},{c:'a',t:'Analyse',em:'📊'}],{done:'steps'});
+
+/* WORLD */
+(()=>{const P=[['Mountains','linear-gradient(160deg,#9cc 0,#5a7 60%,#364 100%)','Why is it colder on top of a mountain?','You will explore temperature in Chapter 7.'],
+ ['Desert','linear-gradient(160deg,#fd9,#e9a050)','How can a camel live where there is so little water?','Chapter 2 explores plants and animals in different places.'],
+ ['Ocean','linear-gradient(170deg,#4ad,#136)','How do fish breathe under water?','Chapter 2 tells you about animals of the ocean.'],
+ ['Galaxy','radial-gradient(circle at 60% 40%,#c9f,#213 60%)','Why do stars shine and why do they twinkle?','Chapter 12 takes you beyond Earth.'],
+ ['Kitchen','linear-gradient(160deg,#fc8,#c63)','How do we know which food has starch?','Chapter 3 shows you food tests.'],
+ ['Rainy day','linear-gradient(170deg,#89a,#456)','Where does the rain water come from?','Chapter 8 follows water on its journey.'],
+ ['Playground','linear-gradient(160deg,#8d6,#3a5)','Is a swing moving the same way as a merry-go-round?','Chapter 5 explains types of motion.'],
+ ['Pencil box','linear-gradient(160deg,#e9d,#a5c)','Why does a magnet keep my box closed?','Chapter 4 explores magnets.']];
+ let opened=new Set();$('#world').innerHTML=P.map((p,i)=>`<button class="place" data-i="${i}" style="background:${p[1]}"><span class="lbl">${p[0]}</span><span class="q">${p[2]}<small>${p[3]}</small></span></button>`).join('');
+ $$('.place').forEach(b=>b.onclick=()=>{b.classList.toggle('open');opened.add(b.dataset.i);if(opened.size>=4)markDone('why')})})();
+$('#planBtn').onclick=()=>{const q=$('#myQ').value.trim()||$('#myQ').placeholder,g=$('#myG').value.trim()||$('#myG').placeholder;
+ const L=[['Observe','I noticed something that made me curious.'],['Question',q],['Guess',g],['Test','I will design a fair test or make more observations to check my guess.'],['Analyse','I will compare my results with my guess. If it is wrong, I will make a new guess.']];
+ $('#planOut').innerHTML=L.map((l,i)=>`<div style="animation-delay:${i*.12}s"><b>${l[0]}:</b> ${l[1]}</div>`).join('');markDone('why')};
+
+Quiz($('#quiz'),[
+ {q:'Your pen stops writing. You guess the ink is finished. What should you do next?',o:['Throw the pen away','Test the guess by checking the refill','Ask what colour the ink is','Write with a pencil and forget it'],a:1,e:'After a guess, a scientist tests it. Opening the pen and checking the refill tests the guess.'},
+ {q:'Which is the correct order of the scientific method?',o:['Test, guess, observe, question, analyse','Observe, question, guess, test, analyse','Guess, analyse, observe, test, question','Question, test, observe, analyse, guess'],a:1,e:'We observe, wonder and ask a question, guess an answer, test the guess, then analyse the results.'},
+ {q:'Your guess turns out to be wrong after a test. What does a scientist do?',o:['Stops working on the problem','Hides the result','Makes another guess and tests it','Changes the result to match the guess'],a:2,e:'A wrong guess still teaches us something. We make a new guess and test again.'},
+ {q:'Who among these is following the scientific method?',o:['An electrician checking whether the bulb or the switch is faulty','Someone memorising a list of facts','Someone copying answers','Someone guessing and never checking'],a:0,e:'The electrician observes, guesses and tests. Anyone who does this works like a scientist.'},
+ {q:'What does the textbook call the most important thing for learning science?',o:['A big laboratory','Curiosity','Expensive equipment','Memorising formulas'],a:1,e:'Curiosity, the urge to ask how and why, is where the title of the book comes from.'},
+ {q:'A bicycle tube is dipped in water and bubbles come out at one spot. This result shows…',o:['The tube is new','Where the air is leaking from','The water is hot','The tyre needs paint'],a:1,e:'Bubbles of escaping air show where the hole is. The test confirms the guess.'},
+ {q:'Why does the book compare science to a giant jigsaw puzzle?',o:['Science is a game for children only','Every discovery adds a piece, and pieces may need to be moved','Science has exactly 1000 pieces','Puzzles are hard'],a:1,e:'Each new discovery adds a piece. Sometimes a piece is in the wrong place, and new discoveries change our understanding.'},
+ {q:'“Maybe there was too much water in the cooker.” Which step is this?',o:['Observation','Question','Guess','Analysis'],a:2,e:'A possible answer to a question is a guess, which we can then test.'}
+],'quiz');
+</script>
+
+<a href="../index.html#/class-6" style="position:fixed;right:16px;bottom:16px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;background:rgba(255,255,255,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.95);box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font:900 14px/1 Nunito,'Segoe UI',system-ui,sans-serif;text-decoration:none">🏠 Lab Home</a></body></html>

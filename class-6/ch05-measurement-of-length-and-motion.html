@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Length and Motion Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3F7F4; --grid:#DCE9E3; --ink:#18324A; --ink2:#4B6274; --bench:#1D2A33; --bench2:#26363F;
+  --marker:#FFD84D; --ok:#1E9E6A; --bad:#D64545; --line:#C9D9D2; --card:#FFFFFF;
+  --acc:#2F7DD1; --acc2:#9CC8F5; --accInk:#fff;
+  --r-lg:22px; --r-md:14px; --r-sm:9px;
+  --fh:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --fb:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);font:17px/1.55 var(--fb);background:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;}
+h1,h2,h3,h4{font-family:var(--fh);line-height:1.1;margin:0 0 .4em;letter-spacing:-.01em}
+p{margin:0 0 .8em}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--marker);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* hero */
+.hero{padding:44px 0 26px}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center}
+.chapno{font-family:var(--fh);font-weight:800;font-size:15px;color:var(--acc);display:inline-flex;gap:8px;align-items:center;background:#fff;border:2px solid var(--acc);border-radius:99px;padding:3px 14px 3px 4px}
+.chapno b{background:var(--acc);color:var(--accInk);border-radius:99px;min-width:28px;height:28px;display:grid;place-items:center;font-size:15px}
+.hero h1{font-size:clamp(38px,5.6vw,68px);font-weight:800;margin:16px 0 14px}
+.hero h1 .u{background:linear-gradient(transparent 62%,var(--marker) 62% 92%,transparent 92%)}
+.hero .lede{font-size:19px;color:var(--ink2);max-width:52ch}
+.hero-stage{background:var(--bench);border-radius:var(--r-lg);aspect-ratio:5/4;position:relative;overflow:hidden;box-shadow:0 18px 0 -8px var(--acc2),0 24px 40px -18px rgba(24,50,74,.45)}
+.hero-stage canvas,.hero-stage svg{width:100%;height:100%;display:block}
+.procedure{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:6px;counter-reset:p}
+.procedure li{counter-increment:p;display:flex;gap:10px;align-items:center;font-weight:700}
+.procedure li::before{content:counter(p);width:26px;height:26px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-size:13px;flex:none}
+.procedure li.done::before{content:"✓";background:var(--ok);border-color:var(--ok);color:#fff}
+
+/* tab bar */
+.bar{position:sticky;top:0;z-index:20;background:rgba(243,247,244,.92);backdrop-filter:blur(8px);border-bottom:2px solid var(--line)}
+.bar .wrap{display:flex;gap:8px;align-items:center;overflow-x:auto;padding-top:10px;padding-bottom:10px;scrollbar-width:thin}
+.tab{border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:99px;padding:7px 15px;font-weight:700;font-size:15px;white-space:nowrap;transition:transform .15s}
+.tab:hover{transform:translateY(-2px)}
+.tab[aria-selected=true]{background:var(--ink);color:#fff}
+.tab .tick{display:none;color:var(--ok);margin-left:6px}
+.tab.done .tick{display:inline}
+.tab[aria-selected=true] .tick{color:var(--marker)}
+.meter{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;white-space:nowrap;padding-left:12px}
+.meter i{display:block;width:90px;height:9px;background:#fff;border:2px solid var(--ink);border-radius:9px;overflow:hidden}
+.meter i b{display:block;height:100%;width:0;background:var(--ok);transition:width .5s}
+
+/* panels */
+main{padding:28px 0 60px}
+.panel{display:none;animation:rise .35s ease}
+.panel.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.panel-head{display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.panel-head h2{font-size:clamp(26px,3.4vw,38px);margin:0}
+.panel-head .aim{color:var(--ink2);max-width:62ch;margin:6px 0 0}
+.lab{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:20px;align-items:start}
+.lab.wide{grid-template-columns:1fr}
+.stage{background:var(--bench);border-radius:var(--r-lg);position:relative;overflow:hidden;color:#E8F0F2;min-height:300px}
+.stage canvas,.stage>svg{display:block;width:100%;height:auto}
+.stage .hud{position:absolute;left:14px;top:12px;font-weight:700;font-size:14px;background:rgba(0,0,0,.35);padding:4px 10px;border-radius:8px;pointer-events:none}
+.side{display:grid;gap:14px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:var(--r-md);padding:16px 18px}
+.card h3{font-size:19px}
+.card.note{background:#FFFBE6;border-color:#F1DF8F}
+.card.note h3::before{content:"✎ ";color:#B98B00}
+.card.why{border-left:7px solid var(--acc)}
+.ctrl{display:grid;gap:12px}
+.ctrl label{font-weight:700;font-size:15px;display:grid;gap:4px}
+.ctrl .row{display:flex;gap:8px;flex-wrap:wrap}
+input[type=range]{width:100%;accent-color:var(--acc);height:28px}
+.btn{border:2px solid var(--ink);background:var(--acc);color:var(--accInk);border-radius:12px;padding:9px 16px;font-weight:700;box-shadow:0 4px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn.sm{padding:6px 11px;font-size:14px;border-radius:10px;box-shadow:0 3px 0 var(--ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.sel{background:var(--marker);color:var(--ink)}
+.readout{font-family:var(--fh);font-size:30px;font-weight:800;line-height:1}
+.readout small{font-size:14px;font-weight:600;color:var(--ink2);display:block;margin-top:4px;font-family:var(--fb)}
+.obs{min-height:3em;font-size:16px}
+.obs.ok{color:var(--ok)} .obs.bad{color:var(--bad)}
+.hl{background:linear-gradient(transparent 55%,var(--marker) 55%);font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pill:empty{display:none}
+.pill{display:inline-block;border-radius:99px;padding:2px 10px;font-size:13px;font-weight:700;background:var(--acc2);color:var(--ink)}
+table.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th,.tbl td{border-bottom:1.5px solid var(--line);padding:6px 8px;text-align:left}
+.tbl th{font-family:var(--fh)}
+
+/* sorting game */
+.sorter{display:grid;gap:14px}
+.tray{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:10px;border:2px dashed var(--line);border-radius:var(--r-md);background:#fff}
+.chip{border:2px solid var(--ink);background:#fff;border-radius:12px;padding:7px 12px;font-weight:700;font-size:15px;user-select:none;touch-action:none;display:inline-flex;align-items:center;gap:6px;transition:transform .15s,background .2s}
+.chip .em{font-size:22px;line-height:1}
+.chip.picked{background:var(--marker);transform:scale(1.06) rotate(-2deg)}
+.chip.right{border-color:var(--ok);background:#E3F6EC;cursor:default}
+.chip.dragging{position:fixed;z-index:999;pointer-events:none;box-shadow:0 12px 24px rgba(0,0,0,.25)}
+.bins{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.bin{border:2px solid var(--ink);border-radius:var(--r-md);background:#fff;min-height:140px;padding:10px;display:flex;flex-direction:column;gap:6px;transition:background .2s,transform .2s}
+.bin h4{font-size:17px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.bin.hover{background:#FFF6CC;transform:scale(1.02)}
+.bin .chips{display:flex;flex-wrap:wrap;gap:6px}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+
+/* order game */
+.order{display:flex;flex-wrap:wrap;gap:8px}
+.slots{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.slot{min-width:120px;min-height:44px;border:2px dashed var(--ink2);border-radius:12px;display:grid;place-items:center;padding:6px 10px;font-weight:700;color:var(--ink2);background:#fff}
+.slot.filled{border-style:solid;border-color:var(--ok);color:var(--ink);background:#E3F6EC}
+
+/* quiz */
+.quiz{max-width:760px;margin:0 auto}
+.qcard{background:#fff;border:2px solid var(--ink);border-radius:var(--r-lg);padding:24px;box-shadow:8px 8px 0 var(--acc2)}
+.qtop{display:flex;justify-content:space-between;font-weight:700;color:var(--ink2);margin-bottom:10px;font-size:15px}
+.qtext{font-family:var(--fh);font-size:24px;font-weight:700;margin-bottom:16px}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:11px 14px;font-weight:700;display:flex;gap:12px;align-items:center}
+.opt:hover:not([disabled]){border-color:var(--ink)}
+.opt .k{width:30px;height:30px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;flex:none;font-size:14px}
+.opt.right{border-color:var(--ok);background:#E3F6EC}
+.opt.wrong{border-color:var(--bad);background:#FCE8E8}
+.qexp{margin-top:14px;padding:12px 14px;border-radius:12px;background:#F2F6FA;display:none}
+.qexp.on{display:block;animation:rise .3s}
+.qnav{display:flex;justify-content:flex-end;margin-top:16px}
+.score{text-align:center}
+.score .big{font-family:var(--fh);font-size:72px;font-weight:800;color:var(--acc)}
+
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:22px}
+.fact{background:#fff;border:2px solid var(--line);border-radius:var(--r-md);padding:14px 16px;font-size:15px}
+.fact b{font-family:var(--fh);display:block;font-size:17px;margin-bottom:4px;color:var(--acc)}
+
+footer{padding:24px 0 40px;color:var(--ink2);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:12px;font-weight:700;z-index:1000;transition:transform .35s cubic-bezier(.2,1.4,.4,1);max-width:90vw;text-align:center}
+.toast.on{transform:translate(-50%,0)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:999}
+
+@media (max-width:860px){
+  .hero .wrap,.lab{grid-template-columns:1fr}
+  .hero{padding-top:26px}
+  .meter i{width:60px}
+  .grid2{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+
+:root{--acc:#0E8A9A;--acc2:#9EE3EC}
+.stage canvas{touch-action:none}
+.people{display:flex;gap:8px;flex-wrap:wrap}
+.ans{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ans input{font:inherit;width:110px;padding:8px;border:2px solid var(--ink);border-radius:10px}
+.conv{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
+.conv input,.conv select{font:inherit;padding:8px;border:2px solid var(--ink);border-radius:10px;width:100%;background:#fff}
+.mtype{display:flex;gap:8px;flex-wrap:wrap}
+
+</style><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"></head><body>
+
+
+<header class="hero"><div class="wrap">
+  <div>
+    <span class="chapno"><b>5</b>Chapter 5</span>
+    <h1>Measurement of Length and <span class="u">Motion</span></h1>
+    <p class="lede">Why do we need a standard unit? Measure with handspans, read a scale the correct way, measure curved lines with a thread, and spot linear, circular and oscillatory motion.</p>
+    <ol class="procedure">
+      <li data-t="span">Measure with handspans</li>
+      <li data-t="scale">Read a scale correctly</li>
+      <li data-t="curve">Measure a curved line</li>
+      <li data-t="motion">Spot the type of motion</li>
+      <li data-t="quiz">Check what you learnt</li>
+    </ol>
+  </div>
+  <div class="hero-stage"><canvas id="heroCv"></canvas></div>
+</div></header>
+
+<nav class="bar"><div class="wrap">
+  <button class="tab" data-t="span">Handspans<span class="tick">✓</span></button>
+  <button class="tab" data-t="scale">Using a scale<span class="tick">✓</span></button>
+  <button class="tab" data-t="curve">Curved lines<span class="tick">✓</span></button>
+  <button class="tab" data-t="motion">Types of motion<span class="tick">✓</span></button>
+  <button class="tab" data-t="quiz">Quiz<span class="tick">✓</span></button>
+  <div class="meter"><i><b></b></i><span></span></div>
+</div></nav>
+
+<main class="wrap">
+<section class="panel" id="p-span">
+  <div class="panel-head"><div><h2>How long is the table?</h2><p class="aim">Deepa and her friends measure the same table with their handspans (balisht). Choose each person and watch them measure.</p></div></div>
+  <div class="lab">
+    <div class="stage"><canvas id="spanCv"></canvas></div>
+    <div class="side"><div class="card ctrl"><label>Who measures?</label><div class="people" id="people"></div></div>
+      <div class="card"><table class="tbl"><thead><tr><th>Name</th><th>Handspans</th></tr></thead><tbody id="spanTbl"></tbody></table><p class="obs" id="spanObs"></p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-scale">
+  <div class="panel-head"><div><h2>Reading a scale the correct way</h2><p class="aim">The pencil may not start at the zero mark. Move your eye and see how the reading seems to change. Then measure the pencil and type your answer.</p></div><button class="btn ghost sm" id="newPencil">New pencil</button></div>
+  <div class="lab">
+    <div class="stage"><canvas id="scaleCv"></canvas><div class="hud" id="eyeHud"></div></div>
+    <div class="side">
+      <div class="card ctrl"><label>Move your eye<input type="range" id="eye" min="-100" max="100" value="60"></label>
+        <label><span><input type="checkbox" id="broken"> The scale's zero mark is broken</span></label>
+        <div class="ans"><span>Length =</span><input id="lenIn" inputmode="decimal" placeholder="e.g. 7.4"><span>cm</span><button class="btn sm" id="lenChk">Check</button></div>
+        <p class="obs" id="scaleObs"></p></div>
+      <div class="card note"><h3>Three rules</h3><p>1. Place the scale along the object, touching it.<br>2. Keep your eye <b>exactly above</b> the mark you read.<br>3. If the zero mark is broken, start at another full mark and <b>subtract</b>.</p></div>
+      <div class="card"><h3>Unit converter</h3><div class="conv"><input id="cv1" value="1" inputmode="decimal"><select id="cu1"><option>km</option><option selected>m</option><option>cm</option><option>mm</option></select>
+        <div id="cvOut" style="grid-column:1/-1;font-weight:700"></div></div><p style="font-size:14px;margin:6px 0 0">The SI unit of length is the <b>metre (m)</b>.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="p-curve">
+  <div class="panel-head"><div><h2>Measuring a curved line</h2><p class="aim">A scale cannot bend, but a thread can. Draw any curved line, lay a thread along it, then straighten the thread on a scale.</p></div><button class="btn ghost sm" id="clearCurve">Clear and draw again</button></div>
+  <div class="lab">
+    <div class="stage"><canvas id="curveCv"></canvas><div class="hud" id="curveHud">Draw a curvy line here</div></div>
+    <div class="side"><div class="card ctrl"><button class="btn" id="threadBtn" disabled>Lay a thread along it</button><button class="btn" id="straightBtn" disabled>Straighten the thread on the scale</button></div>
+      <div class="card"><div class="readout" id="curveLen">— <small>length of the curved line</small></div><p class="obs" id="curveObs"></p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-motion">
+  <div class="panel-head"><div><h2>Motion in the children's park</h2><p class="aim">Tap anything that moves, then choose what type of motion it has.</p></div></div>
+  <div class="lab">
+    <div class="stage"><canvas id="parkCv"></canvas><div class="hud" id="parkHud">Tap a moving thing</div></div>
+    <div class="side"><div class="card"><h3 id="mName">Pick something</h3><div class="mtype" id="mBtns"><button class="btn ghost" data-m="lin">Linear</button><button class="btn ghost" data-m="cir">Circular</button><button class="btn ghost" data-m="osc">Oscillatory</button></div><p class="obs" id="mObs"></p><p id="mCount" class="pill"></p></div>
+      <div class="card note"><p><b>Linear:</b> along a straight line.<br><b>Circular:</b> along a circular path.<br><b>Oscillatory:</b> to and fro about a fixed position.</p></div></div>
+  </div>
+</section>
+
+<section class="panel" id="p-quiz">
+  <div class="panel-head"><div><h2>Check what you learnt</h2></div></div>
+  <div class="quiz" id="quiz"></div>
+  <div class="facts">
+    <div class="fact"><b>Ancient Indian units</b>Angula (finger width), dhanusa and yojana were used in India in ancient times to measure length.</div>
+    <div class="fact"><b>Number and unit</b>A measurement has two parts: a number and a unit. In “13 handspans”, 13 is the number and handspan is the unit.</div>
+    <div class="fact"><b>Rest or motion?</b>An object is in motion if its position changes with time compared with a reference point.</div>
+  </div>
+</section>
+</main>
+<footer><a href="../index.html#/class-6" style="color:inherit;font-weight:700">← All Grade 6 labs</a><br>Based on NCERT Curiosity, Grade 6, Chapter 5: Measurement of Length and Motion</footer>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LAB={done:new Set(),total:0,key:'lab-'+location.pathname.split('/').pop()};
+function store(get,val){try{if(get)return JSON.parse(localStorage.getItem(LAB.key)||'[]');localStorage.setItem(LAB.key,JSON.stringify(val))}catch(e){return []}}
+function toast(msg,ms=2600){let t=$('.toast');if(!t){t=document.createElement('div');t.className='toast';document.body.appendChild(t)}
+  t.textContent=msg;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),ms)}
+function markDone(id){if(LAB.done.has(id))return;LAB.done.add(id);store(false,[...LAB.done]);paintProgress();
+  if(LAB.done.size===LAB.total){confetti();toast('You completed every experiment in this lab!')}}
+function paintProgress(){$$('.tab[data-t]').forEach(b=>b.classList.toggle('done',LAB.done.has(b.dataset.t)));
+  $$('.procedure li[data-t]').forEach(l=>l.classList.toggle('done',LAB.done.has(l.dataset.t)));
+  const m=$('.meter b'),n=$('.meter span');if(m){m.style.width=(100*LAB.done.size/LAB.total)+'%';n.textContent=LAB.done.size+' of '+LAB.total+' done'}}
+const tabHooks={};
+function onTab(id,fn){(tabHooks[id]=tabHooks[id]||[]).push(fn)}
+function showTab(id,scroll){$$('.tab[data-t]').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===id));
+  $$('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+id));(tabHooks[id]||[]).forEach(f=>f());
+  if(scroll){const bar=$('.bar');window.scrollTo({top:bar.offsetTop,behavior:'smooth'})}}
+function initTabs(){const tabs=$$('.tab[data-t]');LAB.total=tabs.length;store(true).forEach(x=>LAB.done.add(x));
+  tabs.forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.t,true)));
+  $$('.procedure li[data-t]').forEach(l=>{l.style.cursor='pointer';l.addEventListener('click',()=>showTab(l.dataset.t,true))});
+  paintProgress();showTab(tabs[0].dataset.t)}
+document.addEventListener('DOMContentLoaded',()=>{if($('.tab'))initTabs()});
+
+/* confetti */
+function confetti(){let c=$('#confetti');if(!c){c=document.createElement('canvas');c.id='confetti';document.body.appendChild(c)}
+  const x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;const cols=['#FFD84D','#1E9E6A','#2F7DD1','#E8567C','#8A5CF6','#FF8A3D'];
+  const ps=Array.from({length:160},()=>({x:innerWidth/2+(Math.random()-.5)*200,y:innerHeight*.35,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,r:Math.random()*6+4,c:cols[Math.random()*6|0],a:Math.random()*6,va:(Math.random()-.5)*.4}));
+  let f=0;(function tick(){x.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.vx*=.99;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()});
+    if(++f<180)requestAnimationFrame(tick);else x.clearRect(0,0,c.width,c.height)})()}
+
+/* hi-dpi canvas: returns ctx sized to logical w,h */
+function hiCanvas(cv,w,h){const d=Math.min(2,window.devicePixelRatio||1);cv.width=w*d;cv.height=h*d;cv.style.aspectRatio=w+'/'+h;const x=cv.getContext('2d');x.setTransform(d,0,0,d,0,0);x.W=w;x.H=h;return x}
+function canvasPoint(cv,e,w,h){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*w/r.width,y:(e.clientY-r.top)*h/r.height}}
+function loop(fn){let last=performance.now(),run=true;function f(t){if(!run)return;const dt=Math.min(.05,(t-last)/1000);last=t;fn(dt,t/1000);requestAnimationFrame(f)}requestAnimationFrame(f);return()=>run=false}
+const lerp=(a,b,t)=>a+(b-a)*t, clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), rand=(a,b)=>a+Math.random()*(b-a);
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+
+/* Quiz: qs=[{q,o:[..],a:index,e:explain}] */
+function Quiz(el,qs,doneId){let i=0,score=0,order=shuffle(qs);
+  function render(){if(i>=order.length){const pct=Math.round(100*score/order.length);
+      el.innerHTML=`<div class="qcard score"><div class="big">${score}/${order.length}</div><h3>${pct>=80?'Brilliant work, scientist!':pct>=50?'Good effort! Revisit the experiments and try again.':'Keep exploring the experiments, then try again.'}</h3><p>Every question comes from what you tested in this lab.</p><button class="btn">Try the quiz again</button></div>`;
+      $('button',el).onclick=()=>{i=0;score=0;order=shuffle(qs);render()};if(pct>=60){confetti();doneId&&markDone(doneId)}return}
+    const q=order[i];el.innerHTML=`<div class="qcard"><div class="qtop"><span>Question ${i+1} of ${order.length}</span><span>Score ${score}</span></div>
+      <div class="qtext">${q.q}</div><div class="opts">${q.o.map((o,k)=>`<button class="opt" data-k="${k}"><span class="k">${'ABCD'[k]}</span>${o}</button>`).join('')}</div>
+      <div class="qexp"></div><div class="qnav"><button class="btn" disabled>Next question</button></div></div>`;
+    $$('.opt',el).forEach(b=>b.onclick=()=>{const k=+b.dataset.k;$$('.opt',el).forEach(x=>x.disabled=true);
+      $$('.opt',el)[q.a].classList.add('right');if(k===q.a){score++}else{b.classList.add('wrong');b.classList.add('shake')}
+      const ex=$('.qexp',el);ex.innerHTML=(k===q.a?'<b>Correct.</b> ':'<b>Not quite.</b> ')+q.e;ex.classList.add('on');
+      const nb=$('.qnav .btn',el);nb.disabled=false;nb.textContent=i===order.length-1?'See my score':'Next question';nb.focus()});
+    $('.qnav .btn',el).onclick=()=>{i++;render()}}
+  render()}
+
+/* Sorter: items=[{t,em,c,why}], bins=[{c,t,em}] ; click a chip then a bin, or drag */
+function Sorter(el,items,bins,opts={}){
+  el.innerHTML=`<div class="sorter"><div class="tray"></div><div class="bins">${bins.map(b=>`<div class="bin" data-c="${b.c}"><h4>${b.em?`<span class="em">${b.em}</span>`:''}${b.t}</h4><div class="chips"></div></div>`).join('')}</div><div class="obs" aria-live="polite"></div></div>`;
+  const tray=$('.tray',el),obs=$('.obs',el);let picked=null,left=items.length;
+  shuffle(items).forEach(it=>{const c=document.createElement('button');c.className='chip';c.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;c._it=it;tray.appendChild(c);
+    c.addEventListener('click',()=>{if(c.classList.contains('right'))return;$$('.chip.picked',el).forEach(x=>x.classList.remove('picked'));picked=c;c.classList.add('picked');obs.className='obs';obs.textContent='Now choose a group for “'+it.t+'”.'});
+    c.addEventListener('pointerdown',e=>{if(c.classList.contains('right'))return;const sx=e.clientX,sy=e.clientY;let ghost=null;
+      const mv=ev=>{if(!ghost&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>8){ghost=c.cloneNode(true);ghost.classList.add('dragging');document.body.appendChild(ghost);c.style.opacity=.3}
+        if(ghost){ghost.style.left=ev.clientX-30+'px';ghost.style.top=ev.clientY-20+'px';$$('.bin',el).forEach(b=>{const r=b.getBoundingClientRect();b.classList.toggle('hover',ev.clientX>r.left&&ev.clientX<r.right&&ev.clientY>r.top&&ev.clientY<r.bottom)})}};
+      const up=ev=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);if(ghost){ghost.remove();c.style.opacity=1;const b=$('.bin.hover',el);$$('.bin',el).forEach(x=>x.classList.remove('hover'));if(b)drop(c,b);c._dragged=true;setTimeout(()=>c._dragged=false,50)}};
+      addEventListener('pointermove',mv);addEventListener('pointerup',up)})});
+  $$('.bin',el).forEach(b=>b.addEventListener('click',()=>{if(picked)drop(picked,b)}));
+  function drop(c,b){const it=c._it;if(it.c===b.dataset.c){c.classList.remove('picked');c.classList.add('right');$('.chips',b).appendChild(c);obs.className='obs ok';obs.innerHTML='✓ '+(it.why||'Correct!');left--;picked=null;
+      if(!left){obs.innerHTML='✓ All sorted! '+(opts.end||'');confetti();opts.done&&markDone(opts.done)}}
+    else{c.classList.add('shake');setTimeout(()=>c.classList.remove('shake'),400);obs.className='obs bad';obs.innerHTML='✗ Not this group. '+(it.hint||'Look again at its features.')}}
+}
+
+/* Order game: items in correct order [{t,em}] */
+function OrderGame(el,items,opts={}){
+  el.innerHTML=`<div class="order"></div><div class="slots">${items.map((_,i)=>`<div class="slot">${i+1}</div>`).join('')}</div><div class="obs" style="margin-top:10px"></div>`;
+  let n=0;const box=$('.order',el),obs=$('.obs',el);
+  shuffle(items.map((x,i)=>({...x,i}))).forEach(it=>{const b=document.createElement('button');b.className='chip';b.innerHTML=(it.em?`<span class="em">${it.em}</span>`:'')+it.t;
+    b.onclick=()=>{if(it.i===n){const s=$$('.slot',el)[n];s.innerHTML=b.innerHTML;s.classList.add('filled');b.remove();n++;obs.className='obs ok';obs.textContent=opts.say?opts.say(it.i):'✓ Right!';
+        if(n===items.length){obs.textContent='✓ Perfect order! '+(opts.end||'');confetti();opts.done&&markDone(opts.done);opts.onDone&&opts.onDone()}}
+      else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);obs.className='obs bad';obs.textContent='✗ That is not step '+(n+1)+'. Think about what has to happen first.'}};box.appendChild(b)})}
+
+const DARK='#1D2A33';
+function ruler(x,X,Y,pxcm,cms,from=0,h=46){x.fillStyle='#F3D78A';x.fillRect(X,Y,pxcm*cms+20,h);x.strokeStyle='#4A3A10';x.fillStyle='#4A3A10';x.textAlign='center';x.font='12px Atkinson Hyperlegible, sans-serif';
+ for(let mm=0;mm<=cms*10;mm++){const xx=X+10+mm*pxcm/10,l=mm%10===0?18:mm%5===0?12:7;x.lineWidth=mm%10?1:1.5;x.beginPath();x.moveTo(xx,Y);x.lineTo(xx,Y+l);x.stroke();if(mm%10===0)x.fillText(from+mm/10,xx,Y+32)}}
+
+/* HERO: swinging + circling + linear */
+(()=>{const x=hiCanvas($('#heroCv'),500,400);
+ loop((dt,t)=>{x.fillStyle=DARK;x.fillRect(0,0,500,400);
+  // pendulum
+  const a=Math.sin(t*2)*.6;x.strokeStyle='#9EE3EC';x.lineWidth=2;x.beginPath();x.moveTo(120,60);x.lineTo(120+Math.sin(a)*140,60+Math.cos(a)*140);x.stroke();x.fillStyle='#FFD84D';x.beginPath();x.arc(120+Math.sin(a)*140,60+Math.cos(a)*140,16,0,7);x.fill();
+  // circle
+  x.strokeStyle='rgba(255,255,255,.2)';x.beginPath();x.arc(360,140,80,0,7);x.stroke();x.fillStyle='#FF8FA3';x.beginPath();x.arc(360+Math.cos(t*1.5)*80,140+Math.sin(t*1.5)*80,14,0,7);x.fill();
+  // linear
+  x.strokeStyle='rgba(255,255,255,.2)';x.beginPath();x.moveTo(40,330);x.lineTo(460,330);x.stroke();x.fillStyle='#7BE0AE';const lx=40+((t*90)%420);x.fillRect(lx-14,316,28,28);
+  x.fillStyle='#cde';x.font='15px Atkinson Hyperlegible, sans-serif';x.textAlign='center';x.fillText('oscillatory',120,240);x.fillText('circular',360,250);x.fillText('linear',250,370)})})();
+
+/* SPAN */
+(()=>{const x=hiCanvas($('#spanCv'),640,380);const P=[['Deepa',17.2],['Padma',15.6],['Tasneem',18.4],['Your teacher',21.5]];const T=150;let cur=null,k=0,done={};
+ $('#people').innerHTML=P.map((p,i)=>`<button class="btn ghost" data-i="${i}">${p[0]}</button>`).join('');
+ $$('#people .btn').forEach(b=>b.onclick=()=>{cur=+b.dataset.i;k=0;$$('#people .btn').forEach(z=>z.classList.toggle('sel',z===b))});
+ function tbl(){$('#spanTbl').innerHTML=Object.entries(done).map(([i,v])=>`<tr><td>${P[i][0]}</td><td>${v}</td></tr>`).join('');
+  if(Object.keys(done).length>=3){$('#spanObs').innerHTML='<span class="hl">Same table, different answers!</span> Everyone\'s handspan is a different size. That is why we need a <b>standard unit</b> like the metre, which is the same for everyone.';markDone('span')}}
+ loop((dt,t)=>{x.fillStyle=DARK;x.fillRect(0,0,640,380);const px=3.6,X=50;// cm→px
+  x.fillStyle='#A8723F';x.fillRect(X,160,T*px,26);x.fillStyle='#8A5A2D';x.fillRect(X+10,186,14,140);x.fillRect(X+T*px-24,186,14,140);
+  x.fillStyle='#fff';x.font='800 17px Bricolage Grotesque, sans-serif';x.textAlign='left';x.fillText('The classroom table',X,140);
+  if(cur===null){x.fillStyle='#9EE3EC';x.font='16px Atkinson Hyperlegible, sans-serif';x.fillText('Choose who measures →',X,240);return}
+  const s=P[cur][1];k+=dt*1.6;const n=Math.floor(T/s),shown=Math.min(n,Math.floor(k));
+  for(let i=0;i<shown;i++){x.fillStyle=`hsla(${170+i*9},60%,60%,.8)`;x.fillRect(X+i*s*px+2,150,s*px-4,8)}
+  const hx=X+Math.min(shown,n)*s*px;// hand
+  if(shown<n){const f=k%1;x.save();x.translate(hx+f*s*px/2,140);x.font='34px serif';x.fillStyle='#000';x.fillText('✋',-16,0);x.restore()}
+  else{if(done[cur]===undefined){const rem=(T-n*s)/s;done[cur]=n+(rem>.4?' and a bit':'');tbl()}}
+  x.fillStyle='#FFD84D';x.font='800 26px Bricolage Grotesque, sans-serif';x.textAlign='center';x.fillText(shown+' handspans',320,250);
+  x.fillStyle='#cde';x.font='14px Atkinson Hyperlegible, sans-serif';x.fillText(P[cur][0]+'\'s handspan',320,275)})})();
+
+/* SCALE */
+(()=>{const x=hiCanvas($('#scaleCv'),640,360);let L,start,tries=0,okCount=0;
+ function nw(){L=Math.round(rand(45,120))/10;start=$('#broken').checked?Math.round(rand(1,4)):0;$('#lenIn').value='';$('#scaleObs').textContent='';}
+ $('#newPencil').onclick=nw;$('#broken').onchange=nw;nw();
+ $('#lenChk').onclick=()=>{const v=parseFloat($('#lenIn').value);if(isNaN(v)){$('#scaleObs').textContent='Type a number first.';return}
+  if(Math.abs(v-L)<.06){okCount++;$('#scaleObs').innerHTML='<span class="hl">Correct! '+L.toFixed(1)+' cm</span>'+(start?' (reading '+(start+L).toFixed(1)+' minus starting mark '+start+')':'')+'. Try another pencil.';if(okCount>=2)markDone('scale');confetti()}
+  else if(start&&Math.abs(v-(start+L))<.06)$('#scaleObs').innerHTML='That is the reading at the end. The pencil starts at <b>'+start+' cm</b>, so subtract it!';
+  else $('#scaleObs').innerHTML='Not quite. Move your eye directly above the end of the pencil and read again.'};
+ const cvt=()=>{const v=parseFloat($('#cv1').value)||0,f={km:100000,m:100,cm:1,mm:.1}[$('#cu1').value]*v;$('#cvOut').innerHTML=['km','m','cm','mm'].map(u=>`${+(f/{km:100000,m:100,cm:1,mm:.1}[u]).toPrecision(6)} ${u}`).join(' = ')};
+ $('#cv1').oninput=cvt;$('#cu1').onchange=cvt;cvt();
+ loop((dt,t)=>{const e=+$('#eye').value;x.fillStyle=DARK;x.fillRect(0,0,640,360);const pxcm=46,X=40,Y=200;
+  ruler(x,X,Y,pxcm,12,0);if(start){x.fillStyle=DARK;x.beginPath();x.moveTo(X,Y);x.lineTo(X+30,Y);x.lineTo(X+18,Y+46);x.lineTo(X,Y+46);x.fill()}
+  // pencil raised above scale (thickness causes parallax)
+  const ps=X+10+start*pxcm,pe=ps+L*pxcm,py=170;x.fillStyle='#F2B33D';x.fillRect(ps,py,L*pxcm-26,22);x.fillStyle='#F6D6A8';x.beginPath();x.moveTo(pe-26,py);x.lineTo(pe,py+11);x.lineTo(pe-26,py+22);x.fill();x.fillStyle='#333';x.beginPath();x.moveTo(pe-8,py+7);x.lineTo(pe,py+11);x.lineTo(pe-8,py+15);x.fill();x.fillStyle='#E88';x.fillRect(ps,py,10,22);
+  // eye + sight line
+  const ex=pe+e*1.6,ey=40;x.font='34px serif';x.textAlign='center';x.fillStyle='#000';x.fillText('👁️',ex,ey+12);
+  const hit=ex+(pe-ex)*((Y+4-ey)/(py+11-ey));x.strokeStyle=Math.abs(e)<8?'#7BE0AE':'#FF8A8A';x.setLineDash([6,6]);x.lineWidth=2;x.beginPath();x.moveTo(ex,ey+20);x.lineTo(hit,Y+4);x.stroke();x.setLineDash([]);
+  const read=(hit-X-10)/pxcm;$('#eyeHud').textContent=Math.abs(e)<8?'Eye directly above: correct position':'Eye at an angle: reading appears '+read.toFixed(1)+' cm (wrong!)';
+  x.fillStyle=Math.abs(e)<8?'#7BE0AE':'#FF8A8A';x.beginPath();x.arc(hit,Y+4,5,0,7);x.fill()})})();
+
+/* CURVE */
+(()=>{const cv=$('#curveCv'),x=hiCanvas(cv,640,420);let pts=[],drawing=false,mode='draw',th=0,st=0,len=0;const PXCM=20;
+ function reset(){pts=[];mode='draw';th=0;st=0;$('#threadBtn').disabled=true;$('#straightBtn').disabled=true;$('#curveLen').innerHTML='— <small>length of the curved line</small>';$('#curveObs').textContent='';$('#curveHud').textContent='Draw a curvy line here'}
+ $('#clearCurve').onclick=reset;reset();
+ cv.addEventListener('pointerdown',e=>{if(mode!=='draw')return;pts=[canvasPoint(cv,e,640,420)];drawing=true;cv.setPointerCapture(e.pointerId)});
+ cv.addEventListener('pointermove',e=>{if(!drawing)return;const p=canvasPoint(cv,e,640,420);const l=pts[pts.length-1];if(Math.hypot(p.x-l.x,p.y-l.y)>4&&p.y<300)pts.push(p)});
+ cv.addEventListener('pointerup',()=>{if(!drawing)return;drawing=false;if(pts.length>10){len=0;for(let i=1;i<pts.length;i++)len+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y);
+   if(len/PXCM>29.5){$('#curveHud').textContent='Too long for the 30 cm scale. Draw a shorter line.';pts=[];return}$('#threadBtn').disabled=false;$('#curveHud').textContent='Now lay a thread along it'}});
+ $('#threadBtn').onclick=()=>{mode='thread';th=0;$('#straightBtn').disabled=false};
+ $('#straightBtn').onclick=()=>{mode='straight';st=0};
+ loop((dt)=>{x.fillStyle=DARK;x.fillRect(0,0,640,420);x.fillStyle='rgba(255,255,255,.04)';for(let i=0;i<640;i+=20)x.fillRect(i,0,1,300);
+  ruler(x,10,330,PXCM,30,0,50);
+  if(pts.length>1){x.strokeStyle='#FFFFFF';x.lineWidth=4;x.lineCap='round';x.lineJoin='round';x.beginPath();pts.forEach((p,i)=>i?x.lineTo(p.x,p.y):x.moveTo(p.x,p.y));x.stroke()}
+  if(mode==='thread'||mode==='straight'){th=Math.min(1,th+dt*.7);if(mode==='straight')st=Math.min(1,st+dt*.6);
+   const n=Math.floor(pts.length*th);x.strokeStyle='#FF6B9A';x.lineWidth=3;x.beginPath();let acc=0;
+   for(let i=0;i<n;i++){if(i)acc+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y);const tx=20+acc,ty=318;const px=lerp(pts[i].x,tx,st),py=lerp(pts[i].y,ty,st);i?x.lineTo(px,py):x.moveTo(px,py)}x.stroke();
+   if(st>=1&&mode==='straight'){mode='done';const cm=len/PXCM;$('#curveLen').innerHTML=cm.toFixed(1)+' cm <small>length of the curved line</small>';$('#curveObs').innerHTML='The straightened thread shows the length of the curved line. Mark the thread\'s end and read it on the scale.';markDone('curve')}}
+  if(mode==='done'){const e=20+len;x.fillStyle='#FF6B9A';x.beginPath();x.arc(20,318,5,0,7);x.arc(e,318,5,0,7);x.fill();x.strokeStyle='#FF6B9A';x.lineWidth=3;x.beginPath();x.moveTo(20,318);x.lineTo(e,318);x.stroke()}})})();
+
+/* PARK */
+(()=>{const cv=$('#parkCv'),x=hiCanvas(cv,640,440);const O=[{n:'Swing',m:'osc',x:120,y:190},{n:'Merry-go-round',m:'cir',x:470,y:300},{n:'Child on the slide',m:'lin',x:300,y:150},{n:'See-saw',m:'osc',x:150,y:370},{n:'Giant wheel',m:'cir',x:500,y:120},{n:'Toy train on a straight track',m:'lin',x:330,y:405}];
+ let sel=null,got=new Set();const why={lin:'it moves along a straight line.',cir:'it moves along a circular path.',osc:'it moves to and fro about a fixed position.'};
+ cv.addEventListener('click',e=>{const p=canvasPoint(cv,e,640,440);let best=null,bd=80;O.forEach((o,i)=>{const d=Math.hypot(p.x-o.x,p.y-o.y);if(d<bd){bd=d;best=i}});if(best!==null){sel=best;$('#mName').textContent=O[best].n;$('#mObs').textContent='What type of motion is this?';$('#parkHud').textContent=O[best].n}});
+ $$('#mBtns .btn').forEach(b=>b.onclick=()=>{if(sel===null){$('#mObs').textContent='First tap something in the park.';return}const o=O[sel];
+  if(b.dataset.m===o.m){got.add(sel);$('#mObs').innerHTML='✓ '+o.n+': <b>'+b.textContent.toLowerCase()+'</b> motion, because '+why[o.m];$('#mCount').textContent=got.size+' of '+O.length+' found';if(got.size===O.length){markDone('motion');confetti()}}
+  else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);$('#mObs').textContent='Watch its path again. Is it straight, round, or back and forth?'}});
+ loop((dt,t)=>{x.fillStyle='#2F5A3E';x.fillRect(0,0,640,440);x.fillStyle='#3A6B4A';for(let i=0;i<30;i++){x.beginPath();x.arc((i*131)%640,(i*89)%440,18,0,7);x.fill()}
+  O.forEach((o,i)=>{if(sel===i){x.strokeStyle='#FFD84D';x.lineWidth=3;x.beginPath();x.arc(o.x,o.y,62+Math.sin(t*5)*4,0,7);x.stroke()}if(got.has(i)){x.fillStyle='#7BE0AE';x.font='800 20px Bricolage Grotesque, sans-serif';x.textAlign='center';x.fillText('✓',o.x+52,o.y-44)}});
+  // swing
+  {const o=O[0],a=Math.sin(t*2.2)*.7;x.strokeStyle='#7A4E2D';x.lineWidth=6;x.beginPath();x.moveTo(o.x-60,o.y+60);x.lineTo(o.x-40,o.y-70);x.lineTo(o.x+40,o.y-70);x.lineTo(o.x+60,o.y+60);x.stroke();
+   x.strokeStyle='#ddd';x.lineWidth=2;const sx=o.x+Math.sin(a)*90,sy=o.y-70+Math.cos(a)*90;x.beginPath();x.moveTo(o.x-8,o.y-70);x.lineTo(sx-8,sy);x.moveTo(o.x+8,o.y-70);x.lineTo(sx+8,sy);x.stroke();x.fillStyle='#E04A55';x.fillRect(sx-16,sy,32,7);x.font='26px serif';x.fillStyle='#000';x.textAlign='center';x.fillText('🧒',sx,sy-2)}
+  // merry-go-round
+  {const o=O[1];x.fillStyle='#E9C94D';x.beginPath();x.ellipse(o.x,o.y,70,26,0,0,7);x.fill();for(let k=0;k<4;k++){const a=t*1.4+k*1.57,px=o.x+Math.cos(a)*60,py=o.y+Math.sin(a)*20;x.font='24px serif';x.fillStyle='#000';x.fillText(['🐴','🦄','🐴','🦄'][k],px,py)}}
+  // slide
+  {const o=O[2];x.strokeStyle='#5DADE2';x.lineWidth=10;x.beginPath();x.moveTo(o.x-70,o.y-50);x.lineTo(o.x+70,o.y+50);x.stroke();const f=(t*.5)%1;x.font='26px serif';x.fillStyle='#000';x.fillText('🧒',o.x-70+140*f,o.y-56+100*f)}
+  // see-saw
+  {const o=O[3],a=Math.sin(t*1.8)*.25;x.fillStyle='#7A4E2D';x.beginPath();x.moveTo(o.x-12,o.y+30);x.lineTo(o.x+12,o.y+30);x.lineTo(o.x,o.y);x.fill();x.save();x.translate(o.x,o.y);x.rotate(a);x.fillStyle='#E07B39';x.fillRect(-80,-6,160,8);x.font='24px serif';x.fillStyle='#000';x.fillText('👧',-70,-8);x.fillText('👦',70,-8);x.restore()}
+  // giant wheel
+  {const o=O[4];x.strokeStyle='#ccd';x.lineWidth=3;x.beginPath();x.arc(o.x,o.y,60,0,7);x.stroke();for(let k=0;k<6;k++){const a=t*.6+k*1.047;x.beginPath();x.moveTo(o.x,o.y);x.lineTo(o.x+Math.cos(a)*60,o.y+Math.sin(a)*60);x.stroke();x.fillStyle=['#E04A55','#FFD84D','#5DADE2'][k%3];x.fillRect(o.x+Math.cos(a)*60-8,o.y+Math.sin(a)*60,16,12)}}
+  // train
+  {const o=O[5];x.strokeStyle='#888';x.lineWidth=3;x.beginPath();x.moveTo(170,o.y+14);x.lineTo(600,o.y+14);x.stroke();const tx=180+((t*60)%400);x.font='28px serif';x.fillStyle='#000';x.fillText('🚂',tx,o.y+10)}})})();
+
+Quiz($('#quiz'),[
+ {q:'Why did Deepa and her friends get different answers for the same table?',o:['The table changed size','Their handspans are of different sizes','They counted wrongly','The table moved'],a:1,e:'Body units like handspans differ from person to person, so we need a standard unit.'},
+ {q:'What is the SI unit of length?',o:['Centimetre','Kilometre','Metre','Handspan'],a:2,e:'The metre (m) is the SI unit of length.'},
+ {q:'1 metre is equal to…',o:['10 cm','100 cm','1000 cm','100 mm'],a:1,e:'1 m = 100 cm, and 1 cm = 10 mm.'},
+ {q:'Where should your eye be when reading a scale?',o:['To the left of the mark','To the right of the mark','Exactly above the mark','Far away'],a:2,e:'Keep your eye vertically above the point being measured to avoid errors.'},
+ {q:'The zero of your scale is broken. A pencil starts at the 2 cm mark and ends at 9.5 cm. Its length is…',o:['9.5 cm','11.5 cm','7.5 cm','2 cm'],a:2,e:'Length = 9.5 − 2 = 7.5 cm.'},
+ {q:'How can you measure the length of a curved line?',o:['With a straight scale only','Using a thread along the line, then measuring the thread','It cannot be measured','By guessing'],a:1,e:'Place a thread along the curve, mark the ends, then straighten it on a scale.'},
+ {q:'The motion of a swing is…',o:['Linear','Circular','Oscillatory','No motion'],a:2,e:'A swing moves to and fro about a fixed position: oscillatory motion.'},
+ {q:'An eraser tied to a thread is whirled around. Its motion is…',o:['Linear','Circular','Oscillatory','At rest'],a:1,e:'It moves along a circular path.'},
+ {q:'Students marching in a straight line during a parade show…',o:['Linear motion','Circular motion','Oscillatory motion','No motion'],a:0,e:'They move along a straight line: linear motion.'}
+],'quiz');
+</script>
+
+<a href="../index.html#/class-6" style="position:fixed;right:16px;bottom:16px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;background:rgba(255,255,255,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.95);box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font:900 14px/1 Nunito,'Segoe UI',system-ui,sans-serif;text-decoration:none">🏠 Lab Home</a></body></html>
