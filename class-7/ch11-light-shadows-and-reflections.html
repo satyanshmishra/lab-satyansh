@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Light: Shadows & Reflections · Virtual Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>:root{
+  --paper:#f7f2e8; --paper2:#efe7d6; --ink:#1b2232; --ink2:#4a5468; --muted:#7a8296;
+  --card:#ffffff; --line:#e3dac6; --bench:#101a2c; --bench2:#18243b; --benchline:rgba(255,255,255,.06);
+  --good:#1f9d63; --bad:#d64545; --warn:#e3a21a;
+  --r:18px; --shadow:0 1px 0 rgba(0,0,0,.04),0 10px 30px -12px rgba(40,30,10,.25);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 "Nunito","Segoe UI",system-ui,sans-serif;
+  background-image:radial-gradient(circle at 1px 1px,rgba(120,100,60,.12) 1px,transparent 0);background-size:22px 22px}
+h1,h2,h3,h4{font-family:"Baloo 2","Nunito","Segoe UI",sans-serif;line-height:1.15;margin:0 0 .4em;letter-spacing:-.01em}
+button,input,select{font:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);color:#fff;padding:46px 0 40px}
+.hero .wrap{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+.hero .eyebrow{display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);padding:5px 14px;border-radius:99px;font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.hero h1{font-size:clamp(34px,5.2vw,64px);margin:14px 0 8px;font-weight:800;text-shadow:0 2px 0 rgba(0,0,0,.08)}
+.hero p.q{font-size:clamp(17px,2vw,21px);max-width:720px;opacity:.95;margin:0}
+.hero .bignum{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:clamp(110px,16vw,210px);line-height:.8;color:transparent;-webkit-text-stroke:3px rgba(255,255,255,.55);user-select:none}
+.hero .orbits{position:absolute;inset:0;z-index:1;pointer-events:none}
+.hero .orbits span{position:absolute;border:2px solid rgba(255,255,255,.18);border-radius:50%;animation:spin linear infinite}
+.hero .orbits span::after{content:"";position:absolute;top:-6px;left:50%;width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.7)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hero .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+.hero .meta span{background:rgba(0,0,0,.16);padding:4px 12px;border-radius:99px;font-size:14px;font-weight:700}
+
+/* ---------- TABS ---------- */
+.tabbar{position:sticky;top:0;z-index:30;background:rgba(247,242,232,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:12px 0;scrollbar-width:thin}
+.tabs button{flex:0 0 auto;border:1.5px solid var(--line);background:#fff;color:var(--ink2);padding:8px 16px;border-radius:99px;cursor:pointer;font-weight:800;font-size:14px;transition:.2s;display:flex;gap:8px;align-items:center}
+.tabs button .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--paper2);font-size:12px}
+.tabs button:hover{border-color:var(--accent);color:var(--ink)}
+.tabs button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tabs button.active .n{background:var(--accent);color:#fff}
+
+/* ---------- STATIONS ---------- */
+main{padding:28px 0 60px}
+.station{display:none;animation:rise .45s ease}
+.station.active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.st-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.st-head h2{font-size:clamp(26px,3vw,36px);margin:0}
+.st-head .tag{font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;font-size:13px}
+.st-head p{margin:4px 0 0;color:var(--ink2);max-width:760px}
+.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:20px;align-items:start}
+.grid.even{grid-template-columns:1fr 1fr}
+.grid.wide{grid-template-columns:1fr}
+@media(max-width:940px){.grid,.grid.even{grid-template-columns:1fr}.hero .wrap{grid-template-columns:1fr}.hero .bignum{display:none}}
+
+.stage{position:relative;background:var(--bench);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);overflow:hidden;
+  background-image:linear-gradient(var(--benchline) 1px,transparent 1px),linear-gradient(90deg,var(--benchline) 1px,transparent 1px);background-size:28px 28px}
+.stage canvas,.stage svg{display:block;width:100%;height:auto;border-radius:12px}
+.stage .hud{position:absolute;top:22px;left:24px;color:#fff;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.75;pointer-events:none}
+.stage .hint{color:#c9d3e8;font-size:13.5px;text-align:center;padding:8px 6px 2px}
+.stage.light{background:#fff;background-image:none;border:1px solid var(--line)}
+.stage.light .hint{color:var(--ink2)}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 16px;box-shadow:var(--shadow)}
+.panel + .panel{margin-top:16px}
+.panel h3{font-size:20px;display:flex;align-items:center;gap:8px}
+.panel h3 .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.stack > * + *{margin-top:16px}
+
+.ctrl{margin:12px 0}
+.ctrl label{display:flex;justify-content:space-between;font-weight:800;font-size:14px;color:var(--ink2);margin-bottom:4px}
+.ctrl label b{color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent);height:26px;cursor:pointer}
+select{width:100%;padding:9px 12px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-weight:700}
+
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;background:var(--accent);color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;cursor:pointer;transition:transform .12s,filter .2s,box-shadow .2s;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.btn:hover{filter:brightness(1.07)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
+.btn.dark{background:var(--ink)}
+.btn.sm{padding:6px 12px;font-size:14px;border-radius:10px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:#fff;padding:7px 13px;border-radius:99px;cursor:pointer;font-weight:700;font-size:14px;transition:.15s;color:var(--ink)}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.explain{border-left:5px solid var(--accent);background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 10%,#fff),#fff);border-radius:12px;padding:12px 14px;margin-top:12px}
+.explain b.k{color:var(--accent)}
+.explain .t{font-weight:900;text-transform:uppercase;font-size:12px;letter-spacing:.1em;color:var(--accent);display:block;margin-bottom:2px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:12px 0}
+.readout div{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.readout small{display:block;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.readout b{font-size:21px;font-family:"Baloo 2",sans-serif;font-variant-numeric:tabular-nums}
+
+table.log{width:100%;border-collapse:collapse;font-size:14px}
+table.log th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:2px solid var(--line);padding:6px}
+table.log td{border-bottom:1px solid var(--line);padding:7px 6px}
+table.log tr.new td{animation:flash 1.2s ease}
+@keyframes flash{from{background:color-mix(in srgb,var(--accent) 25%,#fff)}to{background:transparent}}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-weight:800;font-size:12.5px}
+.pill.g{background:#dcf5e8;color:#11663f}.pill.r{background:#fde2e2;color:#9b1c1c}.pill.y{background:#fff1cc;color:#7a5200}.pill.b{background:#dde9ff;color:#1d3f8f}.pill.n{background:#eee;color:#444}
+
+/* ---------- SORTER ---------- */
+.sorter .pool{display:flex;flex-wrap:wrap;gap:8px;min-height:48px;padding:10px;border:2px dashed var(--line);border-radius:14px;background:var(--paper)}
+.sorter .card{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:8px 12px;font-weight:700;cursor:grab;user-select:none;transition:.15s;font-size:14.5px}
+.sorter .card.sel{outline:3px solid var(--accent);transform:translateY(-2px)}
+.sorter .card.ok{border-color:var(--good);background:#e9f8f0}
+.sorter .card.no{border-color:var(--bad);background:#fdeaea;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.sorter .bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+.sorter .bin{border:2px solid var(--line);border-radius:14px;padding:10px;min-height:120px;background:#fff;transition:.15s}
+.sorter .bin.hot{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,#fff)}
+.sorter .bin h4{font-size:16px;margin:0 0 8px;display:flex;justify-content:space-between}
+.sorter .bin .cards{display:flex;flex-wrap:wrap;gap:6px}
+.sorter .score{font-weight:800;color:var(--ink2);margin-top:10px}
+
+/* ---------- QUIZ ---------- */
+.quiz{display:grid;gap:14px}
+.qcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow)}
+.qcard .qn{font-weight:900;color:var(--accent);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+.qcard .qt{font-weight:800;font-size:17px;margin:4px 0 10px}
+.qcard .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:640px){.qcard .opts{grid-template-columns:1fr}}
+.qcard .opt{text-align:left;border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:700;transition:.15s;color:var(--ink)}
+.qcard .opt:hover{border-color:var(--accent)}
+.qcard .opt.right{background:#dcf5e8;border-color:var(--good)}
+.qcard .opt.wrong{background:#fde2e2;border-color:var(--bad)}
+.qcard .why{display:none;margin-top:10px;font-size:15px;color:var(--ink2)}
+.qcard.done .why{display:block}
+.qscore{position:sticky;top:64px;z-index:5;background:var(--paper);padding:8px 0;font-family:"Baloo 2","Segoe UI",sans-serif;font-size:22px;font-weight:800}
+
+.keyideas{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:8px}
+.keyideas div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-weight:600;position:relative;padding-left:40px}
+.keyideas div::before{content:"✦";position:absolute;left:14px;top:10px;color:var(--accent);font-size:18px}
+
+footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--muted);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;opacity:0;transition:.3s;z-index:99;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.muted{color:var(--muted)}
+.center{text-align:center}
+.mt0{margin-top:0}
+.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:#c9d3e8;padding:6px 6px 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.caution{background:#fff5df;border:1px solid #f0d79a;border-radius:12px;padding:10px 12px;font-size:14px;margin-top:12px}
+.caution b{color:#8a5a00}
+
+:root{--accent:#f59f00;--accent2:#3b5bdb}
+</style>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"></head><body>
+<header class="hero"><div class="orbits"></div><div class="wrap"><div>
+<a href="../index.html#/class-7" style="color:#fff;font-weight:800;text-decoration:none;opacity:.9;margin-right:10px">← All labs</a><span class="eyebrow">Class 7 Science · Chapter 11 · Virtual Lab</span>
+<h1>Light: Shadows & Reflections</h1><p class="q">Does light really travel in straight lines? How are shadows made, why does a mirror swap left and right, and why is a pinhole image upside down?</p>
+<div class="meta"><span>Straight-line light</span><span>Materials & shadows</span><span>Mirror reflection</span><span>Mirror images</span><span>Pinhole camera</span><span>Kaleidoscope</span></div></div><div class="bignum">11</div></div></header>
+<nav class="tabbar"><div class="wrap tabs"><button data-tab="s1"><span class="n">1</span>Light Travels Straight</button><button data-tab="s2"><span class="n">2</span>Shadow Studio</button><button data-tab="s3"><span class="n">3</span>Mirror Reflection</button><button data-tab="s4"><span class="n">4</span>Mirror Images</button><button data-tab="s5"><span class="n">5</span>Pinhole Camera</button><button data-tab="s6"><span class="n">6</span>Periscope & Kaleidoscope</button><button data-tab="s7"><span class="n">7</span>Check Yourself</button></div></nav>
+<main class="wrap">
+
+
+<section class="station" id="s1">
+  <div class="st-head"><div><div class="tag">Station 1 · Activities 11.1 & 11.2</div><h2>Does Light Travel in a Straight Line?</h2>
+  <p>Three matchboxes with holes stand between a torch and a screen. Drag a matchbox up or down. When do you get a spot of light on the screen?</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c1"></canvas><div class="hint">Drag any matchbox up or down.</div></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Result</h3><div class="readout"><div><small>Holes in line?</small><b id="al">Yes</b></div><div><small>Spot on screen</small><b id="spot">Bright</b></div></div>
+      <div class="btnrow"><button class="btn ghost" id="align">Line them up again</button></div>
+      <div class="explain" id="m1"></div></div>
+      <div class="panel"><h3><span class="dot"></span>Luminous or not?</h3><div id="lum"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s2">
+  <div class="st-head"><div><div class="tag">Station 2 · Activities 11.3 & 11.4</div><h2>Shadow Studio</h2>
+  <p>Place objects of different materials between a torch and a screen. Move the object nearer to the torch or the screen. What happens to the shadow?</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c2"></canvas><div class="hint">Drag the object left and right.</div></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Object</h3><div class="chips" id="obj"></div>
+      <h4 style="margin:12px 0 6px">Shape</h4><div class="chips" id="shape"></div>
+      <div class="chips" style="margin-top:10px"><button class="chip on" id="torch">🔦 Torch on</button><button class="chip" id="two">Add a second torch</button><button class="chip" id="colr">Change object colour</button></div>
+      <div class="readout"><div><small>Light passes</small><b id="pass">—</b></div><div><small>Shadow size</small><b id="ss">—</b></div></div>
+      <div class="explain" id="m2"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s3">
+  <div class="st-head"><div><div class="tag">Station 3 · Activities 11.5 & 11.6</div><h2>Mirror Reflection</h2>
+  <p>A thin beam of light (made with a comb slit) falls on a plane mirror. Rotate the mirror and move the torch. A shiny surface changes the direction of light — <b>reflection</b>.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c3"></canvas><div class="hint">Drag the torch around · use the slider to turn the mirror.</div></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Controls</h3>
+      <div class="ctrl"><label>Mirror tilt <b id="mt-v"></b></label><input type="range" id="mt" min="-40" max="40" value="0"></div>
+      <div class="chips"><button class="chip on" id="ang">Show angles</button><button class="chip" id="target">🎯 Hit-the-target challenge</button></div>
+      <div class="readout"><div><small>Angle in</small><b id="ai">—</b></div><div><small>Angle out</small><b id="ao">—</b></div><div><small>Targets hit</small><b id="hits">0</b></div></div>
+      <div class="explain" id="m3"><span class="t">Notice</span>Light travels in straight lines and changes direction only at the mirror. The angle at which it strikes equals the angle at which it leaves.</div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s4">
+  <div class="st-head"><div><div class="tag">Station 4 · Activities 11.7 & 11.8</div><h2>Mirror Images & Lateral Inversion</h2>
+  <p>Type a word and see its image in a plane mirror. Move closer to and farther from the mirror. Why is <b>AMBULANCE</b> written backwards on the front of ambulances?</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c4"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Controls</h3>
+      <div class="ctrl"><label>Word</label><input id="word" value="AMBULANCE" maxlength="12" style="width:100%;padding:10px;border-radius:12px;border:1.5px solid var(--line);font-weight:800;font-size:18px"></div>
+      <div class="ctrl"><label>Distance from mirror <b id="dm-v"></b></label><input type="range" id="dm" min="20" max="140" value="80"></div>
+      <div class="btnrow"><button class="btn" id="raise">🙋 Raise left hand</button><button class="btn ghost" id="amb">🚑 Ambulance view</button></div>
+      <div class="explain" id="m4"></div></div>
+      <div class="panel"><h3><span class="dot"></span>Image in a plane mirror</h3><div class="keyideas" style="margin-top:0"><div>Same size as the object</div><div>Erect (upright)</div><div>As far behind the mirror as the object is in front</div><div>Cannot be obtained on a screen</div><div>Laterally inverted (left ↔ right)</div></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s5">
+  <div class="st-head"><div><div class="tag">Station 5 · Activities 11.9 & 11.10</div><h2>Pinhole Camera</h2>
+  <p>Light from each point of an object passes through a tiny hole in straight lines and lands on the screen. Change the hole size and the distances — and watch the image.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c5"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Camera</h3><div class="chips" id="pobj"></div>
+      <div class="ctrl"><label>Hole size <b id="hs-v"></b></label><input type="range" id="hs" min="1" max="10" value="2"></div>
+      <div class="ctrl"><label>Screen distance (slide inner box) <b id="sd-v"></b></label><input type="range" id="sd" min="40" max="200" value="110"></div>
+      <div class="ctrl"><label>Object distance <b id="od-v"></b></label><input type="range" id="od" min="120" max="300" value="220"></div>
+      <div class="chips"><button class="chip on" id="rays">Show rays</button></div>
+      <div class="explain" id="m5"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s6">
+  <div class="st-head"><div><div class="tag">Station 6 · Section 11.8</div><h2>Periscope & Kaleidoscope</h2>
+  <p>Two mirrors in a Z-shaped tube let you see over a wall. Three mirrors in a triangle make endless patterns from a few bangle pieces. Turn the kaleidoscope!</p></div></div>
+  <div class="grid even">
+    <div class="stage"><canvas id="c6a"></canvas><div class="hint">Drag the periscope up to peep over the wall.</div></div>
+    <div class="stage"><canvas id="c6b"></canvas><div class="hint">Drag on the pattern to turn the kaleidoscope · <button class="btn sm" id="shake" style="vertical-align:middle">Shake new pieces</button></div></div>
+  </div>
+</section>
+
+<section class="station" id="s7">
+  <div class="st-head"><div><div class="tag">Station 7</div><h2>Check Yourself</h2></div></div>
+  <div id="quiz"></div>
+  <h3 style="margin-top:28px">Key ideas</h3>
+  <div class="keyideas"><div>Luminous objects emit light; the Moon only reflects sunlight.</div><div>Light travels in a straight line.</div><div>Transparent: light passes fully; translucent: partly; opaque: not at all.</div><div>A shadow needs a light source, an opaque object and a screen.</div><div>A plane mirror’s image is erect, same size, laterally inverted and can’t be caught on a screen.</div><div>A pinhole camera forms an inverted image.</div></div>
+</section>
+
+
+
+</main>
+<footer class="wrap">Class 7 Science · Chapter 11: Light: Shadows & Reflections · Interactive Virtual Lab · Explore, predict, observe, explain.</footer>
+<script>/* ===== Shared lab toolkit ===== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const rand = (a, b) => a + Math.random() * (b - a);
+const TAU = Math.PI * 2;
+
+/* Canvas with crisp DPR scaling; draw in logical W x H units */
+function setupCanvas(cv, W, H) {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = W * dpr; cv.height = H * dpr;
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  cv._W = W; cv._H = H; ctx.W = W; ctx.H = H;
+  return ctx;
+}
+function canvasPoint(cv, e) {
+  const r = cv.getBoundingClientRect();
+  const p = e.touches ? e.touches[0] : e;
+  return { x: (p.clientX - r.left) * cv._W / r.width, y: (p.clientY - r.top) * cv._H / r.height };
+}
+function svgPoint(svg, e) {
+  const pt = svg.createSVGPoint(); const p = e.touches ? e.touches[0] : e;
+  pt.x = p.clientX; pt.y = p.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+function mixColor(c1, c2, t) { // hex colours
+  const a = parseInt(c1.slice(1), 16), b = parseInt(c2.slice(1), 16);
+  const r = Math.round(lerp(a >> 16, b >> 16, t)), g = Math.round(lerp((a >> 8) & 255, (b >> 8) & 255, t)), bl = Math.round(lerp(a & 255, b & 255, t));
+  return `rgb(${r},${g},${bl})`;
+}
+
+/* Animation loop: callbacks receive dt (s). Each registered with a station id; runs only when that station is visible */
+const Loop = { fns: [], last: 0,
+  add(stationId, fn) { this.fns.push({ id: stationId, fn }); },
+  tick(t) { const dt = Math.min(.05, (t - (Loop.last || t)) / 1000); Loop.last = t;
+    for (const f of Loop.fns) { const el = f.id ? document.getElementById(f.id) : null; if (!f.id || (el && el.classList.contains('active'))) f.fn(dt, t / 1000); }
+    requestAnimationFrame(Loop.tick); } };
+requestAnimationFrame(Loop.tick);
+
+/* Tabs */
+function initTabs() {
+  const btns = $$('.tabs button');
+  const show = id => {
+    btns.forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+    $$('.station').forEach(s => s.classList.toggle('active', s.id === id));
+    document.dispatchEvent(new CustomEvent('station', { detail: id }));
+    try { history.replaceState(null, '', '#' + id); } catch (e) {}
+  };
+  btns.forEach(b => b.addEventListener('click', () => { show(b.dataset.tab); window.scrollTo({ top: $('.tabbar').offsetTop, behavior: 'smooth' }); }));
+  const h = location.hash.slice(1);
+  show(btns.some(b => b.dataset.tab === h) ? h : btns[0].dataset.tab);
+}
+
+/* Toast */
+let _tt; function toast(msg, ms = 2200) { let t = $('.toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add('show'); clearTimeout(_tt); _tt = setTimeout(() => t.classList.remove('show'), ms); }
+
+/* Sound (Web Audio) */
+let _ac; function ac() { if (!_ac) { try { _ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (_ac && _ac.state === 'suspended') _ac.resume(); return _ac; }
+const Sound = {
+  on: true,
+  tone(f = 440, d = .15, type = 'sine', v = .15) { const a = ac(); if (!a || !this.on) return; const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(v, a.currentTime); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + d); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + d); },
+  ring(f = 880) { [1, 2.76, 5.4].forEach((m, i) => setTimeout(() => this.tone(f * m, 1.6 - i * .4, 'sine', .12 / (i + 1)), 0)); },
+  thud() { const a = ac(); if (!a || !this.on) return; const o = a.createOscillator(), g = a.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(140, a.currentTime); o.frequency.exponentialRampToValueAtTime(40, a.currentTime + .15); g.gain.setValueAtTime(.35, a.currentTime); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + .18); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + .2); },
+  noise(d = .5, v = .08, hp = 2000) { const a = ac(); if (!a || !this.on) return; const b = a.createBuffer(1, a.sampleRate * d, a.sampleRate), ch = b.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / ch.length); const s = a.createBufferSource(); s.buffer = b; const f = a.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = hp; const g = a.createGain(); g.gain.value = v; s.connect(f).connect(g).connect(a.destination); s.start(); },
+  good() { this.tone(660, .12, 'sine', .12); setTimeout(() => this.tone(990, .18, 'sine', .12), 110); },
+  bad() { this.tone(200, .22, 'square', .05); },
+  click() { this.tone(1200, .03, 'square', .03); }
+};
+
+/* Click-or-drag sorter. items: [{t, cat}], cats: [{id,label}] */
+function makeSorter(root, items, cats, opts = {}) {
+  root.classList.add('sorter');
+  root.innerHTML = `<div class="pool"></div><div class="bins">${cats.map(c => `<div class="bin" data-cat="${c.id}"><h4>${c.label}<span class="cnt">0</span></h4><div class="cards"></div></div>`).join('')}</div><div class="score"></div>`;
+  const pool = $('.pool', root); let sel = null, right = 0, tries = 0;
+  const shuffled = items.map(x => ({ ...x })).sort(() => Math.random() - .5);
+  shuffled.forEach((it, i) => { const c = document.createElement('div'); c.className = 'card'; c.textContent = it.t; c.draggable = true; c.dataset.i = i;
+    c.addEventListener('click', () => { if (c.classList.contains('ok')) return; $$('.card.sel', root).forEach(x => x.classList.remove('sel')); sel = c; c.classList.add('sel'); });
+    c.addEventListener('dragstart', e => { sel = c; e.dataTransfer.setData('text', i); }); pool.appendChild(c); });
+  const drop = bin => { if (!sel) return; const it = shuffled[+sel.dataset.i]; tries++;
+    const ok = Array.isArray(it.cat) ? it.cat.includes(bin.dataset.cat) : it.cat === bin.dataset.cat;
+    if (ok) { right++; sel.classList.remove('sel', 'no'); sel.classList.add('ok'); sel.draggable = false; $('.cards', bin).appendChild(sel); $('.cnt', bin).textContent = $$('.card', bin).length; Sound.good(); if (it.why) toast(it.why, 3000); }
+    else { sel.classList.remove('no'); void sel.offsetWidth; sel.classList.add('no'); Sound.bad(); toast(it.hint || 'Not quite — think again!'); }
+    sel = null; $$('.card.sel', root).forEach(x => x.classList.remove('sel'));
+    $('.score', root).textContent = `Sorted ${right} / ${items.length}` + (right === items.length ? `  ·  🎉 Done in ${tries} tries!` : '');
+    if (right === items.length && opts.onDone) opts.onDone(tries);
+  };
+  $$('.bin', root).forEach(b => { b.addEventListener('click', () => drop(b)); b.addEventListener('dragover', e => { e.preventDefault(); b.classList.add('hot'); }); b.addEventListener('dragleave', () => b.classList.remove('hot')); b.addEventListener('drop', e => { e.preventDefault(); b.classList.remove('hot'); drop(b); }); });
+  $('.score', root).textContent = `Sorted 0 / ${items.length}  ·  Tip: tap a card, then tap a box (or drag it).`;
+}
+
+/* Quiz: [{q, o:[..], a:index, why}] */
+function makeQuiz(root, qs) {
+  let score = 0, done = 0;
+  const head = document.createElement('div'); head.className = 'qscore'; root.before(head);
+  const upd = () => head.textContent = `Score: ${score} / ${qs.length}` + (done === qs.length ? (score === qs.length ? '  ·  Perfect! 🌟' : score >= qs.length * .7 ? '  ·  Great work!' : '  ·  Revisit the stations and try again') : '');
+  root.classList.add('quiz');
+  qs.forEach((q, i) => { const c = document.createElement('div'); c.className = 'qcard';
+    c.innerHTML = `<div class="qn">Question ${i + 1}</div><div class="qt">${q.q}</div><div class="opts">${q.o.map((o, j) => `<button class="opt" data-j="${j}">${String.fromCharCode(65 + j)}. ${o}</button>`).join('')}</div><div class="why">${q.why || ''}</div>`;
+    $$('.opt', c).forEach(b => b.addEventListener('click', () => { if (c.classList.contains('done')) return; c.classList.add('done'); done++;
+      const j = +b.dataset.j; if (j === q.a) { score++; b.classList.add('right'); Sound.good(); } else { b.classList.add('wrong'); $$('.opt', c)[q.a].classList.add('right'); Sound.bad(); }
+      upd(); }));
+    root.appendChild(c); });
+  const r = document.createElement('button'); r.className = 'btn ghost'; r.textContent = '↺ Reset quiz'; r.style.marginTop = '6px';
+  r.onclick = () => { root.innerHTML = ''; head.remove(); r.remove(); makeQuiz(root, qs); }; root.after(r);
+  upd();
+}
+
+/* Logging helper */
+function addRow(tbody, cells, max = 12) { const tr = document.createElement('tr'); tr.className = 'new'; tr.innerHTML = cells.map(c => `<td>${c}</td>`).join(''); tbody.prepend(tr); while (tbody.children.length > max) tbody.lastChild.remove(); }
+
+/* Range binding: bindRange('#id', v=>..., fmt) */
+function bindRange(sel, fn, fmt = v => v) { const el = $(sel); const out = $(sel + '-v'); const go = () => { const v = +el.value; if (out) out.textContent = fmt(v); fn(v); }; el.addEventListener('input', go); go(); return el; }
+
+document.addEventListener('DOMContentLoaded', () => {
+  initTabs();
+  const o = $('.hero .orbits'); if (o) { [[420, 30, 70, -120], [620, 50, 40, -250], [260, 18, 80, 30]].forEach(([s, d, x, y]) => { const sp = document.createElement('span'); sp.style.cssText = `width:${s}px;height:${s}px;left:${x}%;top:${y}px;animation-duration:${d}s`; o.appendChild(sp); }); }
+});
+</script>
+<script>
+/* S1 */
+const c1=$('#c1'),x1=setupCanvas(c1,700,440);let boxes=[0,0,0],dragB=-1;const BX=[250,370,490];
+c1.addEventListener('pointerdown',e=>{const p=canvasPoint(c1,e);BX.forEach((x,i)=>{if(Math.abs(p.x-x)<35&&Math.abs(p.y-(220+boxes[i]))<60)dragB=i;});});
+c1.addEventListener('pointermove',e=>{if(dragB<0)return;const p=canvasPoint(c1,e);boxes[dragB]=clamp(p.y-220,-80,80);});window.addEventListener('pointerup',()=>dragB=-1);
+$('#align').onclick=()=>boxes=[0,0,0];
+let lastAl=null;
+Loop.add('s1',(dt,t)=>{const c=x1;c.clearRect(0,0,700,440);const al=boxes.every(b=>Math.abs(b)<5);
+  if(al!==lastAl){lastAl=al;$('#al').textContent=al?'Yes':'No';$('#spot').textContent=al?'Bright':'None';$('#m1').innerHTML=al?'<span class="t">Spot appears ✅</span>When all three holes are in one straight line, light passes through them and makes a bright spot.':'<span class="t">No spot ❌</span>If even one hole is out of line, the light is blocked. Light cannot bend around to reach the next hole — <b>light travels in a straight line</b>.';}
+  c.fillStyle='#495057';rr(c,40,195,90,50,10);c.fill();c.fillStyle='#ffe066';c.beginPath();c.ellipse(132,220,8,22,0,0,TAU);c.fill();
+  // beam
+  let endX=640;for(let i=0;i<3;i++){if(Math.abs(boxes[i])>=5){endX=BX[i]-12;break;}}
+  const g=c.createLinearGradient(135,0,endX,0);g.addColorStop(0,'rgba(255,236,150,.9)');g.addColorStop(1,'rgba(255,236,150,.5)');c.fillStyle=g;c.fillRect(135,214,endX-135,12);
+  BX.forEach((x,i)=>{const y=220+boxes[i];c.fillStyle='#e8590c';rr(c,x-30,y-55,60,110,6);c.fill();c.fillStyle='#ffa94d';rr(c,x-24,y-48,48,96,4);c.fill();c.fillStyle='#101a2c';c.beginPath();c.arc(x,y,7,0,TAU);c.fill();if(Math.abs(boxes[i])<5){c.fillStyle='rgba(255,236,150,.9)';c.beginPath();c.arc(x,y,5,0,TAU);c.fill();}});
+  c.fillStyle='#dee2e6';c.fillRect(640,90,16,260);if(al){const gg=c.createRadialGradient(640,220,2,640,220,30);gg.addColorStop(0,'rgba(255,240,170,1)');gg.addColorStop(1,'rgba(255,240,170,0)');c.fillStyle=gg;c.beginPath();c.arc(640,220,30,0,TAU);c.fill();}
+  c.fillStyle='#c9d3e8';c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText('torch',85,270);c.fillText('screen',648,370);
+});
+makeSorter($('#lum'),[{t:'Sun',cat:'l'},{t:'Pole Star',cat:'l'},{t:'Firefly',cat:'l'},{t:'Lightning',cat:'l'},{t:'Candle flame',cat:'l'},{t:'Moon',cat:'n',why:'The Moon reflects sunlight; it is non-luminous.'},{t:'Venus',cat:'n',why:'Planets shine by reflected sunlight.'},{t:'Mirror',cat:'n'},{t:'Mars',cat:'n'}],[{id:'l',label:'✨ Luminous'},{id:'n',label:'🌑 Non-luminous'}]);
+
+/* S2 shadows */
+const OB={card:['Cardboard','opaque',1],cloth:['Thick cloth','opaque',1],trace:['Tracing paper','translucent',.45],glass:['Glass sheet','transparent',.08],hand:['Your hand','opaque',1]};
+let ob='card',shp='circle',ox=330,torchOn=true,two=false,ocol=0;const c2=$('#c2'),x2=setupCanvas(c2,700,440);let dragO=false;
+Object.entries(OB).forEach(([k,v],i)=>{const b=document.createElement('button');b.className='chip'+(i?'':' on');b.textContent=v[0];b.onclick=()=>{ob=k;$$('#obj .chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');};$('#obj').appendChild(b);});
+['circle','square','triangle','bird'].forEach((k,i)=>{const b=document.createElement('button');b.className='chip'+(i?'':' on');b.textContent=k;b.onclick=()=>{shp=k;$$('#shape .chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');};$('#shape').appendChild(b);});
+$('#torch').onclick=()=>{torchOn=!torchOn;$('#torch').classList.toggle('on',torchOn);};$('#two').onclick=()=>{two=!two;$('#two').classList.toggle('on',two);};$('#colr').onclick=()=>{ocol=(ocol+1)%4;$('#colr').classList.add('on');};
+c2.addEventListener('pointerdown',e=>{const p=canvasPoint(c2,e);if(Math.abs(p.x-ox)<40)dragO=true;});c2.addEventListener('pointermove',e=>{if(dragO)ox=clamp(canvasPoint(c2,e).x,150,580);});window.addEventListener('pointerup',()=>dragO=false);
+function drawShape(c,x,y,s,k){c.beginPath();if(k==='circle')c.arc(x,y,s,0,TAU);else if(k==='square')c.rect(x-s,y-s,2*s,2*s);else if(k==='triangle'){c.moveTo(x,y-s);c.lineTo(x+s,y+s);c.lineTo(x-s,y+s);c.closePath();}else{c.moveTo(x-s,y);c.quadraticCurveTo(x-s*.4,y-s*.8,x,y-s*.1);c.quadraticCurveTo(x+s*.4,y-s*.8,x+s,y);c.quadraticCurveTo(x,y+s*.3,x-s,y);}c.fill();}
+let lastM2='';
+Loop.add('s2',(dt,t)=>{const c=x2;c.clearRect(0,0,700,440);const O=OB[ob];const L1={x:70,y:220},scrX=640;const k=(scrX-L1.x)/(ox-L1.x);const s=34;
+  c.fillStyle='#dee2e6';c.fillRect(scrX,40,18,360);
+  if(torchOn){c.fillStyle='rgba(255,240,170,.12)';c.beginPath();c.moveTo(L1.x,L1.y);c.lineTo(scrX,40);c.lineTo(scrX,400);c.fill();c.fillStyle='rgba(255,240,170,.85)';c.fillRect(scrX,40,4,360);
+    c.save();c.fillStyle=`rgba(20,20,30,${O[2]})`;c.translate(scrX+2,L1.y);c.scale(.12,1);drawShape(c,0,0,s*k,shp);c.restore();
+    c.fillStyle=`rgba(20,20,30,${O[2]*.9})`;drawShape(c,scrX-0+(-60),L1.y,0,shp);
+    // shadow drawn on screen face as projection (front view inset)
+    c.fillStyle='rgba(255,240,170,.9)';rr(c,470,300,150,110,10);c.fill();c.fillStyle=`rgba(20,20,30,${O[2]})`;drawShape(c,545,355,Math.min(50,s*k*0.35),shp);if(two){c.fillStyle=`rgba(20,20,30,${O[2]*.5})`;drawShape(c,565,345,Math.min(50,s*k*0.35),shp);}
+    c.fillStyle='#333';c.font='700 11px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText('view of the screen',545,402);
+    c.strokeStyle='rgba(255,240,170,.35)';c.lineWidth=1;c.beginPath();c.moveTo(L1.x,L1.y);c.lineTo(scrX,L1.y-s*k);c.moveTo(L1.x,L1.y);c.lineTo(scrX,L1.y+s*k);c.stroke();}
+  c.fillStyle='#495057';rr(c,20,200,50,40,8);c.fill();c.fillStyle='#ffe066';c.beginPath();c.ellipse(70,220,6,16,0,0,TAU);c.fill();if(two){c.fillStyle='#495057';rr(c,20,150,50,40,8);c.fill();}
+  const cols=['#e8590c','#2f9e44','#1c7ed6','#c2255c'];c.fillStyle=ob==='glass'?'rgba(200,230,255,.35)':ob==='trace'?'rgba(255,255,255,.6)':cols[ocol];drawShape(c,ox,L1.y,s,shp);
+  c.fillStyle='#fff';c.font='800 13px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText(O[0],ox,L1.y+s+22);
+  $('#pass').textContent=O[1]==='opaque'?'Not at all':O[1]==='translucent'?'Partly':'Almost fully';$('#ss').textContent=torchOn?(k).toFixed(1)+'× object':'—';
+  const m=!torchOn?'<span class="t">No light, no shadow</span>We need a light source, an opaque object and a screen to see a shadow.':`<span class="t">${O[0]} is ${O[1]}</span>${O[1]==='opaque'?'It blocks light completely — a dark shadow.':O[1]==='translucent'?'Some light passes — a lighter shadow.':'Most light passes — only a very faint shadow.'} ${ox<260?'Close to the torch, the shadow is <b>large</b>.':ox>480?'Close to the screen, the shadow is <b>small and sharp</b>, nearly the object’s size.':''} ${ocol?' Changing the object’s colour does not change the shadow’s colour.':''}${two?' Two torches → two shadows.':''}`;
+  if(m!==lastM2){lastM2=m;$('#m2').innerHTML=m;}
+});
+
+/* S3 reflection */
+let mt=0,torch={x:150,y:110},showA=true,tgtMode=false,tgt={x:560,y:120},hits=0,dragT=false;const c3=$('#c3'),x3=setupCanvas(c3,700,440);
+bindRange('#mt',v=>mt=v,v=>v+'°');$('#ang').onclick=()=>{showA=!showA;$('#ang').classList.toggle('on',showA);};$('#target').onclick=()=>{tgtMode=!tgtMode;$('#target').classList.toggle('on',tgtMode);newT();};
+function newT(){tgt={x:rand(420,640),y:rand(60,260)};}
+c3.addEventListener('pointerdown',e=>{const p=canvasPoint(c3,e);if(Math.hypot(p.x-torch.x,p.y-torch.y)<40)dragT=true;});c3.addEventListener('pointermove',e=>{if(dragT){const p=canvasPoint(c3,e);torch={x:clamp(p.x,30,330),y:clamp(p.y,30,330)};}});window.addEventListener('pointerup',()=>dragT=false);
+let hitCool=0;
+Loop.add('s3',(dt,t)=>{const c=x3;c.clearRect(0,0,700,440);hitCool-=dt;const M={x:350,y:370};const a=mt*Math.PI/180;const n={x:Math.sin(a),y:-Math.cos(a)};const tg={x:Math.cos(a),y:Math.sin(a)};
+  c.fillStyle='#f8f9fa';rr(c,0,0,700,440,12);c.fill();
+  let d={x:M.x-torch.x,y:M.y-torch.y};const L=Math.hypot(d.x,d.y);d={x:d.x/L,y:d.y/L};const dot=d.x*n.x+d.y*n.y;const r={x:d.x-2*dot*n.x,y:d.y-2*dot*n.y};
+  c.strokeStyle='#f03e3e';c.lineWidth=4;c.beginPath();c.moveTo(torch.x,torch.y);c.lineTo(M.x,M.y);c.lineTo(M.x+r.x*600,M.y+r.y*600);c.stroke();
+  [[torch.x,torch.y,M.x,M.y],[M.x,M.y,M.x+r.x*200,M.y+r.y*200]].forEach(([x0,y0,x1,y1])=>{const mx=(x0+x1)/2,my=(y0+y1)/2,an=Math.atan2(y1-y0,x1-x0);c.fillStyle='#f03e3e';c.save();c.translate(mx,my);c.rotate(an);c.beginPath();c.moveTo(10,0);c.lineTo(-6,-7);c.lineTo(-6,7);c.fill();c.restore();});
+  c.save();c.translate(M.x,M.y);c.rotate(a);c.fillStyle='#74c0fc';c.fillRect(-160,0,320,8);c.fillStyle='#868e96';for(let i=-160;i<160;i+=12){c.fillRect(i,8,6,6);}c.restore();
+  const ai=Math.round(Math.acos(Math.abs(dot))*180/Math.PI);$('#ai').textContent=ai+'°';$('#ao').textContent=ai+'°';
+  if(showA){c.strokeStyle='#495057';c.setLineDash([5,5]);c.lineWidth=1.5;c.beginPath();c.moveTo(M.x,M.y);c.lineTo(M.x+n.x*160,M.y+n.y*160);c.stroke();c.setLineDash([]);c.fillStyle='#495057';c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText('normal',M.x+n.x*175,M.y+n.y*175);
+    const ain=Math.atan2(-d.y,-d.x),an=Math.atan2(n.y,n.x),aout=Math.atan2(r.y,r.x);c.strokeStyle='#e8590c';c.lineWidth=2;c.beginPath();c.arc(M.x,M.y,50,Math.min(ain,an),Math.max(ain,an));c.stroke();c.strokeStyle='#2f9e44';c.beginPath();c.arc(M.x,M.y,60,Math.min(aout,an),Math.max(aout,an));c.stroke();}
+  if(tgtMode){c.fillStyle='#ffe066';c.beginPath();c.arc(tgt.x,tgt.y,22,0,TAU);c.fill();c.fillStyle='#f03e3e';c.beginPath();c.arc(tgt.x,tgt.y,10,0,TAU);c.fill();
+    const tx=tgt.x-M.x,ty=tgt.y-M.y;const cross=Math.abs(tx*r.y-ty*r.x);if(cross<20&&tx*r.x+ty*r.y>0&&hitCool<=0){hits++;hitCool=.6;$('#hits').textContent=hits;Sound.good();newT();}}
+  c.fillStyle='#212529';rr(c,torch.x-26,torch.y-14,52,28,8);c.fill();c.fillStyle='#ffe066';c.beginPath();c.arc(torch.x,torch.y,7,0,TAU);c.fill();c.fillStyle='#495057';c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText('drag torch',torch.x,torch.y-22);
+});
+
+/* S4 mirror images */
+let word='AMBULANCE',dm=80,raise=0,ambV=false;const c4=$('#c4'),x4=setupCanvas(c4,700,440);
+$('#word').addEventListener('input',e=>word=e.target.value.toUpperCase()||' ');bindRange('#dm',v=>dm=v,v=>v+' cm');$('#raise').onclick=()=>{raise=1;};$('#amb').onclick=()=>{ambV=!ambV;$('#amb').classList.toggle('ghost',!ambV);$('#amb').textContent=ambV?'🪞 Back to normal view':'🚑 Ambulance view';};
+Loop.add('s4',(dt,t)=>{const c=x4;c.clearRect(0,0,700,440);raise=Math.max(0,raise-dt*.3);const mx=350;
+  c.fillStyle='rgba(165,216,255,.25)';c.fillRect(mx-6,20,12,300);c.fillStyle='#74c0fc';c.fillRect(mx-2,20,4,300);
+  const px=mx-dm*1.6;const ix=mx+dm*1.6;
+  const person=(x,mirror)=>{c.save();c.translate(x,0);if(mirror)c.scale(-1,1);c.fillStyle='#ffd8a8';c.beginPath();c.arc(0,120,22,0,TAU);c.fill();c.fillStyle='#4c6ef5';rr(c,-22,145,44,70,10);c.fill();c.fillStyle='#e8590c';c.fillRect(-22,150,10,60);
+    c.strokeStyle='#ffd8a8';c.lineWidth=8;c.lineCap='round';c.beginPath();c.moveTo(-22,155);c.lineTo(-38,raise>0?100:205);c.moveTo(22,155);c.lineTo(36,205);c.stroke();c.fillStyle='#343a40';c.fillRect(-18,215,14,50);c.fillRect(4,215,14,50);c.restore();};
+  person(px,false);c.globalAlpha=.75;person(ix,true);c.globalAlpha=1;
+  c.fillStyle='#c9d3e8';c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText('you',px,290);c.fillText('your image',ix,290);c.fillText(dm+' cm',(px+mx)/2,305);c.fillText(dm+' cm',(ix+mx)/2,305);
+  c.strokeStyle='rgba(255,255,255,.3)';c.setLineDash([4,4]);c.beginPath();c.moveTo(px,300);c.lineTo(ix,300);c.stroke();c.setLineDash([]);
+  // word
+  c.font='800 34px "Baloo 2","Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillStyle='#fff';const shown=ambV?word:word;
+  c.save();c.translate(175,385);if(ambV)c.scale(-1,1);c.fillText(shown,0,0);c.restore();c.save();c.translate(525,385);if(!ambV)c.scale(-1,1);c.fillStyle='#ffe066';c.fillText(shown,0,0);c.restore();
+  c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';c.fillStyle='#c9d3e8';c.fillText(ambV?'written on ambulance':'object',175,420);c.fillText(ambV?'seen in a rear-view mirror':'image in mirror',525,420);
+  $('#m4').innerHTML=ambV?'<span class="t">Ambulance view 🚑</span>The word is painted laterally inverted. In the rear-view mirror of the car ahead, lateral inversion flips it back so the driver reads <b>AMBULANCE</b> correctly!':raise>0?'<span class="t">Lateral inversion</span>You raised your <b>left</b> hand, but your image raises its <b>right</b> hand. Left appears right and right appears left.':'<span class="t">Observe</span>The image is the same size, upright, and as far behind the mirror as you are in front. Letters like A, H, M, O, T look the same in a mirror!';
+});
+
+/* S5 pinhole */
+const PO={candle:'Candle flame',tree:'Tree',arrow:'Arrow'};let po='candle',hs=2,sd=110,od=220,showR=true;const c5=$('#c5'),x5=setupCanvas(c5,700,440);
+Object.entries(PO).forEach(([k,v],i)=>{const b=document.createElement('button');b.className='chip'+(i?'':' on');b.textContent=v;b.onclick=()=>{po=k;$$('#pobj .chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');};$('#pobj').appendChild(b);});
+bindRange('#hs',v=>hs=v,v=>v<3?'tiny':v<6?'medium':'large');bindRange('#sd',v=>sd=v,v=>v+' mm');bindRange('#od',v=>od=v,v=>v+' mm');$('#rays').onclick=()=>{showR=!showR;$('#rays').classList.toggle('on',showR);};
+function drawObj(c,x,y,h,k,t){if(k==='candle'){c.fillStyle='#fff9db';c.fillRect(x-8,y-h*.55,16,h*.55);c.fillStyle='#ffd43b';c.beginPath();c.moveTo(x,y-h+3*Math.sin(t*12));c.quadraticCurveTo(x+12,y-h*.7,x,y-h*.55);c.quadraticCurveTo(x-12,y-h*.7,x,y-h);c.fill();}
+  else if(k==='tree'){c.fillStyle='#8b5a2b';c.fillRect(x-6,y-h*.4,12,h*.4);c.fillStyle='#2f9e44';c.beginPath();c.moveTo(x,y-h);c.lineTo(x+h*.3,y-h*.35);c.lineTo(x-h*.3,y-h*.35);c.fill();}
+  else{c.fillStyle='#4dabf7';c.fillRect(x-5,y-h*.7,10,h*.7);c.beginPath();c.moveTo(x,y-h);c.lineTo(x+16,y-h*.7);c.lineTo(x-16,y-h*.7);c.fill();}}
+Loop.add('s5',(dt,t)=>{const c=x5;c.clearRect(0,0,700,440);const ax=330,ay=220;const objX=ax-od,scrX=ax+sd;const H=100;
+  drawObj(c,objX,ay+H/2,H,po,t);
+  c.fillStyle='#868e96';c.fillRect(ax-4,60,8,ay-hs-60);c.fillRect(ax-4,ay+hs,8,380-ay-hs);
+  c.fillStyle='rgba(255,255,255,.08)';c.fillRect(ax,60,scrX-ax,320);c.fillStyle='rgba(255,249,219,.5)';c.fillRect(scrX,60,6,320);
+  const m=sd/od;const blur=hs*(1+m)*1.2;
+  if(showR){[[ay-H/2,'#ffd43b'],[ay+H/2,'#ff8787']].forEach(([y,col])=>{c.strokeStyle=col;c.lineWidth=1.5;c.globalAlpha=.8;c.beginPath();c.moveTo(objX,y);c.lineTo(scrX,ay+(ay-y)*m);c.stroke();c.globalAlpha=1;});}
+  c.save();c.translate(scrX-3,ay);c.scale(1,-1);c.filter=`blur(${blur/3}px)`;c.globalAlpha=clamp(1.2-hs*0.08,.4,1)*clamp(1.4-m*.3,.5,1);drawObj(c,0,H*m/2,H*m,po,t);c.restore();
+  // front view of screen
+  c.fillStyle='#2b2f36';rr(c,560,40,120,120,8);c.fill();c.save();c.beginPath();c.rect(560,40,120,120);c.clip();c.translate(620,100);c.scale(1,-1);c.filter=`blur(${blur/3}px)`;drawObj(c,0,Math.min(50,H*m*.5)/1,Math.min(100,H*m),po,t);c.restore();c.fillStyle='#c9d3e8';c.font='700 11px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText('image on tracing paper',620,176);
+  $('#m5').innerHTML=`<span class="t">Observe</span>The image is <b>upside down (inverted)</b> because rays from the top of the object go down through the hole, and rays from the bottom go up. ${hs>5?'A big hole lets in rays from many directions — the image becomes <b>blurry</b> (but brighter).':'A tiny hole gives a sharp image.'} ${m>1?'With the screen farther than the object, the image is <b>larger</b>.':'Image size depends on the screen distance ÷ object distance.'}`;
+  c.fillStyle='#fff';c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';c.fillText('pinhole',ax,50);
+});
+
+/* S6 periscope + kaleidoscope */
+const ca=$('#c6a'),xa=setupCanvas(ca,420,440);let pz=0,dragP=false;
+ca.addEventListener('pointerdown',()=>dragP=true);ca.addEventListener('pointermove',e=>{if(dragP)pz=clamp((330-canvasPoint(ca,e).y)/150,0,1);});window.addEventListener('pointerup',()=>dragP=false);
+Loop.add('s6',(dt,t)=>{const c=xa;c.clearRect(0,0,420,440);c.fillStyle='#87ceeb';rr(c,0,0,420,440,12);c.fill();c.fillStyle='#8d6e4a';c.fillRect(0,380,420,60);
+  c.fillStyle='#ffe066';c.beginPath();c.arc(350,60,22,0,TAU);c.fill();c.fillStyle='#2f9e44';c.beginPath();c.arc(330,250,30,0,TAU);c.fill();c.fillRect(326,250,8,130);
+  c.fillStyle='#e03131';c.beginPath();c.moveTo(300,300+10*Math.sin(t));c.lineTo(310,280);c.lineTo(320,300);c.fill();
+  c.fillStyle='#a5683a';c.fillRect(200,150,40,230);for(let y=150;y<380;y+=20){c.strokeStyle='#7b4a28';c.beginPath();c.moveTo(200,y);c.lineTo(240,y);c.stroke();}
+  const top=330-140-pz*120;c.fillStyle='#495057';c.fillRect(120,top,30,340-top);c.fillRect(120,top,70,30);c.fillRect(80,310,70,30);
+  c.strokeStyle='#74c0fc';c.lineWidth=5;c.beginPath();c.moveTo(122,top+28);c.lineTo(148,top+2);c.moveTo(122,338);c.lineTo(148,312);c.stroke();
+  const clear=top+15<150;if(clear){c.strokeStyle='rgba(255,224,102,.9)';c.lineWidth=2;c.beginPath();c.moveTo(320,top+15);c.lineTo(135,top+15);c.lineTo(135,325);c.lineTo(60,325);c.stroke();}
+  c.fillStyle='#ffd8a8';c.beginPath();c.arc(55,325,16,0,TAU);c.fill();c.fillStyle='#212529';c.font='800 13px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='left';c.fillText(clear?'I can see the bird over the wall!':'Raise the periscope ↑',20,30);
+});
+const cb=$('#c6b'),xb=setupCanvas(cb,420,440);let rot=0,lastX=null,pieces=[];function shake(){pieces=Array.from({length:14},()=>({r:rand(10,95),a:rand(0,Math.PI/3),s:rand(6,16),c:['#e03131','#f59f00','#2f9e44','#1c7ed6','#ae3ec9','#ffd43b','#12b886'][Math.floor(rand(0,7))],k:Math.floor(rand(0,3))}));}shake();$('#shake').onclick=()=>{shake();Sound.noise(.3,.05,3000);};
+cb.addEventListener('pointerdown',e=>lastX=canvasPoint(cb,e).x);cb.addEventListener('pointermove',e=>{if(lastX==null)return;const x=canvasPoint(cb,e).x;rot+=(x-lastX)*0.01;lastX=x;});window.addEventListener('pointerup',()=>lastX=null);
+Loop.add('s6',(dt,t)=>{const c=xb;c.clearRect(0,0,420,440);const cx=210,cy=220;rot+=dt*0.05;c.fillStyle='#000';c.beginPath();c.arc(cx,cy,190,0,TAU);c.fill();
+  c.save();c.beginPath();c.arc(cx,cy,186,0,TAU);c.clip();for(let w=0;w<6;w++){c.save();c.translate(cx,cy);c.rotate(w*Math.PI/3);if(w%2)c.scale(1,-1);c.beginPath();c.moveTo(0,0);c.arc(0,0,190,0,Math.PI/3);c.closePath();c.clip();
+    pieces.forEach(p=>{const a=p.a+rot;const x=p.r*1.8*Math.cos(a),y=p.r*1.8*Math.sin(a);c.fillStyle=p.c;c.globalAlpha=.85;c.beginPath();if(p.k===0)c.arc(x,y,p.s,0,TAU);else if(p.k===1){c.rect(x-p.s,y-p.s/2,p.s*2,p.s);}else{c.moveTo(x,y-p.s);c.lineTo(x+p.s,y+p.s);c.lineTo(x-p.s,y+p.s);}c.fill();});c.restore();}c.restore();c.globalAlpha=1;
+  c.strokeStyle='#adb5bd';c.lineWidth=8;c.beginPath();c.arc(cx,cy,190,0,TAU);c.stroke();
+});
+
+makeQuiz($('#quiz'),[
+ {q:"Which of these is a luminous object?",o:["Moon","Mars","Pole Star","Mirror"],a:2,why:"Stars emit their own light; the others only reflect it."},
+ {q:"A ball is placed close to a fixed torch, far from the wall. Its shadow will be…",o:["smaller","larger","the same size as the ball","not formed"],a:1,why:"Closer to the light source → larger shadow."},
+ {q:"You view a tree through a pinhole camera. The image is…",o:["erect and coloured","inverted (upside down)","laterally inverted only","not formed"],a:1,why:"Rays cross at the pinhole, so the image is upside down."},
+ {q:"Statement A: A plane mirror image is laterally inverted. Statement B: The letters T and O look the same in a mirror.",o:["Both true","Both false","A true, B false","A false, B true"],a:0,why:"T and O are symmetric left-to-right, so lateral inversion doesn't change them."},
+ {q:"Why don't we see the shadow of a bird flying high in the sky?",o:["Birds are transparent","The shadow is too spread out and faint at that height","The Sun is behind the bird","Birds are luminous"],a:1,why:"Far from the ground, the shadow becomes faint and unclear; it sharpens as the bird swoops near the ground."},
+ {q:"A periscope uses…",o:["one convex lens","two plane mirrors","three mirrors in a triangle","a pinhole"],a:1,why:"Two plane mirrors in a Z-shaped tube."}]);
+</script>
+<a href="../index.html#/class-7" style="position:fixed;right:16px;bottom:16px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;background:rgba(255,255,255,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.95);box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font:900 14px/1 Nunito,'Segoe UI',system-ui,sans-serif;text-decoration:none">🏠 Lab Home</a></body></html>

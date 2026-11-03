@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Adolescence: A Stage of Growth & Change · Virtual Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>:root{
+  --paper:#f7f2e8; --paper2:#efe7d6; --ink:#1b2232; --ink2:#4a5468; --muted:#7a8296;
+  --card:#ffffff; --line:#e3dac6; --bench:#101a2c; --bench2:#18243b; --benchline:rgba(255,255,255,.06);
+  --good:#1f9d63; --bad:#d64545; --warn:#e3a21a;
+  --r:18px; --shadow:0 1px 0 rgba(0,0,0,.04),0 10px 30px -12px rgba(40,30,10,.25);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 "Nunito","Segoe UI",system-ui,sans-serif;
+  background-image:radial-gradient(circle at 1px 1px,rgba(120,100,60,.12) 1px,transparent 0);background-size:22px 22px}
+h1,h2,h3,h4{font-family:"Baloo 2","Nunito","Segoe UI",sans-serif;line-height:1.15;margin:0 0 .4em;letter-spacing:-.01em}
+button,input,select{font:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);color:#fff;padding:46px 0 40px}
+.hero .wrap{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+.hero .eyebrow{display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);padding:5px 14px;border-radius:99px;font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.hero h1{font-size:clamp(34px,5.2vw,64px);margin:14px 0 8px;font-weight:800;text-shadow:0 2px 0 rgba(0,0,0,.08)}
+.hero p.q{font-size:clamp(17px,2vw,21px);max-width:720px;opacity:.95;margin:0}
+.hero .bignum{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:clamp(110px,16vw,210px);line-height:.8;color:transparent;-webkit-text-stroke:3px rgba(255,255,255,.55);user-select:none}
+.hero .orbits{position:absolute;inset:0;z-index:1;pointer-events:none}
+.hero .orbits span{position:absolute;border:2px solid rgba(255,255,255,.18);border-radius:50%;animation:spin linear infinite}
+.hero .orbits span::after{content:"";position:absolute;top:-6px;left:50%;width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.7)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hero .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+.hero .meta span{background:rgba(0,0,0,.16);padding:4px 12px;border-radius:99px;font-size:14px;font-weight:700}
+
+/* ---------- TABS ---------- */
+.tabbar{position:sticky;top:0;z-index:30;background:rgba(247,242,232,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:12px 0;scrollbar-width:thin}
+.tabs button{flex:0 0 auto;border:1.5px solid var(--line);background:#fff;color:var(--ink2);padding:8px 16px;border-radius:99px;cursor:pointer;font-weight:800;font-size:14px;transition:.2s;display:flex;gap:8px;align-items:center}
+.tabs button .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--paper2);font-size:12px}
+.tabs button:hover{border-color:var(--accent);color:var(--ink)}
+.tabs button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tabs button.active .n{background:var(--accent);color:#fff}
+
+/* ---------- STATIONS ---------- */
+main{padding:28px 0 60px}
+.station{display:none;animation:rise .45s ease}
+.station.active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.st-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.st-head h2{font-size:clamp(26px,3vw,36px);margin:0}
+.st-head .tag{font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;font-size:13px}
+.st-head p{margin:4px 0 0;color:var(--ink2);max-width:760px}
+.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:20px;align-items:start}
+.grid.even{grid-template-columns:1fr 1fr}
+.grid.wide{grid-template-columns:1fr}
+@media(max-width:940px){.grid,.grid.even{grid-template-columns:1fr}.hero .wrap{grid-template-columns:1fr}.hero .bignum{display:none}}
+
+.stage{position:relative;background:var(--bench);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);overflow:hidden;
+  background-image:linear-gradient(var(--benchline) 1px,transparent 1px),linear-gradient(90deg,var(--benchline) 1px,transparent 1px);background-size:28px 28px}
+.stage canvas,.stage svg{display:block;width:100%;height:auto;border-radius:12px}
+.stage .hud{position:absolute;top:22px;left:24px;color:#fff;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.75;pointer-events:none}
+.stage .hint{color:#c9d3e8;font-size:13.5px;text-align:center;padding:8px 6px 2px}
+.stage.light{background:#fff;background-image:none;border:1px solid var(--line)}
+.stage.light .hint{color:var(--ink2)}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 16px;box-shadow:var(--shadow)}
+.panel + .panel{margin-top:16px}
+.panel h3{font-size:20px;display:flex;align-items:center;gap:8px}
+.panel h3 .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.stack > * + *{margin-top:16px}
+
+.ctrl{margin:12px 0}
+.ctrl label{display:flex;justify-content:space-between;font-weight:800;font-size:14px;color:var(--ink2);margin-bottom:4px}
+.ctrl label b{color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent);height:26px;cursor:pointer}
+select{width:100%;padding:9px 12px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-weight:700}
+
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;background:var(--accent);color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;cursor:pointer;transition:transform .12s,filter .2s,box-shadow .2s;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.btn:hover{filter:brightness(1.07)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
+.btn.dark{background:var(--ink)}
+.btn.sm{padding:6px 12px;font-size:14px;border-radius:10px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:#fff;padding:7px 13px;border-radius:99px;cursor:pointer;font-weight:700;font-size:14px;transition:.15s;color:var(--ink)}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.explain{border-left:5px solid var(--accent);background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 10%,#fff),#fff);border-radius:12px;padding:12px 14px;margin-top:12px}
+.explain b.k{color:var(--accent)}
+.explain .t{font-weight:900;text-transform:uppercase;font-size:12px;letter-spacing:.1em;color:var(--accent);display:block;margin-bottom:2px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:12px 0}
+.readout div{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.readout small{display:block;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.readout b{font-size:21px;font-family:"Baloo 2",sans-serif;font-variant-numeric:tabular-nums}
+
+table.log{width:100%;border-collapse:collapse;font-size:14px}
+table.log th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:2px solid var(--line);padding:6px}
+table.log td{border-bottom:1px solid var(--line);padding:7px 6px}
+table.log tr.new td{animation:flash 1.2s ease}
+@keyframes flash{from{background:color-mix(in srgb,var(--accent) 25%,#fff)}to{background:transparent}}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-weight:800;font-size:12.5px}
+.pill.g{background:#dcf5e8;color:#11663f}.pill.r{background:#fde2e2;color:#9b1c1c}.pill.y{background:#fff1cc;color:#7a5200}.pill.b{background:#dde9ff;color:#1d3f8f}.pill.n{background:#eee;color:#444}
+
+/* ---------- SORTER ---------- */
+.sorter .pool{display:flex;flex-wrap:wrap;gap:8px;min-height:48px;padding:10px;border:2px dashed var(--line);border-radius:14px;background:var(--paper)}
+.sorter .card{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:8px 12px;font-weight:700;cursor:grab;user-select:none;transition:.15s;font-size:14.5px}
+.sorter .card.sel{outline:3px solid var(--accent);transform:translateY(-2px)}
+.sorter .card.ok{border-color:var(--good);background:#e9f8f0}
+.sorter .card.no{border-color:var(--bad);background:#fdeaea;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.sorter .bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+.sorter .bin{border:2px solid var(--line);border-radius:14px;padding:10px;min-height:120px;background:#fff;transition:.15s}
+.sorter .bin.hot{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,#fff)}
+.sorter .bin h4{font-size:16px;margin:0 0 8px;display:flex;justify-content:space-between}
+.sorter .bin .cards{display:flex;flex-wrap:wrap;gap:6px}
+.sorter .score{font-weight:800;color:var(--ink2);margin-top:10px}
+
+/* ---------- QUIZ ---------- */
+.quiz{display:grid;gap:14px}
+.qcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow)}
+.qcard .qn{font-weight:900;color:var(--accent);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+.qcard .qt{font-weight:800;font-size:17px;margin:4px 0 10px}
+.qcard .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:640px){.qcard .opts{grid-template-columns:1fr}}
+.qcard .opt{text-align:left;border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:700;transition:.15s;color:var(--ink)}
+.qcard .opt:hover{border-color:var(--accent)}
+.qcard .opt.right{background:#dcf5e8;border-color:var(--good)}
+.qcard .opt.wrong{background:#fde2e2;border-color:var(--bad)}
+.qcard .why{display:none;margin-top:10px;font-size:15px;color:var(--ink2)}
+.qcard.done .why{display:block}
+.qscore{position:sticky;top:64px;z-index:5;background:var(--paper);padding:8px 0;font-family:"Baloo 2","Segoe UI",sans-serif;font-size:22px;font-weight:800}
+
+.keyideas{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:8px}
+.keyideas div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-weight:600;position:relative;padding-left:40px}
+.keyideas div::before{content:"✦";position:absolute;left:14px;top:10px;color:var(--accent);font-size:18px}
+
+footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--muted);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;opacity:0;transition:.3s;z-index:99;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.muted{color:var(--muted)}
+.center{text-align:center}
+.mt0{margin-top:0}
+.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:#c9d3e8;padding:6px 6px 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.caution{background:#fff5df;border:1px solid #f0d79a;border-radius:12px;padding:10px 12px;font-size:14px;margin-top:12px}
+.caution b{color:#8a5a00}
+
+:root{--accent:#7048e8;--accent2:#e64980}
+</style>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"></head><body>
+<header class="hero"><div class="orbits"></div><div class="wrap"><div>
+<a href="../index.html#/class-7" style="color:#fff;font-weight:800;text-decoration:none;opacity:.9;margin-right:10px">← All labs</a><span class="eyebrow">Class 7 Science · Chapter 6 · Virtual Lab</span>
+<h1>Adolescence: A Stage of Growth & Change</h1><p class="q">Taller one summer, a new voice the next, big feelings in between — what is happening during adolescence, and how can we make it a joyful journey?</p>
+<div class="meta"><span>Life’s journey</span><span>Growth spurt</span><span>Body changes</span><span>Hormones</span><span>Nutrition plate</span><span>Healthy choices</span></div></div><div class="bignum">06</div></div></header>
+<nav class="tabbar"><div class="wrap tabs"><button data-tab="s1"><span class="n">1</span>Life’s Journey</button><button data-tab="s2"><span class="n">2</span>Changes Sorter</button><button data-tab="s3"><span class="n">3</span>Hormone Messengers</button><button data-tab="s4"><span class="n">4</span>Build a Healthy Plate</button><button data-tab="s5"><span class="n">5</span>Cycle & Myth-busting</button><button data-tab="s6"><span class="n">6</span>Healthy Choices</button><button data-tab="s7"><span class="n">7</span>Check Yourself</button></div></nav>
+<main class="wrap">
+
+
+<section class="station" id="s1">
+  <div class="st-head"><div><div class="tag">Station 1 · Stages of life</div><h2>Life’s Journey & the Growth Spurt</h2>
+  <p>Slide through a lifetime. Notice how growth in height speeds up during <b>adolescence (about 10–19 years)</b>. Change the “timing” to see that everyone grows at their own pace — and that is completely normal.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c1"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Controls</h3>
+      <div class="ctrl"><label>Age <b id="age-v"></b></label><input type="range" id="age" min="0" max="80" step="0.5" value="8"></div>
+      <div class="ctrl"><label>Timing of growth spurt <b id="tim-v"></b></label><input type="range" id="tim" min="-2" max="2" step="1" value="0"></div>
+      <div class="readout"><div><small>Stage</small><b id="stage">Childhood</b></div><div><small>Height</small><b id="ht">—</b></div><div><small>Growth this year</small><b id="gr">—</b></div></div>
+      <div class="explain" id="m1"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s2">
+  <div class="st-head"><div><div class="tag">Station 2 · Activity 6.1 & Q9</div><h2>Changes During Adolescence</h2>
+  <p>Sort each change. Remember: the timing, nature and extent of these changes vary from person to person — every variation is normal.</p></div></div>
+  <div id="sorter"></div>
+  <div class="panel" style="margin-top:16px"><h3><span class="dot"></span>Words to know</h3><div class="keyideas" style="margin-top:0">
+    <div><b>Puberty</b> — the stage when the body changes, inside and outside, to become an adult capable of reproduction.</div>
+    <div><b>Secondary sexual characteristics</b> — changes like voice, facial hair or breast development that help distinguish males and females but are not directly involved in reproduction.</div>
+    <div><b>Adam’s apple</b> — the bump seen in the throat when the voice box grows, more in boys.</div>
+    <div><b>Acne</b> — extra oily secretions can clog skin pores, causing pimples. Wash your face gently and regularly.</div></div></div>
+</section>
+
+<section class="station" id="s3">
+  <div class="st-head"><div><div class="tag">Station 3 · The ‘why’ question</div><h2>Hormone Messengers</h2>
+  <p>Many changes in adolescence are caused by <b>hormones</b> — chemicals made in different parts of the body and released at the right time in response to signals from the <b>brain</b>. Send a signal and follow the messengers.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c3"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Send a signal</h3><div class="chips" id="hb"></div>
+      <div class="explain" id="m3"><span class="t">How it works</span>Pick a message for the brain to send.</div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s4">
+  <div class="st-head"><div><div class="tag">Station 4 · Activity 6.3</div><h2>Build a Healthy Plate</h2>
+  <p>Adolescence is a period of rapid growth, so a nutritious diet matters more than ever. Tap foods to add them to the plate (tap again to remove) and watch the nutrient meters.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c4"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Food shelf</h3><div class="chips" id="foods"></div>
+      <div class="explain" id="m4"><span class="t">Plate check</span>Add some foods.</div></div>
+      <div class="panel"><h3><span class="dot"></span>Did you know?</h3><p class="mt0">Adolescents, especially girls, may face blood-related problems from a lack of <b>iron</b> or <b>vitamin B12</b>. Spinach, kidney beans, raisins and figs give iron. Scientist <b>Dorothy Hodgkin</b> worked out the structure of vitamin B12 and won the Nobel Prize in 1964.</p></div></div>
+  </div>
+</section>
+
+<section class="station" id="s5">
+  <div class="st-head"><div><div class="tag">Station 5 · Reproductive health</div><h2>The Menstrual Cycle & Myth-busting</h2>
+  <p>The menstrual cycle is a natural process and a sign of good reproductive health. It usually recurs every 28–30 days, though anything from 21 to 35 days can be healthy. Menstruation lasts about 3 to 7 days.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c5"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Explore the cycle</h3>
+      <div class="ctrl"><label>Cycle length <b id="cl-v"></b></label><input type="range" id="cl" min="21" max="35" value="28"></div>
+      <div class="ctrl"><label>Days of menstruation <b id="md-v"></b></label><input type="range" id="md" min="3" max="7" value="5"></div>
+      <p class="muted mt0" style="font-size:14px">Menstruation usually stops naturally around the age of 45–55.</p></div>
+      <div class="panel"><h3><span class="dot"></span>Myth or fact? (tap to flip)</h3><div id="myths" class="stack"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s6">
+  <div class="st-head"><div><div class="tag">Station 6 · Making adolescence joyful</div><h2>Healthy Choices</h2>
+  <p>Good habits and thoughtful decisions have a powerful impact. Work through each situation and choose the wisest response.</p></div></div>
+  <div class="grid even">
+    <div class="panel"><h3><span class="dot"></span>What would you do?</h3><div id="scen"></div></div>
+    <div class="panel"><h3><span class="dot"></span>Social media: Do or Don’t?</h3><div id="sm"></div></div>
+  </div>
+  <div class="panel" style="margin-top:16px"><h3><span class="dot"></span>Help is always there</h3><p class="mt0">Talk to parents, teachers or trusted elders about anything that worries you. The National De-addiction Helpline (<b>14446</b>) supports anyone dealing with substance abuse, under the <b>Nasha Mukt Bharat Abhiyaan</b>.</p></div>
+</section>
+
+<section class="station" id="s7">
+  <div class="st-head"><div><div class="tag">Station 7</div><h2>Check Yourself</h2></div></div>
+  <div id="quiz"></div>
+  <h3 style="margin-top:28px">Key ideas</h3>
+  <div class="keyideas"><div>Adolescence is the change from childhood to adulthood, roughly 10–19 years.</div><div>It brings physical, emotional and behavioural changes.</div><div>Hormones, released on signals from the brain, control these changes.</div><div>The menstrual cycle is natural; myths about it have no scientific basis.</div><div>A balanced diet, hygiene, exercise and a balanced social life keep adolescents healthy.</div><div>Say NO to tobacco, alcohol and drugs — the first time and every time.</div></div>
+</section>
+
+
+
+</main>
+<footer class="wrap">Class 7 Science · Chapter 6: Adolescence: A Stage of Growth & Change · Interactive Virtual Lab · Explore, predict, observe, explain.</footer>
+<script>/* ===== Shared lab toolkit ===== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const rand = (a, b) => a + Math.random() * (b - a);
+const TAU = Math.PI * 2;
+
+/* Canvas with crisp DPR scaling; draw in logical W x H units */
+function setupCanvas(cv, W, H) {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = W * dpr; cv.height = H * dpr;
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  cv._W = W; cv._H = H; ctx.W = W; ctx.H = H;
+  return ctx;
+}
+function canvasPoint(cv, e) {
+  const r = cv.getBoundingClientRect();
+  const p = e.touches ? e.touches[0] : e;
+  return { x: (p.clientX - r.left) * cv._W / r.width, y: (p.clientY - r.top) * cv._H / r.height };
+}
+function svgPoint(svg, e) {
+  const pt = svg.createSVGPoint(); const p = e.touches ? e.touches[0] : e;
+  pt.x = p.clientX; pt.y = p.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+function mixColor(c1, c2, t) { // hex colours
+  const a = parseInt(c1.slice(1), 16), b = parseInt(c2.slice(1), 16);
+  const r = Math.round(lerp(a >> 16, b >> 16, t)), g = Math.round(lerp((a >> 8) & 255, (b >> 8) & 255, t)), bl = Math.round(lerp(a & 255, b & 255, t));
+  return `rgb(${r},${g},${bl})`;
+}
+
+/* Animation loop: callbacks receive dt (s). Each registered with a station id; runs only when that station is visible */
+const Loop = { fns: [], last: 0,
+  add(stationId, fn) { this.fns.push({ id: stationId, fn }); },
+  tick(t) { const dt = Math.min(.05, (t - (Loop.last || t)) / 1000); Loop.last = t;
+    for (const f of Loop.fns) { const el = f.id ? document.getElementById(f.id) : null; if (!f.id || (el && el.classList.contains('active'))) f.fn(dt, t / 1000); }
+    requestAnimationFrame(Loop.tick); } };
+requestAnimationFrame(Loop.tick);
+
+/* Tabs */
+function initTabs() {
+  const btns = $$('.tabs button');
+  const show = id => {
+    btns.forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+    $$('.station').forEach(s => s.classList.toggle('active', s.id === id));
+    document.dispatchEvent(new CustomEvent('station', { detail: id }));
+    try { history.replaceState(null, '', '#' + id); } catch (e) {}
+  };
+  btns.forEach(b => b.addEventListener('click', () => { show(b.dataset.tab); window.scrollTo({ top: $('.tabbar').offsetTop, behavior: 'smooth' }); }));
+  const h = location.hash.slice(1);
+  show(btns.some(b => b.dataset.tab === h) ? h : btns[0].dataset.tab);
+}
+
+/* Toast */
+let _tt; function toast(msg, ms = 2200) { let t = $('.toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add('show'); clearTimeout(_tt); _tt = setTimeout(() => t.classList.remove('show'), ms); }
+
+/* Sound (Web Audio) */
+let _ac; function ac() { if (!_ac) { try { _ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (_ac && _ac.state === 'suspended') _ac.resume(); return _ac; }
+const Sound = {
+  on: true,
+  tone(f = 440, d = .15, type = 'sine', v = .15) { const a = ac(); if (!a || !this.on) return; const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(v, a.currentTime); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + d); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + d); },
+  ring(f = 880) { [1, 2.76, 5.4].forEach((m, i) => setTimeout(() => this.tone(f * m, 1.6 - i * .4, 'sine', .12 / (i + 1)), 0)); },
+  thud() { const a = ac(); if (!a || !this.on) return; const o = a.createOscillator(), g = a.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(140, a.currentTime); o.frequency.exponentialRampToValueAtTime(40, a.currentTime + .15); g.gain.setValueAtTime(.35, a.currentTime); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + .18); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + .2); },
+  noise(d = .5, v = .08, hp = 2000) { const a = ac(); if (!a || !this.on) return; const b = a.createBuffer(1, a.sampleRate * d, a.sampleRate), ch = b.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / ch.length); const s = a.createBufferSource(); s.buffer = b; const f = a.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = hp; const g = a.createGain(); g.gain.value = v; s.connect(f).connect(g).connect(a.destination); s.start(); },
+  good() { this.tone(660, .12, 'sine', .12); setTimeout(() => this.tone(990, .18, 'sine', .12), 110); },
+  bad() { this.tone(200, .22, 'square', .05); },
+  click() { this.tone(1200, .03, 'square', .03); }
+};
+
+/* Click-or-drag sorter. items: [{t, cat}], cats: [{id,label}] */
+function makeSorter(root, items, cats, opts = {}) {
+  root.classList.add('sorter');
+  root.innerHTML = `<div class="pool"></div><div class="bins">${cats.map(c => `<div class="bin" data-cat="${c.id}"><h4>${c.label}<span class="cnt">0</span></h4><div class="cards"></div></div>`).join('')}</div><div class="score"></div>`;
+  const pool = $('.pool', root); let sel = null, right = 0, tries = 0;
+  const shuffled = items.map(x => ({ ...x })).sort(() => Math.random() - .5);
+  shuffled.forEach((it, i) => { const c = document.createElement('div'); c.className = 'card'; c.textContent = it.t; c.draggable = true; c.dataset.i = i;
+    c.addEventListener('click', () => { if (c.classList.contains('ok')) return; $$('.card.sel', root).forEach(x => x.classList.remove('sel')); sel = c; c.classList.add('sel'); });
+    c.addEventListener('dragstart', e => { sel = c; e.dataTransfer.setData('text', i); }); pool.appendChild(c); });
+  const drop = bin => { if (!sel) return; const it = shuffled[+sel.dataset.i]; tries++;
+    const ok = Array.isArray(it.cat) ? it.cat.includes(bin.dataset.cat) : it.cat === bin.dataset.cat;
+    if (ok) { right++; sel.classList.remove('sel', 'no'); sel.classList.add('ok'); sel.draggable = false; $('.cards', bin).appendChild(sel); $('.cnt', bin).textContent = $$('.card', bin).length; Sound.good(); if (it.why) toast(it.why, 3000); }
+    else { sel.classList.remove('no'); void sel.offsetWidth; sel.classList.add('no'); Sound.bad(); toast(it.hint || 'Not quite — think again!'); }
+    sel = null; $$('.card.sel', root).forEach(x => x.classList.remove('sel'));
+    $('.score', root).textContent = `Sorted ${right} / ${items.length}` + (right === items.length ? `  ·  🎉 Done in ${tries} tries!` : '');
+    if (right === items.length && opts.onDone) opts.onDone(tries);
+  };
+  $$('.bin', root).forEach(b => { b.addEventListener('click', () => drop(b)); b.addEventListener('dragover', e => { e.preventDefault(); b.classList.add('hot'); }); b.addEventListener('dragleave', () => b.classList.remove('hot')); b.addEventListener('drop', e => { e.preventDefault(); b.classList.remove('hot'); drop(b); }); });
+  $('.score', root).textContent = `Sorted 0 / ${items.length}  ·  Tip: tap a card, then tap a box (or drag it).`;
+}
+
+/* Quiz: [{q, o:[..], a:index, why}] */
+function makeQuiz(root, qs) {
+  let score = 0, done = 0;
+  const head = document.createElement('div'); head.className = 'qscore'; root.before(head);
+  const upd = () => head.textContent = `Score: ${score} / ${qs.length}` + (done === qs.length ? (score === qs.length ? '  ·  Perfect! 🌟' : score >= qs.length * .7 ? '  ·  Great work!' : '  ·  Revisit the stations and try again') : '');
+  root.classList.add('quiz');
+  qs.forEach((q, i) => { const c = document.createElement('div'); c.className = 'qcard';
+    c.innerHTML = `<div class="qn">Question ${i + 1}</div><div class="qt">${q.q}</div><div class="opts">${q.o.map((o, j) => `<button class="opt" data-j="${j}">${String.fromCharCode(65 + j)}. ${o}</button>`).join('')}</div><div class="why">${q.why || ''}</div>`;
+    $$('.opt', c).forEach(b => b.addEventListener('click', () => { if (c.classList.contains('done')) return; c.classList.add('done'); done++;
+      const j = +b.dataset.j; if (j === q.a) { score++; b.classList.add('right'); Sound.good(); } else { b.classList.add('wrong'); $$('.opt', c)[q.a].classList.add('right'); Sound.bad(); }
+      upd(); }));
+    root.appendChild(c); });
+  const r = document.createElement('button'); r.className = 'btn ghost'; r.textContent = '↺ Reset quiz'; r.style.marginTop = '6px';
+  r.onclick = () => { root.innerHTML = ''; head.remove(); r.remove(); makeQuiz(root, qs); }; root.after(r);
+  upd();
+}
+
+/* Logging helper */
+function addRow(tbody, cells, max = 12) { const tr = document.createElement('tr'); tr.className = 'new'; tr.innerHTML = cells.map(c => `<td>${c}</td>`).join(''); tbody.prepend(tr); while (tbody.children.length > max) tbody.lastChild.remove(); }
+
+/* Range binding: bindRange('#id', v=>..., fmt) */
+function bindRange(sel, fn, fmt = v => v) { const el = $(sel); const out = $(sel + '-v'); const go = () => { const v = +el.value; if (out) out.textContent = fmt(v); fn(v); }; el.addEventListener('input', go); go(); return el; }
+
+document.addEventListener('DOMContentLoaded', () => {
+  initTabs();
+  const o = $('.hero .orbits'); if (o) { [[420, 30, 70, -120], [620, 50, 40, -250], [260, 18, 80, 30]].forEach(([s, d, x, y]) => { const sp = document.createElement('span'); sp.style.cssText = `width:${s}px;height:${s}px;left:${x}%;top:${y}px;animation-duration:${d}s`; o.appendChild(sp); }); }
+});
+</script>
+<script>
+/* S1 growth */
+let age=8,tim=0;const c1=$('#c1'),x1=setupCanvas(c1,700,440);
+const _hc={};
+function vel(a,s){const sig=x=>1/(1+Math.exp(-x));return 22*Math.exp(-a/0.8)+5.6*sig(-(a-(14.5+s))/0.9)+5*Math.exp(-Math.pow((a-(12.8+s))/1.4,2));}
+function height(a,s=0){const key=s;if(!_hc[key]){const arr=[];let h=50;for(let i=0;i<=900;i++){arr.push(h);h+=vel(i/10,s)*0.1;}_hc[key]=arr;}const arr=_hc[key];const i=clamp(Math.round(a*10),0,900);return arr[i]-(a>60?(a-60)*0.1:0);}
+function stageOf(a){return a<2?'Infancy':a<10?'Childhood':a<19?'Adolescence':a<60?'Adulthood':'Old age';}
+bindRange('#age',v=>{age=v;upd1();},v=>v+' yrs');bindRange('#tim',v=>{tim=v;upd1();},v=>['much earlier','earlier','average','later','much later'][v+2]);
+function upd1(){const h=height(age,tim),g=height(age+1,tim)-h;$('#stage').textContent=stageOf(age);$('#ht').textContent=h.toFixed(0)+' cm';$('#gr').textContent=(g>0?'+':'')+g.toFixed(1)+' cm';
+  $('#m1').innerHTML={'Infancy':'<span class="t">Infancy</span>Very rapid growth in the first years of life.','Childhood':'<span class="t">Childhood</span>Until about 10–12 years, most changes are in height and weight.','Adolescence':'<span class="t">Adolescence</span>A period of rapid growth and development — the body prepares for adulthood. Height increases most noticeably now.','Adulthood':'<span class="t">Adulthood</span>Growth in height stops; the body is mature.','Old age':'<span class="t">Old age</span>Each stage has its own pace — and it varies from person to person.'}[stageOf(age)];}
+Loop.add('s1',(dt,t)=>{const c=x1;c.clearRect(0,0,700,440);
+  // chart growth per year
+  const X=a=>a<=25?340+a*11.6:630+(a-25)*1.0, Y=v=>390-v*13;c.strokeStyle='rgba(255,255,255,.25)';c.lineWidth=1;c.beginPath();c.moveTo(330,40);c.lineTo(330,390);c.lineTo(690,390);c.stroke();
+  c.fillStyle='rgba(112,72,232,.25)';c.fillRect(X(10),40,X(19)-X(10),350);c.fillStyle='#d0bfff';c.font='800 12px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText('Adolescence',(X(10)+X(19))/2,56);
+  [-2,0,2].forEach(s=>{c.strokeStyle=s===tim?'#ffd43b':'rgba(255,255,255,.18)';c.lineWidth=s===tim?3:1.5;c.beginPath();for(let a=1;a<=80;a+=.5){const g=height(a+1,s)-height(a,s);a===1?c.moveTo(X(a),Y(clamp(g,0,25))):c.lineTo(X(a),Y(clamp(g,0,25)));}c.stroke();});
+  if(tim!==0&&tim!==2&&tim!==-2){c.strokeStyle='#ffd43b';c.lineWidth=3;c.beginPath();for(let a=1;a<=80;a+=.5){const g=height(a+1,tim)-height(a,tim);a===1?c.moveTo(X(a),Y(clamp(g,0,25))):c.lineTo(X(a),Y(clamp(g,0,25)));}c.stroke();}
+  c.fillStyle='#fff';c.beginPath();c.arc(X(age),Y(clamp(height(age+1,tim)-height(age,tim),0,25)),6,0,TAU);c.fill();
+  c.fillStyle='#c9d3e8';c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';[0,5,10,15,20,25,50,80].forEach(a=>c.fillText(a,X(a),408));c.fillText('age (years)',510,428);c.save();c.translate(312,215);c.rotate(-Math.PI/2);c.fillText('growth in height per year (cm)',0,0);c.restore();
+  // figure
+  const h=height(age,tim),sc=h/190*300,bx=150,by=400;c.fillStyle='rgba(255,255,255,.08)';rr(c,40,40,240,365,14);c.fill();
+  for(let k=50;k<=190;k+=20){const yy=by-k/190*300;c.strokeStyle='rgba(255,255,255,.12)';c.beginPath();c.moveTo(48,yy);c.lineTo(270,yy);c.stroke();c.fillStyle='#8d99ae';c.font='600 10px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='left';c.fillText(k,50,yy-2);}
+  const head=sc*(age<2?.25:age<10?.18:.13);c.fillStyle='#b197fc';const bodyH=sc-head*2;c.beginPath();c.arc(bx,by-sc+head,head,0,TAU);c.fill();
+  rr(c,bx-sc*.11,by-sc+head*2+2,sc*.22,bodyH*.48,sc*.05);c.fill();rr(c,bx-sc*.17,by-sc+head*2+6,sc*.05,bodyH*.42,sc*.03);c.fill();rr(c,bx+sc*.12,by-sc+head*2+6,sc*.05,bodyH*.42,sc*.03);c.fill();c.fillRect(bx-sc*.1,by-bodyH*.52,sc*.08,bodyH*.52);c.fillRect(bx+sc*.02,by-bodyH*.52,sc*.08,bodyH*.52);
+  c.fillStyle='#fff';c.font='800 15px "Baloo 2","Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText(stageOf(age)+' · '+age+' yrs',bx,30+0*t);
+});
+upd1();
+
+/* S2 sorter */
+makeSorter($('#sorter'),[
+ {t:'Increase in height',cat:'both'},{t:'Pimples on the face',cat:'both'},{t:'Hair in armpits',cat:'both'},{t:'Hair in the pubic region',cat:'both'},{t:'Stronger emotions & mood swings',cat:'both'},{t:'Growth of the voice box',cat:'both',why:'The voice box grows in both — more in boys, so their voice changes more.'},
+ {t:'Hoarse, deeper voice & Adam’s apple',cat:'boys'},{t:'Growth of moustache and beard',cat:'boys'},{t:'Broader shoulders, wider chest',cat:'boys'},
+ {t:'Development of breasts',cat:'girls'},{t:'Start of the menstrual cycle',cat:'girls'}],
+ [{id:'boys',label:'Observed only in boys'},{id:'both',label:'Common in boys and girls'},{id:'girls',label:'Observed only in girls'}]);
+
+/* S3 hormones */
+const H=[['Grow taller','bones and muscles grow faster','#ffd43b',[150,330]],['Mature for reproduction','the body matures to become capable of reproduction (puberty)','#ff8787',[150,250]],['Mood & feelings','some hormones influence mood and behaviour','#74c0fc',[150,90]],['Skin & hair','oily secretions and new hair growth','#8ce99a',[150,180]]];
+let pk=[],hsel=-1;const c3=$('#c3'),x3=setupCanvas(c3,700,440);
+H.forEach((h,i)=>{const b=document.createElement('button');b.className='chip';b.textContent=h[0];b.onclick=()=>{hsel=i;$$('#hb .chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');for(let k=0;k<18;k++)pk.push({t:-k*0.06,i});$('#m3').innerHTML=`<span class="t">${h[0]}</span>The brain sends a signal → a gland releases hormones into the blood → the blood carries them through the body → ${h[1]}.`;Sound.tone(600,.1);};$('#hb').appendChild(b);});
+Loop.add('s3',(dt,t)=>{const c=x3;c.clearRect(0,0,700,440);
+  // body outline
+  const cx=440;c.fillStyle='rgba(255,255,255,.07)';c.beginPath();c.arc(cx,80,42,0,TAU);c.fill();rr(c,cx-70,128,140,170,40);c.fill();rr(c,cx-60,290,50,130,20);c.fill();rr(c,cx+10,290,50,130,20);c.fill();rr(c,cx-110,140,36,150,18);c.fill();rr(c,cx+74,140,36,150,18);c.fill();
+  // brain
+  c.fillStyle='#f783ac';c.beginPath();c.ellipse(cx,72,28,20,0,0,TAU);c.fill();c.strokeStyle='#c2255c';c.lineWidth=2;for(let i=0;i<4;i++){c.beginPath();c.arc(cx-14+i*9,72,7,Math.PI,0);c.stroke();}
+  // glands
+  [[cx,96],[cx,140],[cx,240]].forEach(([x,y])=>{c.fillStyle='#ffa94d';c.beginPath();c.arc(x,y,7,0,TAU);c.fill();});
+  // blood vessels
+  c.strokeStyle='rgba(255,107,107,.35)';c.lineWidth=4;c.beginPath();c.moveTo(cx,96);c.lineTo(cx,300);c.moveTo(cx,160);c.lineTo(cx-92,200);c.moveTo(cx,160);c.lineTo(cx+92,200);c.moveTo(cx,280);c.lineTo(cx-35,400);c.moveTo(cx,280);c.lineTo(cx+35,400);c.stroke();
+  pk.forEach(p=>{p.t+=dt*.5;if(p.t<0)return;const u=p.t;let x,y;if(u<.3){x=cx;y=lerp(72,140,u/.3);}else{const v=(u-.3)/.7;const tg=[[cx-92,210],[cx+92,210],[cx-35,400],[cx+35,400],[cx,300]][Math.floor(p.t*97)%5];x=lerp(cx,tg[0],v);y=lerp(140,tg[1],v);}
+    c.fillStyle=H[p.i][2];c.beginPath();c.arc(x,y,5,0,TAU);c.fill();});pk=pk.filter(p=>p.t<1);
+  c.fillStyle='#fff';c.font='800 13px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='left';c.fillText('Brain sends signal',cx+40,60);c.fillText('Glands release hormones',cx+40,140);c.fillText('Blood carries them everywhere',cx+40,320);
+  if(hsel>=0){c.fillStyle=H[hsel][2];c.font='800 22px "Baloo 2","Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText(H[hsel][0],150,200);c.font='700 13px Nunito,"Segoe UI",system-ui,sans-serif';c.fillStyle='#c9d3e8';const w=H[hsel][1].split(' ');let line='',yy=226;w.forEach(word=>{if((line+word).length>26){c.fillText(line,150,yy);line='';yy+=18;}line+=word+' ';});c.fillText(line,150,yy);}
+});
+
+/* S4 plate */
+const F=[['Milk',{ca:3,pr:2,fa:1}],['Curd / paneer',{ca:3,pr:2,fa:1}],['Millets (ragi, bajra)',{ca:2,cb:3,fe:1}],['Rice / chapati',{cb:3}],['Dal / rajma',{pr:3,fe:2}],['Eggs / fish',{pr:3,fa:1,b12:2}],['Spinach',{fe:3,vm:2}],['Raisins & figs',{fe:2,cb:1}],['Seasonal fruit',{vm:3,cb:1}],['Groundnuts',{pr:2,fa:2}],['Chips',{fa:3,cb:1,junk:1}],['Cola',{cb:2,junk:1}]];
+const NUT=[['cb','Carbohydrates','energy','#ffd43b'],['pr','Proteins','growth & strength','#ff8787'],['fa','Fats','energy store','#ffa94d'],['ca','Calcium','bones & teeth','#e9ecef'],['fe','Iron','formation of blood','#c92a2a'],['vm','Vitamins','protection & health','#69db7c'],['b12','Vitamin B12','proper body functioning','#748ffc']];
+let plate=new Set();const c4=$('#c4'),x4=setupCanvas(c4,700,440);
+F.forEach((f,i)=>{const b=document.createElement('button');b.className='chip';b.textContent=f[0];b.onclick=()=>{plate.has(i)?plate.delete(i):plate.add(i);b.classList.toggle('on');Sound.click();upd4();};$('#foods').appendChild(b);});
+function tot(){const s={};plate.forEach(i=>Object.entries(F[i][1]).forEach(([k,v])=>s[k]=(s[k]||0)+v));return s;}
+function upd4(){const s=tot();const miss=NUT.filter(n=>n[0]!=='b12'&&(s[n[0]]||0)<2).map(n=>n[1]);const junk=s.junk||0;
+  $('#m4').innerHTML=!plate.size?'<span class="t">Plate check</span>Add some foods.':junk?`<span class="t">Hmm…</span>Chips and cola add mostly fat and sugar with few other nutrients. Swap them for a fruit or groundnuts!${miss.length?' Still low on: '+miss.join(', ')+'.':''}`:miss.length?`<span class="t">Getting there</span>Low on: <b>${miss.join(', ')}</b>.`:'<span class="t">Balanced plate! 🌟</span>Carbohydrates, proteins, fats, vitamins and minerals like calcium and iron — everything a growing body needs.';}
+Loop.add('s4',(dt,t)=>{const c=x4;c.clearRect(0,0,700,440);const s=tot();
+  c.fillStyle='#f1f3f5';c.beginPath();c.arc(180,220,150,0,TAU);c.fill();c.fillStyle='#fff';c.beginPath();c.arc(180,220,120,0,TAU);c.fill();
+  [...plate].forEach((i,k)=>{const a=k*2.4,r=k===0?0:30+12*Math.sqrt(k)*2;const x=180+Math.min(r,90)*Math.cos(a),y=220+Math.min(r,90)*Math.sin(a);const col=['#fff3bf','#fff9db','#d9a066','#f8f0e3','#f4a261','#ffe8cc','#2b8a3e','#7b3f61','#ff922b','#c08552','#ffd43b','#5c3d2e'][i];c.fillStyle=col;c.beginPath();c.arc(x,y,24+2*Math.sin(t*2+k),0,TAU);c.fill();c.strokeStyle='rgba(0,0,0,.12)';c.stroke();c.fillStyle='#333';c.font='800 9.5px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText(F[i][0].split(' ')[0],x,y+3);});
+  NUT.forEach((n,i)=>{const y=60+i*50,v=clamp((s[n[0]]||0)/6,0,1);c.fillStyle='#fff';c.font='800 13px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='left';c.fillText(n[1],370,y);c.fillStyle='#c9d3e8';c.font='600 11px Nunito,"Segoe UI",system-ui,sans-serif';c.fillText(n[2],370,y+14);
+    c.fillStyle='rgba(255,255,255,.1)';rr(c,370,y+20,300,12,6);c.fill();c.fillStyle=n[3];rr(c,370,y+20,Math.max(6,300*v),12,6);c.fill();});
+});
+upd4();
+
+/* S5 cycle */
+let cl=28,md=5;const c5=$('#c5'),x5=setupCanvas(c5,700,440);bindRange('#cl',v=>cl=v,v=>v+' days');bindRange('#md',v=>md=v,v=>v+' days');
+Loop.add('s5',(dt,t)=>{const c=x5;c.clearRect(0,0,700,440);const cx=350,cy=225,R=160;const day=Math.floor((t*2)%cl);
+  for(let d=0;d<cl;d++){const a0=-Math.PI/2+d/cl*TAU,a1=a0+TAU/cl-.02;c.strokeStyle=d<md?'#e64980':'rgba(255,255,255,.15)';c.lineWidth=34;c.beginPath();c.arc(cx,cy,R,a0,a1);c.stroke();
+    if(d%(cl>30?5:4)===0||d===cl-1){c.fillStyle='#c9d3e8';c.font='700 11px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText(d+1,cx+(R+32)*Math.cos(a0+.08),cy+(R+32)*Math.sin(a0+.08)+4);}}
+  const a=-Math.PI/2+(day+.5)/cl*TAU;c.fillStyle='#ffe066';c.beginPath();c.arc(cx+R*Math.cos(a),cy+R*Math.sin(a),10,0,TAU);c.fill();
+  c.fillStyle='#fff';c.font='800 34px "Baloo 2","Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText(cl+' days',cx,cy-6);c.font='700 14px Nunito,"Segoe UI",system-ui,sans-serif';c.fillStyle='#c9d3e8';c.fillText('one cycle',cx,cy+18);c.fillStyle='#f783ac';c.fillText('■ menstruation: '+md+' days',cx,cy+44);
+  c.fillStyle='#8ce99a';c.font='800 14px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='left';c.fillText('Within the healthy range (21–35 days)',20,30);
+});
+[['Menstruation is a natural process.','FACT','It is a sign of good reproductive health.'],['Girls should be kept apart from others during menstruation.','MYTH','Isolation has no scientific basis. A scientific outlook removes fear and shame.'],['Every girl’s cycle is exactly 28 days.','MYTH','Cycles from 21 to 35 days can be perfectly healthy.'],['Used sanitary pads should be wrapped and put in a dustbin.','FACT','Proper disposal protects community health and the environment.']].forEach(([q,a,w])=>{const d=document.createElement('button');d.className='opt';d.style.cssText='text-align:left;width:100%;border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:700';d.innerHTML=q;let f=false;d.onclick=()=>{f=!f;d.innerHTML=f?`<span class="pill ${a==='FACT'?'g':'r'}">${a}</span> ${w}`:q;};$('#myths').appendChild(d);});
+
+/* S6 scenarios */
+const SC=[['A senior offers you gutka “just once, for fun”.',[['Say a firm NO and walk away; tell a trusted adult if it continues.',1],['Try it once — one time can’t hurt.',0],['Accept it and hide it from parents.',0]],'“Just one time” is how addiction often begins. Say NO the first time and every time.'],
+ ['Someone keeps posting hurtful rumours about your classmate online.',[['Join in so you are not targeted next.',0],['Don’t share it; support your classmate and tell a parent or teacher.',1],['Reply with insults.',0]],'That is cyberbullying. Don’t feel scared or helpless — handle it wisely and seek help.'],
+ ['You feel low and irritable for a few days for no clear reason.',[['Bottle it up and avoid everyone.',0],['Play a sport, make music or dance, and talk to someone you trust.',1],['Eat lots of junk food.',0]],'Mood swings are common in adolescence. Varied activities and talking help.'],
+ ['An online “friend” you’ve never met asks for your photo and home address.',[['Send it — they seem nice.',0],['Never share personal information with strangers; tell an adult.',1],['Send only the photo.',0]],'Protect your privacy. Think before you post or share.']];
+SC.forEach(([q,opts,why],i)=>{const d=document.createElement('div');d.className='qcard';d.style.marginBottom='10px';d.innerHTML=`<div class="qt" style="font-size:15.5px">${q}</div><div class="opts" style="grid-template-columns:1fr">${opts.map((o,j)=>`<button class="opt" data-j="${j}">${o[0]}</button>`).join('')}</div><div class="why">${why}</div>`;
+  $$('.opt',d).forEach(b=>b.onclick=()=>{if(d.classList.contains('done'))return;d.classList.add('done');const ok=opts[+b.dataset.j][1];b.classList.add(ok?'right':'wrong');if(!ok)$$('.opt',d)[opts.findIndex(o=>o[1])].classList.add('right');ok?Sound.good():Sound.bad();});$('#scen').appendChild(d);});
+makeSorter($('#sm'),[{t:'Be respectful and kind',cat:'do'},{t:'Think before posting',cat:'do'},{t:'Protect your privacy',cat:'do'},{t:'Ask elders if unsure',cat:'do'},{t:'Share personal photos with strangers',cat:'dont'},{t:'Spread rumours',cat:'dont'},{t:'Share passwords with friends',cat:'dont'},{t:'Share others’ information without consent',cat:'dont'}],[{id:'do',label:'✅ Do'},{id:'dont',label:'⛔ Don’t'}]);
+
+makeQuiz($('#quiz'),[
+ {q:"Adolescence generally spans which ages?",o:["2–8 years","10–19 years","20–30 years","45–55 years"],a:1,why:"It begins around 10 and usually lasts until 19."},
+ {q:"Shalu says adolescence brings only physical changes. What is missing?",o:["Nothing — she is right","Emotional and behavioural changes","Only changes in height","Changes in eye colour"],a:1,why:"Adolescence also brings emotional and behavioural changes."},
+ {q:"Which chemicals mainly cause the changes of adolescence?",o:["Enzymes in saliva","Hormones","Vitamins","Acids"],a:1,why:"Hormones, released on signals from the brain."},
+ {q:"Which food group best helps formation of blood?",o:["Iron-rich foods like spinach and rajma","Chips and cola","Sugar","Only rice"],a:0,why:"Iron is needed to form blood."},
+ {q:"Mary’s neck bulge needed iodine-rich food; Manoj’s bump was 'part of growing up'. Manoj’s bump is most likely…",o:["a pimple","the Adam’s apple","an injury","a vitamin deficiency"],a:1,why:"The growing voice box forms the Adam's apple in boys."},
+ {q:"Someone says “If you try a harmful substance once, you can stop anytime.” The best response is:",o:["True, once is safe","Addiction often starts with ‘just one time’ — say NO","Only alcohol is addictive","Ask a stranger online"],a:1,why:"These substances are addictive; the safest choice is NO every time."}]);
+</script>
+<a href="../index.html#/class-7" style="position:fixed;right:16px;bottom:16px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;background:rgba(255,255,255,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.95);box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font:900 14px/1 Nunito,'Segoe UI',system-ui,sans-serif;text-decoration:none">🏠 Lab Home</a></body></html>

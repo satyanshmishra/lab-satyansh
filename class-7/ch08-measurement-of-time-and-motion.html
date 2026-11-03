@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Measurement of Time & Motion · Virtual Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>:root{
+  --paper:#f7f2e8; --paper2:#efe7d6; --ink:#1b2232; --ink2:#4a5468; --muted:#7a8296;
+  --card:#ffffff; --line:#e3dac6; --bench:#101a2c; --bench2:#18243b; --benchline:rgba(255,255,255,.06);
+  --good:#1f9d63; --bad:#d64545; --warn:#e3a21a;
+  --r:18px; --shadow:0 1px 0 rgba(0,0,0,.04),0 10px 30px -12px rgba(40,30,10,.25);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 "Nunito","Segoe UI",system-ui,sans-serif;
+  background-image:radial-gradient(circle at 1px 1px,rgba(120,100,60,.12) 1px,transparent 0);background-size:22px 22px}
+h1,h2,h3,h4{font-family:"Baloo 2","Nunito","Segoe UI",sans-serif;line-height:1.15;margin:0 0 .4em;letter-spacing:-.01em}
+button,input,select{font:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);color:#fff;padding:46px 0 40px}
+.hero .wrap{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+.hero .eyebrow{display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);padding:5px 14px;border-radius:99px;font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.hero h1{font-size:clamp(34px,5.2vw,64px);margin:14px 0 8px;font-weight:800;text-shadow:0 2px 0 rgba(0,0,0,.08)}
+.hero p.q{font-size:clamp(17px,2vw,21px);max-width:720px;opacity:.95;margin:0}
+.hero .bignum{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:clamp(110px,16vw,210px);line-height:.8;color:transparent;-webkit-text-stroke:3px rgba(255,255,255,.55);user-select:none}
+.hero .orbits{position:absolute;inset:0;z-index:1;pointer-events:none}
+.hero .orbits span{position:absolute;border:2px solid rgba(255,255,255,.18);border-radius:50%;animation:spin linear infinite}
+.hero .orbits span::after{content:"";position:absolute;top:-6px;left:50%;width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.7)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hero .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+.hero .meta span{background:rgba(0,0,0,.16);padding:4px 12px;border-radius:99px;font-size:14px;font-weight:700}
+
+/* ---------- TABS ---------- */
+.tabbar{position:sticky;top:0;z-index:30;background:rgba(247,242,232,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:12px 0;scrollbar-width:thin}
+.tabs button{flex:0 0 auto;border:1.5px solid var(--line);background:#fff;color:var(--ink2);padding:8px 16px;border-radius:99px;cursor:pointer;font-weight:800;font-size:14px;transition:.2s;display:flex;gap:8px;align-items:center}
+.tabs button .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--paper2);font-size:12px}
+.tabs button:hover{border-color:var(--accent);color:var(--ink)}
+.tabs button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tabs button.active .n{background:var(--accent);color:#fff}
+
+/* ---------- STATIONS ---------- */
+main{padding:28px 0 60px}
+.station{display:none;animation:rise .45s ease}
+.station.active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.st-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.st-head h2{font-size:clamp(26px,3vw,36px);margin:0}
+.st-head .tag{font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;font-size:13px}
+.st-head p{margin:4px 0 0;color:var(--ink2);max-width:760px}
+.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:20px;align-items:start}
+.grid.even{grid-template-columns:1fr 1fr}
+.grid.wide{grid-template-columns:1fr}
+@media(max-width:940px){.grid,.grid.even{grid-template-columns:1fr}.hero .wrap{grid-template-columns:1fr}.hero .bignum{display:none}}
+
+.stage{position:relative;background:var(--bench);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);overflow:hidden;
+  background-image:linear-gradient(var(--benchline) 1px,transparent 1px),linear-gradient(90deg,var(--benchline) 1px,transparent 1px);background-size:28px 28px}
+.stage canvas,.stage svg{display:block;width:100%;height:auto;border-radius:12px}
+.stage .hud{position:absolute;top:22px;left:24px;color:#fff;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.75;pointer-events:none}
+.stage .hint{color:#c9d3e8;font-size:13.5px;text-align:center;padding:8px 6px 2px}
+.stage.light{background:#fff;background-image:none;border:1px solid var(--line)}
+.stage.light .hint{color:var(--ink2)}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 16px;box-shadow:var(--shadow)}
+.panel + .panel{margin-top:16px}
+.panel h3{font-size:20px;display:flex;align-items:center;gap:8px}
+.panel h3 .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.stack > * + *{margin-top:16px}
+
+.ctrl{margin:12px 0}
+.ctrl label{display:flex;justify-content:space-between;font-weight:800;font-size:14px;color:var(--ink2);margin-bottom:4px}
+.ctrl label b{color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent);height:26px;cursor:pointer}
+select{width:100%;padding:9px 12px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-weight:700}
+
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;background:var(--accent);color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;cursor:pointer;transition:transform .12s,filter .2s,box-shadow .2s;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.btn:hover{filter:brightness(1.07)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
+.btn.dark{background:var(--ink)}
+.btn.sm{padding:6px 12px;font-size:14px;border-radius:10px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:#fff;padding:7px 13px;border-radius:99px;cursor:pointer;font-weight:700;font-size:14px;transition:.15s;color:var(--ink)}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.explain{border-left:5px solid var(--accent);background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 10%,#fff),#fff);border-radius:12px;padding:12px 14px;margin-top:12px}
+.explain b.k{color:var(--accent)}
+.explain .t{font-weight:900;text-transform:uppercase;font-size:12px;letter-spacing:.1em;color:var(--accent);display:block;margin-bottom:2px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:12px 0}
+.readout div{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.readout small{display:block;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.readout b{font-size:21px;font-family:"Baloo 2",sans-serif;font-variant-numeric:tabular-nums}
+
+table.log{width:100%;border-collapse:collapse;font-size:14px}
+table.log th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:2px solid var(--line);padding:6px}
+table.log td{border-bottom:1px solid var(--line);padding:7px 6px}
+table.log tr.new td{animation:flash 1.2s ease}
+@keyframes flash{from{background:color-mix(in srgb,var(--accent) 25%,#fff)}to{background:transparent}}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-weight:800;font-size:12.5px}
+.pill.g{background:#dcf5e8;color:#11663f}.pill.r{background:#fde2e2;color:#9b1c1c}.pill.y{background:#fff1cc;color:#7a5200}.pill.b{background:#dde9ff;color:#1d3f8f}.pill.n{background:#eee;color:#444}
+
+/* ---------- SORTER ---------- */
+.sorter .pool{display:flex;flex-wrap:wrap;gap:8px;min-height:48px;padding:10px;border:2px dashed var(--line);border-radius:14px;background:var(--paper)}
+.sorter .card{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:8px 12px;font-weight:700;cursor:grab;user-select:none;transition:.15s;font-size:14.5px}
+.sorter .card.sel{outline:3px solid var(--accent);transform:translateY(-2px)}
+.sorter .card.ok{border-color:var(--good);background:#e9f8f0}
+.sorter .card.no{border-color:var(--bad);background:#fdeaea;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.sorter .bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+.sorter .bin{border:2px solid var(--line);border-radius:14px;padding:10px;min-height:120px;background:#fff;transition:.15s}
+.sorter .bin.hot{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,#fff)}
+.sorter .bin h4{font-size:16px;margin:0 0 8px;display:flex;justify-content:space-between}
+.sorter .bin .cards{display:flex;flex-wrap:wrap;gap:6px}
+.sorter .score{font-weight:800;color:var(--ink2);margin-top:10px}
+
+/* ---------- QUIZ ---------- */
+.quiz{display:grid;gap:14px}
+.qcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow)}
+.qcard .qn{font-weight:900;color:var(--accent);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+.qcard .qt{font-weight:800;font-size:17px;margin:4px 0 10px}
+.qcard .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:640px){.qcard .opts{grid-template-columns:1fr}}
+.qcard .opt{text-align:left;border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:700;transition:.15s;color:var(--ink)}
+.qcard .opt:hover{border-color:var(--accent)}
+.qcard .opt.right{background:#dcf5e8;border-color:var(--good)}
+.qcard .opt.wrong{background:#fde2e2;border-color:var(--bad)}
+.qcard .why{display:none;margin-top:10px;font-size:15px;color:var(--ink2)}
+.qcard.done .why{display:block}
+.qscore{position:sticky;top:64px;z-index:5;background:var(--paper);padding:8px 0;font-family:"Baloo 2","Segoe UI",sans-serif;font-size:22px;font-weight:800}
+
+.keyideas{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:8px}
+.keyideas div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-weight:600;position:relative;padding-left:40px}
+.keyideas div::before{content:"✦";position:absolute;left:14px;top:10px;color:var(--accent);font-size:18px}
+
+footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--muted);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;opacity:0;transition:.3s;z-index:99;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.muted{color:var(--muted)}
+.center{text-align:center}
+.mt0{margin-top:0}
+.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:#c9d3e8;padding:6px 6px 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.caution{background:#fff5df;border:1px solid #f0d79a;border-radius:12px;padding:10px 12px;font-size:14px;margin-top:12px}
+.caution b{color:#8a5a00}
+
+:root{--accent:#1098ad;--accent2:#5f3dc4}
+</style>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"></head><body>
+<header class="hero"><div class="orbits"></div><div class="wrap"><div>
+<a href="../index.html#/class-7" style="color:#fff;font-weight:800;text-decoration:none;opacity:.9;margin-right:10px">← All labs</a><span class="eyebrow">Class 7 Science · Chapter 8 · Virtual Lab</span>
+<h1>Measurement of Time & Motion</h1><p class="q">How did people tell time before clocks? Why does a pendulum keep such steady time? And how do we decide who is really the fastest?</p>
+<div class="meta"><span>Ancient clocks</span><span>Pendulum lab</span><span>Speed race</span><span>Speed calculator</span><span>Uniform motion</span></div></div><div class="bignum">08</div></div></header>
+<nav class="tabbar"><div class="wrap tabs"><button data-tab="s1"><span class="n">1</span>Ancient Clocks</button><button data-tab="s2"><span class="n">2</span>Pendulum Lab</button><button data-tab="s3"><span class="n">3</span>Speed Race</button><button data-tab="s4"><span class="n">4</span>Speed Calculator</button><button data-tab="s5"><span class="n">5</span>Uniform or Not?</button><button data-tab="s6"><span class="n">6</span>Check Yourself</button></div></nav>
+<main class="wrap">
+
+
+<section class="station" id="s1">
+  <div class="st-head"><div><div class="tag">Station 1 · Section 8.1 & Activity 8.1</div><h2>Ancient Clocks</h2>
+  <p>Long before electric clocks, people used shadows, flowing water, sand and burning candles — all repeating or steady processes. Choose a clock and speed up time.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c1"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Choose a clock</h3><div class="chips" id="clk"></div>
+      <div class="ctrl"><label>Speed of time <b id="sp1-v"></b></label><input type="range" id="sp1" min="1" max="5" value="3"></div>
+      <div class="readout"><div><small>Time elapsed</small><b id="el1">0 min</b></div><div><small>Reading</small><b id="rd1">—</b></div></div>
+      <div class="btnrow"><button class="btn ghost" id="rs1">Restart</button></div>
+      <div class="explain" id="m1"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s2">
+  <div class="st-head"><div><div class="tag">Station 2 · Activity 8.2 · Think like a scientist</div><h2>Pendulum Lab</h2>
+  <p>Like Galileo, investigate: does the time period depend on the <b>length</b>, the <b>mass of the bob</b>, or how far you pull it? Time 10 oscillations with the stopwatch and divide by 10.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c2"></canvas><div class="hint">Drag the bob sideways and release — or press Release.</div></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Pendulum</h3>
+      <div class="ctrl"><label>Length of string <b id="len-v"></b></label><input type="range" id="len" min="20" max="200" step="5" value="100"></div>
+      <div class="ctrl"><label>Mass of bob <b id="mass-v"></b></label><input type="range" id="mass" min="50" max="500" step="50" value="200"></div>
+      <div class="ctrl"><label>Released from <b id="amp-v"></b></label><input type="range" id="amp" min="3" max="25" value="10"></div>
+      <div class="btnrow"><button class="btn" id="rel">Release</button><button class="btn ghost" id="stopP">Stop</button></div>
+      <div class="readout"><div><small>Stopwatch</small><b id="sw">0.00 s</b></div><div><small>Oscillations</small><b id="osc">0</b></div></div>
+      <div class="btnrow"><button class="btn dark" id="swb">⏱ Start stopwatch</button><button class="btn ghost sm" id="swr">Reset</button></div>
+      <div class="explain" id="m2"><span class="t">Tip</span>Start the stopwatch as the bob passes the mean position, stop after 10 oscillations.</div></div>
+      <div class="panel"><h3><span class="dot"></span>Results (Table 8.1)</h3><table class="log"><thead><tr><th>Length</th><th>Mass</th><th>10 osc.</th><th>Time period</th></tr></thead><tbody id="t2"></tbody></table></div></div>
+  </div>
+</section>
+
+<section class="station" id="s3">
+  <div class="st-head"><div><div class="tag">Station 3 · Sections 8.2 & 8.3</div><h2>Speed Race</h2>
+  <p>Prerna dreams of the Olympic 100 m. When everyone runs the same distance, the shortest time wins. But how do we compare a 100 m runner with a 400 m runner? We use <b>speed = distance ÷ time</b>.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c3"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Race</h3><div class="chips" id="race"></div>
+      <div class="btnrow"><button class="btn" id="go3">🏁 Start race</button></div>
+      <table class="log"><thead><tr><th>Runner</th><th>Distance</th><th>Time</th><th>Speed</th></tr></thead><tbody id="t3"></tbody></table>
+      <div class="explain" id="m3"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s4">
+  <div class="st-head"><div><div class="tag">Station 4 · Section 8.3.1 & Activity 8.4</div><h2>Speed Calculator</h2>
+  <p>Speed, distance and time are linked. Choose what to find, enter the other two, and see the working — just like Examples 8.1–8.3.</p></div></div>
+  <div class="grid even">
+    <div class="panel"><h3><span class="dot"></span>Find…</h3><div class="chips" id="find"></div>
+      <div class="grid even" style="gap:10px;margin-top:10px">
+        <div class="ctrl" id="fd"><label>Distance</label><div class="flex"><input id="d4" type="number" value="3.6" style="flex:1;padding:8px;border-radius:10px;border:1.5px solid var(--line)"><select id="du" style="width:90px"><option>km</option><option>m</option></select></div></div>
+        <div class="ctrl" id="ft"><label>Time</label><div class="flex"><input id="t4" type="number" value="15" style="flex:1;padding:8px;border-radius:10px;border:1.5px solid var(--line)"><select id="tu" style="width:90px"><option>min</option><option>s</option><option>h</option></select></div></div>
+        <div class="ctrl" id="fs"><label>Speed</label><div class="flex"><input id="s4" type="number" value="50" style="flex:1;padding:8px;border-radius:10px;border:1.5px solid var(--line)"><select id="su" style="width:90px"><option>km/h</option><option>m/s</option></select></div></div></div>
+      <div class="explain" id="work" style="font-size:17px"></div></div>
+    <div class="stack"><div class="stage"><canvas id="c4"></canvas></div>
+      <div class="panel"><h3><span class="dot"></span>Writing units correctly</h3><p class="mt0">Second <b>s</b>, minute <b>min</b>, hour <b>h</b> — lowercase, singular, no full stop, with a space: <b>5 s</b>, not “5sec” or “5 hrs”. 1 km/h = 5/18 m/s.</p></div></div>
+  </div>
+</section>
+
+<section class="station" id="s5">
+  <div class="st-head"><div><div class="tag">Station 5 · Section 8.4</div><h2>Uniform or Non-uniform?</h2>
+  <p>A train runs on a straight track from station A to D. A dot is dropped every 10 minutes. Equal gaps mean equal distances in equal times — <b>uniform linear motion</b>.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c5"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Choose the trip</h3><div class="chips" id="trip"></div>
+      <div class="btnrow"><button class="btn" id="go5">▶ Run</button></div>
+      <table class="log"><thead><tr><th>Time</th><th>Position</th><th>Distance in 10 min</th></tr></thead><tbody id="t5"></tbody></table>
+      <div class="explain" id="m5"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s6">
+  <div class="st-head"><div><div class="tag">Station 6</div><h2>Check Yourself</h2></div></div>
+  <div id="quiz"></div>
+  <h3 style="margin-top:28px">Key ideas</h3>
+  <div class="keyideas"><div>All clocks use a process that repeats (or flows) steadily.</div><div>Time period = time for one complete oscillation.</div><div>A pendulum’s time period depends on its length, not the mass of the bob.</div><div>SI unit of time: second (s). 60 s = 1 min, 60 min = 1 h.</div><div>Speed = total distance ÷ total time; SI unit m/s.</div><div>Uniform linear motion: equal distances in equal intervals of time.</div></div>
+</section>
+
+
+
+</main>
+<footer class="wrap">Class 7 Science · Chapter 8: Measurement of Time & Motion · Interactive Virtual Lab · Explore, predict, observe, explain.</footer>
+<script>/* ===== Shared lab toolkit ===== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const rand = (a, b) => a + Math.random() * (b - a);
+const TAU = Math.PI * 2;
+
+/* Canvas with crisp DPR scaling; draw in logical W x H units */
+function setupCanvas(cv, W, H) {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = W * dpr; cv.height = H * dpr;
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  cv._W = W; cv._H = H; ctx.W = W; ctx.H = H;
+  return ctx;
+}
+function canvasPoint(cv, e) {
+  const r = cv.getBoundingClientRect();
+  const p = e.touches ? e.touches[0] : e;
+  return { x: (p.clientX - r.left) * cv._W / r.width, y: (p.clientY - r.top) * cv._H / r.height };
+}
+function svgPoint(svg, e) {
+  const pt = svg.createSVGPoint(); const p = e.touches ? e.touches[0] : e;
+  pt.x = p.clientX; pt.y = p.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+function mixColor(c1, c2, t) { // hex colours
+  const a = parseInt(c1.slice(1), 16), b = parseInt(c2.slice(1), 16);
+  const r = Math.round(lerp(a >> 16, b >> 16, t)), g = Math.round(lerp((a >> 8) & 255, (b >> 8) & 255, t)), bl = Math.round(lerp(a & 255, b & 255, t));
+  return `rgb(${r},${g},${bl})`;
+}
+
+/* Animation loop: callbacks receive dt (s). Each registered with a station id; runs only when that station is visible */
+const Loop = { fns: [], last: 0,
+  add(stationId, fn) { this.fns.push({ id: stationId, fn }); },
+  tick(t) { const dt = Math.min(.05, (t - (Loop.last || t)) / 1000); Loop.last = t;
+    for (const f of Loop.fns) { const el = f.id ? document.getElementById(f.id) : null; if (!f.id || (el && el.classList.contains('active'))) f.fn(dt, t / 1000); }
+    requestAnimationFrame(Loop.tick); } };
+requestAnimationFrame(Loop.tick);
+
+/* Tabs */
+function initTabs() {
+  const btns = $$('.tabs button');
+  const show = id => {
+    btns.forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+    $$('.station').forEach(s => s.classList.toggle('active', s.id === id));
+    document.dispatchEvent(new CustomEvent('station', { detail: id }));
+    try { history.replaceState(null, '', '#' + id); } catch (e) {}
+  };
+  btns.forEach(b => b.addEventListener('click', () => { show(b.dataset.tab); window.scrollTo({ top: $('.tabbar').offsetTop, behavior: 'smooth' }); }));
+  const h = location.hash.slice(1);
+  show(btns.some(b => b.dataset.tab === h) ? h : btns[0].dataset.tab);
+}
+
+/* Toast */
+let _tt; function toast(msg, ms = 2200) { let t = $('.toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add('show'); clearTimeout(_tt); _tt = setTimeout(() => t.classList.remove('show'), ms); }
+
+/* Sound (Web Audio) */
+let _ac; function ac() { if (!_ac) { try { _ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (_ac && _ac.state === 'suspended') _ac.resume(); return _ac; }
+const Sound = {
+  on: true,
+  tone(f = 440, d = .15, type = 'sine', v = .15) { const a = ac(); if (!a || !this.on) return; const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(v, a.currentTime); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + d); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + d); },
+  ring(f = 880) { [1, 2.76, 5.4].forEach((m, i) => setTimeout(() => this.tone(f * m, 1.6 - i * .4, 'sine', .12 / (i + 1)), 0)); },
+  thud() { const a = ac(); if (!a || !this.on) return; const o = a.createOscillator(), g = a.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(140, a.currentTime); o.frequency.exponentialRampToValueAtTime(40, a.currentTime + .15); g.gain.setValueAtTime(.35, a.currentTime); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + .18); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + .2); },
+  noise(d = .5, v = .08, hp = 2000) { const a = ac(); if (!a || !this.on) return; const b = a.createBuffer(1, a.sampleRate * d, a.sampleRate), ch = b.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / ch.length); const s = a.createBufferSource(); s.buffer = b; const f = a.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = hp; const g = a.createGain(); g.gain.value = v; s.connect(f).connect(g).connect(a.destination); s.start(); },
+  good() { this.tone(660, .12, 'sine', .12); setTimeout(() => this.tone(990, .18, 'sine', .12), 110); },
+  bad() { this.tone(200, .22, 'square', .05); },
+  click() { this.tone(1200, .03, 'square', .03); }
+};
+
+/* Click-or-drag sorter. items: [{t, cat}], cats: [{id,label}] */
+function makeSorter(root, items, cats, opts = {}) {
+  root.classList.add('sorter');
+  root.innerHTML = `<div class="pool"></div><div class="bins">${cats.map(c => `<div class="bin" data-cat="${c.id}"><h4>${c.label}<span class="cnt">0</span></h4><div class="cards"></div></div>`).join('')}</div><div class="score"></div>`;
+  const pool = $('.pool', root); let sel = null, right = 0, tries = 0;
+  const shuffled = items.map(x => ({ ...x })).sort(() => Math.random() - .5);
+  shuffled.forEach((it, i) => { const c = document.createElement('div'); c.className = 'card'; c.textContent = it.t; c.draggable = true; c.dataset.i = i;
+    c.addEventListener('click', () => { if (c.classList.contains('ok')) return; $$('.card.sel', root).forEach(x => x.classList.remove('sel')); sel = c; c.classList.add('sel'); });
+    c.addEventListener('dragstart', e => { sel = c; e.dataTransfer.setData('text', i); }); pool.appendChild(c); });
+  const drop = bin => { if (!sel) return; const it = shuffled[+sel.dataset.i]; tries++;
+    const ok = Array.isArray(it.cat) ? it.cat.includes(bin.dataset.cat) : it.cat === bin.dataset.cat;
+    if (ok) { right++; sel.classList.remove('sel', 'no'); sel.classList.add('ok'); sel.draggable = false; $('.cards', bin).appendChild(sel); $('.cnt', bin).textContent = $$('.card', bin).length; Sound.good(); if (it.why) toast(it.why, 3000); }
+    else { sel.classList.remove('no'); void sel.offsetWidth; sel.classList.add('no'); Sound.bad(); toast(it.hint || 'Not quite — think again!'); }
+    sel = null; $$('.card.sel', root).forEach(x => x.classList.remove('sel'));
+    $('.score', root).textContent = `Sorted ${right} / ${items.length}` + (right === items.length ? `  ·  🎉 Done in ${tries} tries!` : '');
+    if (right === items.length && opts.onDone) opts.onDone(tries);
+  };
+  $$('.bin', root).forEach(b => { b.addEventListener('click', () => drop(b)); b.addEventListener('dragover', e => { e.preventDefault(); b.classList.add('hot'); }); b.addEventListener('dragleave', () => b.classList.remove('hot')); b.addEventListener('drop', e => { e.preventDefault(); b.classList.remove('hot'); drop(b); }); });
+  $('.score', root).textContent = `Sorted 0 / ${items.length}  ·  Tip: tap a card, then tap a box (or drag it).`;
+}
+
+/* Quiz: [{q, o:[..], a:index, why}] */
+function makeQuiz(root, qs) {
+  let score = 0, done = 0;
+  const head = document.createElement('div'); head.className = 'qscore'; root.before(head);
+  const upd = () => head.textContent = `Score: ${score} / ${qs.length}` + (done === qs.length ? (score === qs.length ? '  ·  Perfect! 🌟' : score >= qs.length * .7 ? '  ·  Great work!' : '  ·  Revisit the stations and try again') : '');
+  root.classList.add('quiz');
+  qs.forEach((q, i) => { const c = document.createElement('div'); c.className = 'qcard';
+    c.innerHTML = `<div class="qn">Question ${i + 1}</div><div class="qt">${q.q}</div><div class="opts">${q.o.map((o, j) => `<button class="opt" data-j="${j}">${String.fromCharCode(65 + j)}. ${o}</button>`).join('')}</div><div class="why">${q.why || ''}</div>`;
+    $$('.opt', c).forEach(b => b.addEventListener('click', () => { if (c.classList.contains('done')) return; c.classList.add('done'); done++;
+      const j = +b.dataset.j; if (j === q.a) { score++; b.classList.add('right'); Sound.good(); } else { b.classList.add('wrong'); $$('.opt', c)[q.a].classList.add('right'); Sound.bad(); }
+      upd(); }));
+    root.appendChild(c); });
+  const r = document.createElement('button'); r.className = 'btn ghost'; r.textContent = '↺ Reset quiz'; r.style.marginTop = '6px';
+  r.onclick = () => { root.innerHTML = ''; head.remove(); r.remove(); makeQuiz(root, qs); }; root.after(r);
+  upd();
+}
+
+/* Logging helper */
+function addRow(tbody, cells, max = 12) { const tr = document.createElement('tr'); tr.className = 'new'; tr.innerHTML = cells.map(c => `<td>${c}</td>`).join(''); tbody.prepend(tr); while (tbody.children.length > max) tbody.lastChild.remove(); }
+
+/* Range binding: bindRange('#id', v=>..., fmt) */
+function bindRange(sel, fn, fmt = v => v) { const el = $(sel); const out = $(sel + '-v'); const go = () => { const v = +el.value; if (out) out.textContent = fmt(v); fn(v); }; el.addEventListener('input', go); go(); return el; }
+
+document.addEventListener('DOMContentLoaded', () => {
+  initTabs();
+  const o = $('.hero .orbits'); if (o) { [[420, 30, 70, -120], [620, 50, 40, -250], [260, 18, 80, 30]].forEach(([s, d, x, y]) => { const sp = document.createElement('span'); sp.style.cssText = `width:${s}px;height:${s}px;left:${x}%;top:${y}px;animation-duration:${d}s`; o.appendChild(sp); }); }
+});
+</script>
+<script>
+/* S1 ancient clocks */
+const CL={sun:'Sundial',out:'Water clock (outflow)',ghat:'Ghatika-yantra (sinking bowl)',hour:'Hourglass',candle:'Candle clock'};
+let clk='sun',el=0,sp1=3,sinks=0,bowl=0;const c1=$('#c1'),x1=setupCanvas(c1,700,440);
+Object.entries(CL).forEach(([k,v],i)=>{const b=document.createElement('button');b.className='chip'+(i?'':' on');b.textContent=v;b.onclick=()=>{clk=k;$$('#clk .chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');el=0;sinks=0;bowl=0;msg1();};$('#clk').appendChild(b);});
+bindRange('#sp1',v=>sp1=v,v=>['','×60','×300','×900','×2400','×6000'][v]);$('#rs1').onclick=()=>{el=0;sinks=0;bowl=0;};
+function msg1(){$('#m1').innerHTML={sun:'<span class="t">Sundial</span>Time is read from the changing position of a shadow cast by the Sun. The <b>Samrat Yantra</b> at Jantar Mantar, Jaipur — 27 m tall — is the world’s largest stone sundial; its shadow moves about 1 mm every second!',out:'<span class="t">Water clock (outflow)</span>Water flows out of a marked vessel. Described in the <i>Arthasastra</i>. But as the water level drops, the flow slows down — so it is not very accurate.',ghat:'<span class="t">Ghatika-yantra</span>A bowl with a fine hole floats on water, slowly fills and <b>sinks in 24 minutes</b> — one <b>ghatika</b>. A day of 24 hours = 60 ghatikas. Each sinking was announced with drums, conch shells or a gong!',hour:'<span class="t">Hourglass</span>Sand flows from one bulb to the other at a steady rate. Flip it when it empties.',candle:'<span class="t">Candle clock</span>A marked candle burns down steadily; each mark shows that a fixed time has passed.'}[clk];}
+msg1();
+Loop.add('s1',(dt,t)=>{const c=x1;c.clearRect(0,0,700,440);const mult=[0,60,300,900,2400,6000][sp1];el+=dt*mult/60; // minutes
+  $('#el1').textContent=el<120?el.toFixed(0)+' min':(el/60).toFixed(1)+' h';
+  if(clk==='sun'){const hour=6+((el/60)%12);const a=(hour-6)/12*Math.PI;const sx=350-280*Math.cos(a),sy=360-260*Math.sin(a);c.fillStyle='#ffe066';c.beginPath();c.arc(sx,sy,22,0,TAU);c.fill();
+    c.fillStyle='#c9b18a';c.beginPath();c.ellipse(350,360,220,60,0,0,TAU);c.fill();for(let h=6;h<=18;h++){const aa=Math.PI+(h-6)/12*Math.PI;c.strokeStyle='#5c4a32';c.lineWidth=2;c.beginPath();c.moveTo(350+150*Math.cos(aa),360+40*Math.sin(aa)*-1);c.lineTo(350+200*Math.cos(aa),360+55*Math.sin(aa)*-1);c.stroke();c.fillStyle='#3b2f20';c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText(h,350+212*Math.cos(aa),364+60*Math.sin(aa)*-1);}
+    const L=Math.min(200,40/Math.max(.15,Math.sin(a)));const shA=Math.PI+a;c.strokeStyle='rgba(0,0,0,.45)';c.lineWidth=10;c.lineCap='round';c.beginPath();c.moveTo(350,360);c.lineTo(350+L*Math.cos(a),366);c.stroke();
+    c.fillStyle='#868e96';c.beginPath();c.moveTo(350,360);c.lineTo(350,250);c.lineTo(360,360);c.fill();
+    $('#rd1').textContent=Math.floor(hour)+':'+String(Math.floor((hour%1)*60)).padStart(2,'0')+(hour<12?' AM':' PM');}
+  if(clk==='out'||clk==='hour'||clk==='candle'){const total=clk==='out'?10:clk==='hour'?60:240;const k=(el%total)/total;
+    if(clk==='out'){const lvl=1-Math.sqrt(k)*1;c.fillStyle='rgba(255,255,255,.08)';rr(c,270,80,160,140,10);c.fill();rr(c,270,250,160,140,10);c.fill();c.fillStyle='rgba(77,171,247,.7)';c.fillRect(272,218-136*(1-k)**1.6,156,136*(1-k)**1.6);c.fillRect(272,388-136*(1-(1-k)**1.6),156,136*(1-(1-k)**1.6));
+      for(let m=1;m<10;m++){const y=388-136*(1-(1-m/10)**1.6);c.strokeStyle='#ffe066';c.beginPath();c.moveTo(430,y);c.lineTo(445,y);c.stroke();c.fillStyle='#ffe066';c.font='700 11px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='left';c.fillText(m+' min',450,y+4);}
+      for(let i=0;i<3;i++){c.fillStyle='#4dabf7';c.beginPath();c.arc(350,225+((t*200+i*10)%25),3,0,TAU);c.fill();}c.fillStyle='#c9d3e8';c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText('marks get closer as flow slows!',350,420);$('#rd1').textContent=(k*10).toFixed(1)+' min';}
+    if(clk==='hour'){c.fillStyle='#a47148';c.fillRect(260,60,180,12);c.fillRect(260,370,180,12);c.strokeStyle='rgba(255,255,255,.6)';c.lineWidth=3;c.beginPath();c.moveTo(280,72);c.quadraticCurveTo(280,200,345,215);c.quadraticCurveTo(280,230,280,370);c.moveTo(420,72);c.quadraticCurveTo(420,200,355,215);c.quadraticCurveTo(420,230,420,370);c.stroke();
+      c.fillStyle='#e9c46a';const top=(1-k)*120;c.beginPath();c.moveTo(350-60*(top/120),210-top);c.lineTo(350+60*(top/120),210-top);c.lineTo(352,212);c.lineTo(348,212);c.fill();const bot=k*110;c.beginPath();c.moveTo(285,368);c.lineTo(415,368);c.lineTo(350,368-bot);c.fill();c.fillRect(349,214,2,150);$('#rd1').textContent=(k*60).toFixed(0)+' of 60 min';}
+    if(clk==='candle'){const h=230*(1-k);c.fillStyle='#fff9db';rr(c,320,370-h,60,h,6);c.fill();for(let m=1;m<4;m++){const y=370-230*(1-m/4);c.strokeStyle='#e03131';c.lineWidth=2;c.beginPath();c.moveTo(316,y);c.lineTo(384,y);c.stroke();c.fillStyle='#ffe066';c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='left';c.fillText(m+' h',392,y+4);}
+      c.fillStyle='#ffd43b';c.beginPath();c.moveTo(350,370-h-40+3*Math.sin(t*14));c.quadraticCurveTo(364,370-h-12,350,370-h);c.quadraticCurveTo(336,370-h-12,350,370-h-40);c.fill();$('#rd1').textContent=(k*4).toFixed(2)+' h';}}
+  if(clk==='ghat'){const prev=bowl;bowl=(el%24)/24;if(bowl<prev){sinks++;Sound.ring(320);}
+    c.fillStyle='rgba(116,192,252,.3)';rr(c,170,180,360,200,14);c.fill();c.strokeStyle='rgba(255,255,255,.5)';c.lineWidth=3;rr(c,170,160,360,220,14);c.stroke();
+    const sinkY=bowl>.92?(bowl-.92)/.08*150:0;const by=190+bowl*22+sinkY;c.fillStyle='#d9a066';c.beginPath();c.arc(350,by,60,0,Math.PI);c.fill();c.fillStyle='rgba(77,171,247,.8)';c.beginPath();c.ellipse(350,by+5,55*Math.sqrt(bowl),8*bowl,0,0,TAU);c.fill();
+    if(bowl<.92){for(let i=0;i<3;i++){c.fillStyle='#a5d8ff';c.beginPath();c.arc(350,by+58-((t*40+i*7)%18),2,0,TAU);c.fill();}}
+    c.fillStyle='#ffe066';c.font='800 20px "Baloo 2","Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText('Ghatikas completed: '+sinks,350,60);c.fillStyle='#c9d3e8';c.font='700 13px Nunito,"Segoe UI",system-ui,sans-serif';c.fillText('1 ghatika = 24 min · 60 ghatikas = 1 day',350,86);$('#rd1').textContent=(bowl*24).toFixed(1)+' / 24 min';}
+});
+
+/* S2 pendulum */
+let L=100,mass=200,amp=10,th=0,om=0,swinging=false,drag=false,cross=0,lastSign=0,swOn=false,swT=0,startOsc=0;const g=981;const c2=$('#c2'),x2=setupCanvas(c2,700,440);
+bindRange('#len',v=>L=v,v=>v+' cm');bindRange('#mass',v=>mass=v,v=>v+' g');bindRange('#amp',v=>amp=v,v=>v+'°');
+$('#rel').onclick=()=>{th=amp*Math.PI/180;om=0;swinging=true;cross=0;};$('#stopP').onclick=()=>{swinging=false;th=0;om=0;};
+$('#swb').onclick=()=>{if(!swOn){swOn=true;swT=0;startOsc=cross;$('#swb').textContent='⏹ Stop stopwatch';}else{swOn=false;$('#swb').textContent='⏱ Start stopwatch';const n=Math.round((cross-startOsc)/2);if(n>=3){const Tp=swT/n;addRow($('#t2'),[L+' cm',mass+' g',(Tp*10).toFixed(2)+' s',`<b>${Tp.toFixed(2)} s</b>`]);
+  $('#m2').innerHTML=`<span class="t">Result</span>${n} oscillations in ${swT.toFixed(2)} s → time period ≈ <b>${Tp.toFixed(2)} s</b>. Now change only the mass — then only the length. What changes the time period?`;Sound.good();}else toast('Time at least a few full oscillations (ideally 10)');}};
+$('#swr').onclick=()=>{swOn=false;swT=0;$('#swb').textContent='⏱ Start stopwatch';};
+const piv={x:350,y:30};const sc=1.75;
+c2.addEventListener('pointerdown',e=>{const p=canvasPoint(c2,e);const bx=piv.x+L*sc*Math.sin(th),by=piv.y+L*sc*Math.cos(th);if(Math.hypot(p.x-bx,p.y-by)<40){drag=true;swinging=false;}});
+c2.addEventListener('pointermove',e=>{if(!drag)return;const p=canvasPoint(c2,e);th=clamp(Math.atan2(p.x-piv.x,p.y-piv.y),-0.5,0.5);});
+window.addEventListener('pointerup',()=>{if(drag){drag=false;om=0;swinging=true;cross=0;}});
+Loop.add('s2',(dt,t)=>{const c=x2;c.clearRect(0,0,700,440);
+  if(swinging){const steps=20;for(let i=0;i<steps;i++){const h=dt/steps;om+=-(g/L)*Math.sin(th)*h;th+=om*h;}const s=Math.sign(th);if(lastSign&&s&&s!==lastSign){cross++;}if(s)lastSign=s;}
+  if(swOn)swT+=dt;$('#sw').textContent=swT.toFixed(2)+' s';$('#osc').textContent=swOn?Math.floor((cross-startOsc)/2):Math.floor(cross/2);
+  c.fillStyle='#868e96';c.fillRect(250,20,200,12);
+  const len=L*sc,bx=piv.x+len*Math.sin(th),by=piv.y+len*Math.cos(th);
+  c.strokeStyle='rgba(255,255,255,.15)';c.setLineDash([4,6]);c.beginPath();c.moveTo(piv.x,piv.y);c.lineTo(piv.x,piv.y+len+30);c.stroke();c.setLineDash([]);
+  const A=amp*Math.PI/180;[-A,A].forEach(a=>{c.fillStyle='rgba(255,255,255,.12)';c.beginPath();c.arc(piv.x+len*Math.sin(a),piv.y+len*Math.cos(a),8,0,TAU);c.fill();});
+  c.strokeStyle='#dee2e6';c.lineWidth=2;c.beginPath();c.moveTo(piv.x,piv.y);c.lineTo(bx,by);c.stroke();
+  const r=8+Math.cbrt(mass)*1.6;const gr=c.createRadialGradient(bx-r/3,by-r/3,2,bx,by,r);gr.addColorStop(0,'#fff');gr.addColorStop(1,'#868e96');c.fillStyle=gr;c.beginPath();c.arc(bx,by,r,0,TAU);c.fill();
+  c.fillStyle='#c9d3e8';c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText('O (mean)',piv.x,piv.y+len+48);c.fillText('A',piv.x+len*Math.sin(A)+16,piv.y+len*Math.cos(A));c.fillText('B',piv.x-len*Math.sin(A)-16,piv.y+len*Math.cos(A));
+  const Tth=2*Math.PI*Math.sqrt(L/g);c.textAlign='left';c.fillStyle='#ffe066';c.font='800 15px Nunito,"Segoe UI",system-ui,sans-serif';c.fillText('Length '+L+' cm · bob '+mass+' g',16,420);
+});
+
+/* S3 race */
+const RACES={sprint:{n:'100 m sprint (same distance)',r:[['Prerna',100,13.2,'#ff6b6b'],['Asha',100,14.0,'#4dabf7'],['Meera',100,13.6,'#ffd43b']]},mixed:{n:'Different distances',r:[['100 m runner',100,10.5,'#ff6b6b'],['200 m runner',200,21.5,'#4dabf7'],['400 m runner',400,47,'#ffd43b']]},animals:{n:'Horse vs train',r:[['Galloping horse',180,10,'#ffa94d'],['Train at 72 km/h',200,10,'#69db7c'],['Cyclist (Swati)',40,10,'#b197fc']]}};
+let race='sprint',rt=0,running=false,done3=false;const c3=$('#c3'),x3=setupCanvas(c3,700,440);
+Object.entries(RACES).forEach(([k,v],i)=>{const b=document.createElement('button');b.className='chip'+(i?'':' on');b.textContent=v.n;b.onclick=()=>{race=k;rt=0;running=false;done3=false;$$('#race .chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('#t3').innerHTML='';$('#m3').innerHTML='';};$('#race').appendChild(b);});
+$('#go3').onclick=()=>{rt=0;running=true;done3=false;$('#t3').innerHTML='';};
+Loop.add('s3',(dt,t)=>{const c=x3;c.clearRect(0,0,700,440);const R=RACES[race].r;const maxD=Math.max(...R.map(r=>r[1]));const maxT=Math.max(...R.map(r=>r[2]));
+  if(running){rt+=dt*Math.max(1.5,maxT/6);if(rt>=maxT){rt=maxT;running=false;if(!done3){done3=true;R.forEach(r=>addRow($('#t3'),[r[0],r[1]+' m',r[2]+' s',`<b>${(r[1]/r[2]).toFixed(2)} m/s</b> (${(r[1]/r[2]*3.6).toFixed(1)} km/h)`]));
+    const best=R.reduce((a,b)=>a[1]/a[2]>b[1]/b[2]?a:b);$('#m3').innerHTML=race==='sprint'?`<span class="t">Same distance</span>Everyone ran 100 m, so the one with the <b>least time</b> — ${best[0]} — is fastest. Equivalently, she covered the most distance per second.`:race==='mixed'?`<span class="t">Different distances</span>Times alone can’t be compared. Speed = distance ÷ time shows the <b>${best[0]}</b> is fastest (${(best[1]/best[2]).toFixed(2)} m/s).`:`<span class="t">Horse vs train</span>Horse: 18 m/s. Train: 72 km/h = 72 × 1000 ÷ 3600 = <b>20 m/s</b>. The train is a little faster!`;Sound.good();}}}
+  R.forEach((r,i)=>{const y=90+i*110;c.fillStyle='#c0392b';c.globalAlpha=.25;c.fillRect(20,y-30,660,70);c.globalAlpha=1;c.strokeStyle='rgba(255,255,255,.4)';c.setLineDash([8,8]);c.beginPath();c.moveTo(20,y+40);c.lineTo(680,y+40);c.stroke();c.setLineDash([]);
+    const fx=40+620*r[1]/maxD;c.fillStyle='#fff';for(let k=0;k<7;k++){c.fillStyle=k%2?'#fff':'#111';c.fillRect(fx,y-30+k*10,8,10);}
+    const d=Math.min(r[1],r[1]*rt/r[2]);const x=40+620*d/maxD;
+    c.fillStyle=r[3];c.beginPath();c.arc(x,y-8,9,0,TAU);c.fill();const ph=Math.sin(t*20)*(running&&d<r[1]?1:0);c.strokeStyle=r[3];c.lineWidth=5;c.lineCap='round';c.beginPath();c.moveTo(x,y);c.lineTo(x-3,y+16);c.lineTo(x-3+8*ph,y+32);c.moveTo(x-3,y+16);c.lineTo(x-3-8*ph,y+32);c.moveTo(x,y+4);c.lineTo(x+10*ph,y+14);c.stroke();
+    c.fillStyle='#fff';c.font='800 13px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='left';c.fillText(r[0]+' · '+r[1]+' m',30,y-36);c.textAlign='right';c.fillText(Math.min(rt,r[2]).toFixed(1)+' s',680,y-36);});
+});
+
+/* S4 calculator */
+let find='s';const c4=$('#c4'),x4=setupCanvas(c4,420,220);
+[['s','Speed'],['d','Distance'],['t','Time']].forEach(([k,n],i)=>{const b=document.createElement('button');b.className='chip'+(i?'':' on');b.textContent=n;b.onclick=()=>{find=k;$$('#find .chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');calc();};$('#find').appendChild(b);});
+['d4','t4','s4','du','tu','su'].forEach(id=>$('#'+id).addEventListener('input',calc));
+function calc(){$('#fd').style.opacity=find==='d'?.35:1;$('#ft').style.opacity=find==='t'?.35:1;$('#fs').style.opacity=find==='s'?.35:1;
+  const dm=+$('#d4').value*($('#du').value==='km'?1000:1), ts=+$('#t4').value*({s:1,min:60,h:3600}[$('#tu').value]), sms=+$('#s4').value*($('#su').value==='km/h'?1000/3600:1);let h='';
+  if(find==='s'){const v=dm/ts;h=`Speed = Distance ÷ Time<br>= ${$('#d4').value} ${$('#du').value} ÷ ${$('#t4').value} ${$('#tu').value}<br>= ${dm} m ÷ ${ts} s = <b>${v.toFixed(2)} m/s</b><br>= ${v.toFixed(2)} × 18/5 = <b>${(v*3.6).toFixed(2)} km/h</b>`;}
+  if(find==='d'){const d=sms*ts;h=`Distance = Speed × Time<br>= ${$('#s4').value} ${$('#su').value} × ${$('#t4').value} ${$('#tu').value}<br>= <b>${d>=1000?(d/1000).toFixed(2)+' km':d.toFixed(1)+' m'}</b>`;}
+  if(find==='t'){const tt=dm/sms;h=`Time = Distance ÷ Speed<br>= ${$('#d4').value} ${$('#du').value} ÷ ${$('#s4').value} ${$('#su').value}<br>= <b>${tt>=3600?(tt/3600).toFixed(2)+' h':tt>=60?(tt/60).toFixed(2)+' min':tt.toFixed(1)+' s'}</b>`;}
+  $('#work').innerHTML='<span class="t">Working</span>'+h;}
+calc();
+Loop.add('s4',(dt,t)=>{const c=x4;c.clearRect(0,0,420,220);c.fillStyle='rgba(255,255,255,.06)';c.beginPath();c.moveTo(210,20);c.lineTo(370,200);c.lineTo(50,200);c.closePath();c.fill();c.strokeStyle='#fff';c.lineWidth=3;c.stroke();c.beginPath();c.moveTo(110,125);c.lineTo(310,125);c.moveTo(210,125);c.lineTo(210,200);c.stroke();
+  const hl=k=>find===k?'#ffe066':'#fff';c.font='800 30px "Baloo 2","Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillStyle=hl('d');c.fillText('D',210,105);c.fillStyle=hl('s');c.fillText('S',160,180);c.fillStyle=hl('t');c.fillText('T',260,180);
+  c.font='700 13px Nunito,"Segoe UI",system-ui,sans-serif';c.fillStyle='#c9d3e8';c.fillText(find==='s'?'cover S → D ÷ T':find==='d'?'cover D → S × T':'cover T → D ÷ S',210,215);});
+
+/* S5 uniform */
+const TR={x:{n:'Train X (uniform)',pos:[0,10,20,30,40,50,60]},y:{n:'Train Y (non-uniform)',pos:[0,4,12,25,40,52,60]},ad:{n:'A → D with stops',pos:[0,3,12,24,36,45,48]}};
+let trip='x',u5=0,run5=false;const c5=$('#c5'),x5=setupCanvas(c5,700,440);
+Object.entries(TR).forEach(([k,v],i)=>{const b=document.createElement('button');b.className='chip'+(i?'':' on');b.textContent=v.n;b.onclick=()=>{trip=k;u5=0;run5=false;$$('#trip .chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('#t5').innerHTML='';$('#m5').innerHTML='';};$('#trip').appendChild(b);});
+$('#go5').onclick=()=>{u5=0;run5=true;$('#t5').innerHTML='';$('#m5').innerHTML='';};
+function posAt(p,u){const i=Math.min(5,Math.floor(u*6)),f=u*6-i;if(u>=1)return p[6];return lerp(p[i],p[i+1],f);}
+let lastI=-1;
+Loop.add('s5',(dt,t)=>{const c=x5;c.clearRect(0,0,700,440);const p=TR[trip].pos;const maxP=60;
+  if(run5){u5=Math.min(1,u5+dt*0.12);const i=Math.floor(u5*6+1e-6);if(i!==lastI&&i<=6){lastI=i;const tm=['10:00','10:10','10:20','10:30','10:40','10:50','11:00'][i];addRow($('#t5'),[tm,p[i]+' km',i?(p[i]-p[i-1])+' km':'—'],8);}if(u5>=1){run5=false;lastI=-1;const ds=p.slice(1).map((v,i)=>v-p[i]);const uni=ds.every(d=>d===ds[0]);$('#m5').innerHTML=uni?`<span class="t">Uniform ✅</span>Equal distances (${ds[0]} km) in equal 10-minute intervals. Speed = 60 km ÷ 1 h = <b>60 km/h</b> throughout.`:`<span class="t">Non-uniform</span>Unequal distances (${ds.join(', ')} km) in equal intervals — the speed keeps changing. Average speed = ${p[6]} km ÷ 1 h = <b>${p[6]} km/h</b>. ${trip==='ad'?'The train speeds up after A, runs steadily between B and C, then slows to stop at D.':''}`;}}
+  const X=v=>50+v/maxP*600;c.fillStyle='#495057';c.fillRect(30,140,640,8);for(let k=0;k<60;k++){c.fillStyle='#6b4f3a';c.fillRect(34+k*11,136,4,16);}
+  if(trip==='ad'){['A','B','C','D'].forEach((l,i)=>{const v=[0,12,36,48][i];c.fillStyle='#fff';c.font='800 18px "Baloo 2","Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText(l,X(v),120);});}
+  for(let i=0;i<=Math.floor(u5*6+1e-6)&&i<=6;i++){c.fillStyle='#ffe066';c.beginPath();c.arc(X(p[i]),175,7,0,TAU);c.fill();c.fillStyle='#c9d3e8';c.font='700 11px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText(p[i]+' km',X(p[i]),198);}
+  const x=X(posAt(p,u5));c.fillStyle='#1098ad';rr(c,x-60,108,60,30,8);c.fill();c.fillStyle='#d0ebff';for(let k=0;k<3;k++)c.fillRect(x-54+k*18,114,12,10);c.fillStyle='#212529';c.beginPath();c.arc(x-48,140,6,0,TAU);c.arc(x-12,140,6,0,TAU);c.fill();
+  // distance-time graph
+  const gx=80,gy=410,gw=360,gh=170;c.strokeStyle='rgba(255,255,255,.4)';c.lineWidth=1.5;c.beginPath();c.moveTo(gx,gy-gh);c.lineTo(gx,gy);c.lineTo(gx+gw,gy);c.stroke();c.fillStyle='#c9d3e8';c.font='700 11px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText('time (min) →',gx+gw/2,gy+24);c.save();c.translate(gx-30,gy-gh/2);c.rotate(-Math.PI/2);c.fillText('distance (km)',0,0);c.restore();
+  [0,20,40,60].forEach(m=>c.fillText(m,gx+m/60*gw,gy+12));c.strokeStyle='#ffe066';c.lineWidth=3;c.beginPath();for(let u=0;u<=u5;u+=.01)c.lineTo(gx+u*gw,gy-posAt(p,u)/maxP*gh);c.stroke();
+  // speedometer
+  const sp=(posAt(p,Math.min(1,u5+.005))-posAt(p,Math.max(0,u5-.005)))/.01*1; const kmh=run5?sp:0;const cx=580,cy=360;c.strokeStyle='rgba(255,255,255,.2)';c.lineWidth=12;c.beginPath();c.arc(cx,cy,70,Math.PI*.8,Math.PI*2.2);c.stroke();
+  const a=Math.PI*.8+clamp(kmh/100,0,1)*Math.PI*1.4;c.strokeStyle='#ff6b6b';c.lineWidth=4;c.beginPath();c.moveTo(cx,cy);c.lineTo(cx+60*Math.cos(a),cy+60*Math.sin(a));c.stroke();c.fillStyle='#fff';c.font='800 18px "Baloo 2","Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText(Math.round(kmh)+' km/h',cx,cy+40);c.font='700 11px Nunito,"Segoe UI",system-ui,sans-serif';c.fillStyle='#c9d3e8';c.fillText('speedometer',cx,cy+58);
+});
+
+makeQuiz($('#quiz'),[
+ {q:"A car travels 150 m in 10 s. Its speed in km/h is…",o:["15 km/h","54 km/h","150 km/h","1.5 km/h"],a:1,why:"15 m/s × 18/5 = 54 km/h."},
+ {q:"A pendulum takes 20 s for 10 oscillations. Its time period is…",o:["200 s","10 s","2 s","0.5 s"],a:2,why:"20 s ÷ 10 = 2 s."},
+ {q:"Which change will alter a simple pendulum’s time period?",o:["Using a heavier bob","Changing its length","Painting the bob","Starting the stopwatch later"],a:1,why:"Time period depends on length, not on the mass of the bob."},
+ {q:"A train travels at 25 m/s for 360 km. How long does it take?",o:["4 h","14.4 h","4 min","40 h"],a:0,why:"25 m/s = 90 km/h; 360 ÷ 90 = 4 h."},
+ {q:"A car covers 60 km, 70 km and 50 km in three successive hours. Its motion is…",o:["uniform, 60 km/h","non-uniform, average 60 km/h","uniform, 70 km/h","non-uniform, average 70 km/h"],a:1,why:"Unequal distances in equal times; average = 180 km ÷ 3 h = 60 km/h."},
+ {q:"Which is the correct way to write time?",o:["5 sec.","5 Hrs","5 s","5S"],a:2,why:"Symbols are lowercase and singular with a space: 5 s, 3 min, 2 h."}]);
+</script>
+<a href="../index.html#/class-7" style="position:fixed;right:16px;bottom:16px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;background:rgba(255,255,255,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.95);box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font:900 14px/1 Nunito,'Segoe UI',system-ui,sans-serif;text-decoration:none">🏠 Lab Home</a></body></html>

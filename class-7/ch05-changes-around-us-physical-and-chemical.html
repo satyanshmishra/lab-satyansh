@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Changes Around Us: Physical & Chemical · Virtual Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>:root{
+  --paper:#f7f2e8; --paper2:#efe7d6; --ink:#1b2232; --ink2:#4a5468; --muted:#7a8296;
+  --card:#ffffff; --line:#e3dac6; --bench:#101a2c; --bench2:#18243b; --benchline:rgba(255,255,255,.06);
+  --good:#1f9d63; --bad:#d64545; --warn:#e3a21a;
+  --r:18px; --shadow:0 1px 0 rgba(0,0,0,.04),0 10px 30px -12px rgba(40,30,10,.25);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 "Nunito","Segoe UI",system-ui,sans-serif;
+  background-image:radial-gradient(circle at 1px 1px,rgba(120,100,60,.12) 1px,transparent 0);background-size:22px 22px}
+h1,h2,h3,h4{font-family:"Baloo 2","Nunito","Segoe UI",sans-serif;line-height:1.15;margin:0 0 .4em;letter-spacing:-.01em}
+button,input,select{font:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);color:#fff;padding:46px 0 40px}
+.hero .wrap{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+.hero .eyebrow{display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);padding:5px 14px;border-radius:99px;font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.hero h1{font-size:clamp(34px,5.2vw,64px);margin:14px 0 8px;font-weight:800;text-shadow:0 2px 0 rgba(0,0,0,.08)}
+.hero p.q{font-size:clamp(17px,2vw,21px);max-width:720px;opacity:.95;margin:0}
+.hero .bignum{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:clamp(110px,16vw,210px);line-height:.8;color:transparent;-webkit-text-stroke:3px rgba(255,255,255,.55);user-select:none}
+.hero .orbits{position:absolute;inset:0;z-index:1;pointer-events:none}
+.hero .orbits span{position:absolute;border:2px solid rgba(255,255,255,.18);border-radius:50%;animation:spin linear infinite}
+.hero .orbits span::after{content:"";position:absolute;top:-6px;left:50%;width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.7)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hero .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+.hero .meta span{background:rgba(0,0,0,.16);padding:4px 12px;border-radius:99px;font-size:14px;font-weight:700}
+
+/* ---------- TABS ---------- */
+.tabbar{position:sticky;top:0;z-index:30;background:rgba(247,242,232,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:12px 0;scrollbar-width:thin}
+.tabs button{flex:0 0 auto;border:1.5px solid var(--line);background:#fff;color:var(--ink2);padding:8px 16px;border-radius:99px;cursor:pointer;font-weight:800;font-size:14px;transition:.2s;display:flex;gap:8px;align-items:center}
+.tabs button .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--paper2);font-size:12px}
+.tabs button:hover{border-color:var(--accent);color:var(--ink)}
+.tabs button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tabs button.active .n{background:var(--accent);color:#fff}
+
+/* ---------- STATIONS ---------- */
+main{padding:28px 0 60px}
+.station{display:none;animation:rise .45s ease}
+.station.active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.st-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.st-head h2{font-size:clamp(26px,3vw,36px);margin:0}
+.st-head .tag{font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;font-size:13px}
+.st-head p{margin:4px 0 0;color:var(--ink2);max-width:760px}
+.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:20px;align-items:start}
+.grid.even{grid-template-columns:1fr 1fr}
+.grid.wide{grid-template-columns:1fr}
+@media(max-width:940px){.grid,.grid.even{grid-template-columns:1fr}.hero .wrap{grid-template-columns:1fr}.hero .bignum{display:none}}
+
+.stage{position:relative;background:var(--bench);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);overflow:hidden;
+  background-image:linear-gradient(var(--benchline) 1px,transparent 1px),linear-gradient(90deg,var(--benchline) 1px,transparent 1px);background-size:28px 28px}
+.stage canvas,.stage svg{display:block;width:100%;height:auto;border-radius:12px}
+.stage .hud{position:absolute;top:22px;left:24px;color:#fff;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.75;pointer-events:none}
+.stage .hint{color:#c9d3e8;font-size:13.5px;text-align:center;padding:8px 6px 2px}
+.stage.light{background:#fff;background-image:none;border:1px solid var(--line)}
+.stage.light .hint{color:var(--ink2)}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 16px;box-shadow:var(--shadow)}
+.panel + .panel{margin-top:16px}
+.panel h3{font-size:20px;display:flex;align-items:center;gap:8px}
+.panel h3 .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.stack > * + *{margin-top:16px}
+
+.ctrl{margin:12px 0}
+.ctrl label{display:flex;justify-content:space-between;font-weight:800;font-size:14px;color:var(--ink2);margin-bottom:4px}
+.ctrl label b{color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent);height:26px;cursor:pointer}
+select{width:100%;padding:9px 12px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-weight:700}
+
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;background:var(--accent);color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;cursor:pointer;transition:transform .12s,filter .2s,box-shadow .2s;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.btn:hover{filter:brightness(1.07)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
+.btn.dark{background:var(--ink)}
+.btn.sm{padding:6px 12px;font-size:14px;border-radius:10px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:#fff;padding:7px 13px;border-radius:99px;cursor:pointer;font-weight:700;font-size:14px;transition:.15s;color:var(--ink)}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.explain{border-left:5px solid var(--accent);background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 10%,#fff),#fff);border-radius:12px;padding:12px 14px;margin-top:12px}
+.explain b.k{color:var(--accent)}
+.explain .t{font-weight:900;text-transform:uppercase;font-size:12px;letter-spacing:.1em;color:var(--accent);display:block;margin-bottom:2px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:12px 0}
+.readout div{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.readout small{display:block;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.readout b{font-size:21px;font-family:"Baloo 2",sans-serif;font-variant-numeric:tabular-nums}
+
+table.log{width:100%;border-collapse:collapse;font-size:14px}
+table.log th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:2px solid var(--line);padding:6px}
+table.log td{border-bottom:1px solid var(--line);padding:7px 6px}
+table.log tr.new td{animation:flash 1.2s ease}
+@keyframes flash{from{background:color-mix(in srgb,var(--accent) 25%,#fff)}to{background:transparent}}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-weight:800;font-size:12.5px}
+.pill.g{background:#dcf5e8;color:#11663f}.pill.r{background:#fde2e2;color:#9b1c1c}.pill.y{background:#fff1cc;color:#7a5200}.pill.b{background:#dde9ff;color:#1d3f8f}.pill.n{background:#eee;color:#444}
+
+/* ---------- SORTER ---------- */
+.sorter .pool{display:flex;flex-wrap:wrap;gap:8px;min-height:48px;padding:10px;border:2px dashed var(--line);border-radius:14px;background:var(--paper)}
+.sorter .card{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:8px 12px;font-weight:700;cursor:grab;user-select:none;transition:.15s;font-size:14.5px}
+.sorter .card.sel{outline:3px solid var(--accent);transform:translateY(-2px)}
+.sorter .card.ok{border-color:var(--good);background:#e9f8f0}
+.sorter .card.no{border-color:var(--bad);background:#fdeaea;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.sorter .bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+.sorter .bin{border:2px solid var(--line);border-radius:14px;padding:10px;min-height:120px;background:#fff;transition:.15s}
+.sorter .bin.hot{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,#fff)}
+.sorter .bin h4{font-size:16px;margin:0 0 8px;display:flex;justify-content:space-between}
+.sorter .bin .cards{display:flex;flex-wrap:wrap;gap:6px}
+.sorter .score{font-weight:800;color:var(--ink2);margin-top:10px}
+
+/* ---------- QUIZ ---------- */
+.quiz{display:grid;gap:14px}
+.qcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow)}
+.qcard .qn{font-weight:900;color:var(--accent);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+.qcard .qt{font-weight:800;font-size:17px;margin:4px 0 10px}
+.qcard .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:640px){.qcard .opts{grid-template-columns:1fr}}
+.qcard .opt{text-align:left;border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:700;transition:.15s;color:var(--ink)}
+.qcard .opt:hover{border-color:var(--accent)}
+.qcard .opt.right{background:#dcf5e8;border-color:var(--good)}
+.qcard .opt.wrong{background:#fde2e2;border-color:var(--bad)}
+.qcard .why{display:none;margin-top:10px;font-size:15px;color:var(--ink2)}
+.qcard.done .why{display:block}
+.qscore{position:sticky;top:64px;z-index:5;background:var(--paper);padding:8px 0;font-family:"Baloo 2","Segoe UI",sans-serif;font-size:22px;font-weight:800}
+
+.keyideas{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:8px}
+.keyideas div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-weight:600;position:relative;padding-left:40px}
+.keyideas div::before{content:"✦";position:absolute;left:14px;top:10px;color:var(--accent);font-size:18px}
+
+footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--muted);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;opacity:0;transition:.3s;z-index:99;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.muted{color:var(--muted)}
+.center{text-align:center}
+.mt0{margin-top:0}
+.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:#c9d3e8;padding:6px 6px 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.caution{background:#fff5df;border:1px solid #f0d79a;border-radius:12px;padding:10px 12px;font-size:14px;margin-top:12px}
+.caution b{color:#8a5a00}
+
+:root{--accent:#0ca678;--accent2:#e8590c}
+</style>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"></head><body>
+<header class="hero"><div class="orbits"></div><div class="wrap"><div>
+<a href="../index.html#/class-7" style="color:#fff;font-weight:800;text-decoration:none;opacity:.9;margin-right:10px">← All labs</a><span class="eyebrow">Class 7 Science · Chapter 5 · Virtual Lab</span>
+<h1>Changes Around Us: Physical & Chemical</h1><p class="q">Ice melts, milk curdles, iron rusts, candles burn. Which changes make something new — and which can be undone?</p>
+<div class="meta"><span>Sort the changes</span><span>Lime-water test</span><span>Candle under a tumbler</span><span>Fire triangle</span><span>Candle: both changes</span><span>Weathering</span></div></div><div class="bignum">05</div></div></header>
+<nav class="tabbar"><div class="wrap tabs"><button data-tab="s1"><span class="n">1</span>Sort the Changes</button><button data-tab="s2"><span class="n">2</span>The Lime-Water Test</button><button data-tab="s3"><span class="n">3</span>Candle & Tumbler</button><button data-tab="s4"><span class="n">4</span>Fire Triangle</button><button data-tab="s5"><span class="n">5</span>A Burning Candle</button><button data-tab="s6"><span class="n">6</span>Slow Changes</button><button data-tab="s7"><span class="n">7</span>Check Yourself</button></div></nav>
+<main class="wrap">
+
+
+<section class="station" id="s1">
+  <div class="st-head"><div><div class="tag">Station 1 · Activities 5.1, 5.2, 5.8</div><h2>Sort the Changes</h2>
+  <p>In a <b>physical change</b> only shape, size or state changes — no new substance forms. In a <b>chemical change</b> one or more new substances form. Some processes involve <b>both</b>!</p></div></div>
+  <div id="sorter"></div>
+  <div class="panel" style="margin-top:16px"><h3><span class="dot"></span>Can it be reversed?</h3><p class="mt0 muted">Tap a change to flip the card and find out whether we can get the original back.</p><div class="chips" id="rev"></div></div>
+</section>
+
+<section class="station" id="s2">
+  <div class="st-head"><div><div class="tag">Station 2 · Activities 5.3 & 5.4</div><h2>The Lime-Water Test</h2>
+  <p>Lime water turns <b>milky</b> with carbon dioxide — a new, insoluble white substance (calcium carbonate) forms. Choose what to bubble through the tumblers.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c2"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Gas source</h3><div class="chips" id="src2"></div>
+      <div class="btnrow"><button class="btn" id="go2">💨 Bubble it!</button><button class="btn ghost" id="rs2">Fresh tumblers</button></div>
+      <div class="explain" id="m2"><span class="t">Predict</span>Which tumbler will change?</div></div>
+      <div class="panel"><h3><span class="dot"></span>Chemical equation</h3><p class="mt0" style="font-weight:800">Calcium hydroxide + Carbon dioxide → Calcium carbonate + Water</p><p class="mt0 muted">(lime water) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(insoluble — milky)</p>
+      <p class="mt0" style="font-weight:800">Vinegar + Baking soda → Carbon dioxide + Other substances</p></div></div>
+  </div>
+</section>
+
+<section class="station" id="s3">
+  <div class="st-head"><div><div class="tag">Station 3 · Activity 5.5</div><h2>Candle & Tumbler</h2>
+  <p>Two identical candles burn. Cover one with a glass tumbler. Watch the oxygen inside — and then test the air in the tumbler with lime water.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c3"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Controls</h3>
+      <div class="btnrow"><button class="btn" id="cover">Cover candle B</button><button class="btn dark" id="lw3">Add lime water to dish B</button><button class="btn ghost" id="rs3">Relight</button></div>
+      <div class="readout"><div><small>Oxygen in tumbler</small><b id="o2">21%</b></div><div><small>Carbon dioxide</small><b id="co2">0.04%</b></div><div><small>Flame B</small><b id="fl">Burning</b></div></div>
+      <div class="explain" id="m3"><span class="t">Observe</span>Cover candle B and watch.</div></div>
+      <div class="panel"><h3><span class="dot"></span>Safety & society</h3><p class="mt0">If someone’s clothes catch fire, wrap them in a blanket — it cuts off the air supply. Never use a synthetic blanket: it can melt and stick to the skin.</p></div></div>
+  </div>
+</section>
+
+<section class="station" id="s4">
+  <div class="st-head"><div><div class="tag">Station 4 · Activity 5.6</div><h2>The Fire Triangle & Ignition Temperature</h2>
+  <p>Focus sunlight with a magnifying glass onto paper. Make the spot as small and bright as possible and hold it. The paper catches fire when it reaches its <b>ignition temperature</b> — no match needed!</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c4"></canvas><div class="hint">Move the lens with the slider — find the sharpest spot.</div></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Magnifying glass</h3>
+      <div class="ctrl"><label>Lens height above paper <b id="lh-v"></b></label><input type="range" id="lh" min="20" max="100" value="80"></div>
+      <div class="readout"><div><small>Spot size</small><b id="spot">—</b></div><div><small>Paper temperature</small><b id="ptemp">30 °C</b></div></div>
+      <div class="btnrow"><button class="btn ghost" id="rs4">New paper</button><button class="btn dark" id="match">🔥 Use a lit matchstick instead</button></div>
+      <div class="explain" id="m4"><span class="t">Try</span>Lower the lens slowly.</div></div>
+      <div class="panel"><h3><span class="dot"></span>Fire triangle</h3><p class="mt0 muted">Combustion needs all three. Switch one off to put out the fire on the paper.</p>
+      <div class="chips"><button class="chip on" id="fF">Fuel</button><button class="chip on" id="fO">Oxygen</button><button class="chip on" id="fH">Heat</button></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s5">
+  <div class="st-head"><div><div class="tag">Station 5 · Activity 5.7</div><h2>A Burning Candle: Both Kinds of Change</h2>
+  <p>Michael Faraday called the candle the perfect object to begin studying science. Tap each glowing label on the candle and decide: physical or chemical?</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c5"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span><span id="p5t">Tap a label</span></h3><p class="mt0" id="p5d">Each label marks something happening in the candle.</p>
+      <div class="btnrow"><button class="btn sm" id="bp">Physical</button><button class="btn sm dark" id="bc">Chemical</button></div><div class="explain" id="m5"><span class="t">Score</span><span id="sc5">0 / 5</span></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s6">
+  <div class="st-head"><div><div class="tag">Station 6 · Section 5.7</div><h2>Slow Natural Changes: Weathering & Erosion</h2>
+  <p>Drag the time slider across thousands of years. Watch a cliff break apart, rust-red layers form, and a river carry sediments away.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c6"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Time-lapse</h3>
+      <div class="ctrl"><label>Years passed <b id="yr-v"></b></label><input type="range" id="yr" min="0" max="100" value="0"></div>
+      <div class="explain" id="m6"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s7">
+  <div class="st-head"><div><div class="tag">Station 7</div><h2>Check Yourself</h2></div></div>
+  <div id="quiz"></div>
+  <h3 style="margin-top:28px">Key ideas</h3>
+  <div class="keyideas"><div>Physical change: shape, size or state changes; no new substance.</div><div>Chemical change: new substance(s) form through a chemical reaction.</div><div>Lime water turning milky is a test for carbon dioxide.</div><div>Combustion needs fuel, oxygen and heat up to the ignition temperature.</div><div>A burning candle shows both physical and chemical changes.</div><div>Some changes can be reversed; some can’t. Some are desirable; some aren’t.</div><div>Weathering and erosion slowly turn rocks into soil and sediments.</div></div>
+</section>
+
+
+
+</main>
+<footer class="wrap">Class 7 Science · Chapter 5: Changes Around Us: Physical & Chemical · Interactive Virtual Lab · Explore, predict, observe, explain.</footer>
+<script>/* ===== Shared lab toolkit ===== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const rand = (a, b) => a + Math.random() * (b - a);
+const TAU = Math.PI * 2;
+
+/* Canvas with crisp DPR scaling; draw in logical W x H units */
+function setupCanvas(cv, W, H) {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = W * dpr; cv.height = H * dpr;
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  cv._W = W; cv._H = H; ctx.W = W; ctx.H = H;
+  return ctx;
+}
+function canvasPoint(cv, e) {
+  const r = cv.getBoundingClientRect();
+  const p = e.touches ? e.touches[0] : e;
+  return { x: (p.clientX - r.left) * cv._W / r.width, y: (p.clientY - r.top) * cv._H / r.height };
+}
+function svgPoint(svg, e) {
+  const pt = svg.createSVGPoint(); const p = e.touches ? e.touches[0] : e;
+  pt.x = p.clientX; pt.y = p.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+function mixColor(c1, c2, t) { // hex colours
+  const a = parseInt(c1.slice(1), 16), b = parseInt(c2.slice(1), 16);
+  const r = Math.round(lerp(a >> 16, b >> 16, t)), g = Math.round(lerp((a >> 8) & 255, (b >> 8) & 255, t)), bl = Math.round(lerp(a & 255, b & 255, t));
+  return `rgb(${r},${g},${bl})`;
+}
+
+/* Animation loop: callbacks receive dt (s). Each registered with a station id; runs only when that station is visible */
+const Loop = { fns: [], last: 0,
+  add(stationId, fn) { this.fns.push({ id: stationId, fn }); },
+  tick(t) { const dt = Math.min(.05, (t - (Loop.last || t)) / 1000); Loop.last = t;
+    for (const f of Loop.fns) { const el = f.id ? document.getElementById(f.id) : null; if (!f.id || (el && el.classList.contains('active'))) f.fn(dt, t / 1000); }
+    requestAnimationFrame(Loop.tick); } };
+requestAnimationFrame(Loop.tick);
+
+/* Tabs */
+function initTabs() {
+  const btns = $$('.tabs button');
+  const show = id => {
+    btns.forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+    $$('.station').forEach(s => s.classList.toggle('active', s.id === id));
+    document.dispatchEvent(new CustomEvent('station', { detail: id }));
+    try { history.replaceState(null, '', '#' + id); } catch (e) {}
+  };
+  btns.forEach(b => b.addEventListener('click', () => { show(b.dataset.tab); window.scrollTo({ top: $('.tabbar').offsetTop, behavior: 'smooth' }); }));
+  const h = location.hash.slice(1);
+  show(btns.some(b => b.dataset.tab === h) ? h : btns[0].dataset.tab);
+}
+
+/* Toast */
+let _tt; function toast(msg, ms = 2200) { let t = $('.toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add('show'); clearTimeout(_tt); _tt = setTimeout(() => t.classList.remove('show'), ms); }
+
+/* Sound (Web Audio) */
+let _ac; function ac() { if (!_ac) { try { _ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (_ac && _ac.state === 'suspended') _ac.resume(); return _ac; }
+const Sound = {
+  on: true,
+  tone(f = 440, d = .15, type = 'sine', v = .15) { const a = ac(); if (!a || !this.on) return; const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(v, a.currentTime); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + d); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + d); },
+  ring(f = 880) { [1, 2.76, 5.4].forEach((m, i) => setTimeout(() => this.tone(f * m, 1.6 - i * .4, 'sine', .12 / (i + 1)), 0)); },
+  thud() { const a = ac(); if (!a || !this.on) return; const o = a.createOscillator(), g = a.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(140, a.currentTime); o.frequency.exponentialRampToValueAtTime(40, a.currentTime + .15); g.gain.setValueAtTime(.35, a.currentTime); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + .18); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + .2); },
+  noise(d = .5, v = .08, hp = 2000) { const a = ac(); if (!a || !this.on) return; const b = a.createBuffer(1, a.sampleRate * d, a.sampleRate), ch = b.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / ch.length); const s = a.createBufferSource(); s.buffer = b; const f = a.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = hp; const g = a.createGain(); g.gain.value = v; s.connect(f).connect(g).connect(a.destination); s.start(); },
+  good() { this.tone(660, .12, 'sine', .12); setTimeout(() => this.tone(990, .18, 'sine', .12), 110); },
+  bad() { this.tone(200, .22, 'square', .05); },
+  click() { this.tone(1200, .03, 'square', .03); }
+};
+
+/* Click-or-drag sorter. items: [{t, cat}], cats: [{id,label}] */
+function makeSorter(root, items, cats, opts = {}) {
+  root.classList.add('sorter');
+  root.innerHTML = `<div class="pool"></div><div class="bins">${cats.map(c => `<div class="bin" data-cat="${c.id}"><h4>${c.label}<span class="cnt">0</span></h4><div class="cards"></div></div>`).join('')}</div><div class="score"></div>`;
+  const pool = $('.pool', root); let sel = null, right = 0, tries = 0;
+  const shuffled = items.map(x => ({ ...x })).sort(() => Math.random() - .5);
+  shuffled.forEach((it, i) => { const c = document.createElement('div'); c.className = 'card'; c.textContent = it.t; c.draggable = true; c.dataset.i = i;
+    c.addEventListener('click', () => { if (c.classList.contains('ok')) return; $$('.card.sel', root).forEach(x => x.classList.remove('sel')); sel = c; c.classList.add('sel'); });
+    c.addEventListener('dragstart', e => { sel = c; e.dataTransfer.setData('text', i); }); pool.appendChild(c); });
+  const drop = bin => { if (!sel) return; const it = shuffled[+sel.dataset.i]; tries++;
+    const ok = Array.isArray(it.cat) ? it.cat.includes(bin.dataset.cat) : it.cat === bin.dataset.cat;
+    if (ok) { right++; sel.classList.remove('sel', 'no'); sel.classList.add('ok'); sel.draggable = false; $('.cards', bin).appendChild(sel); $('.cnt', bin).textContent = $$('.card', bin).length; Sound.good(); if (it.why) toast(it.why, 3000); }
+    else { sel.classList.remove('no'); void sel.offsetWidth; sel.classList.add('no'); Sound.bad(); toast(it.hint || 'Not quite — think again!'); }
+    sel = null; $$('.card.sel', root).forEach(x => x.classList.remove('sel'));
+    $('.score', root).textContent = `Sorted ${right} / ${items.length}` + (right === items.length ? `  ·  🎉 Done in ${tries} tries!` : '');
+    if (right === items.length && opts.onDone) opts.onDone(tries);
+  };
+  $$('.bin', root).forEach(b => { b.addEventListener('click', () => drop(b)); b.addEventListener('dragover', e => { e.preventDefault(); b.classList.add('hot'); }); b.addEventListener('dragleave', () => b.classList.remove('hot')); b.addEventListener('drop', e => { e.preventDefault(); b.classList.remove('hot'); drop(b); }); });
+  $('.score', root).textContent = `Sorted 0 / ${items.length}  ·  Tip: tap a card, then tap a box (or drag it).`;
+}
+
+/* Quiz: [{q, o:[..], a:index, why}] */
+function makeQuiz(root, qs) {
+  let score = 0, done = 0;
+  const head = document.createElement('div'); head.className = 'qscore'; root.before(head);
+  const upd = () => head.textContent = `Score: ${score} / ${qs.length}` + (done === qs.length ? (score === qs.length ? '  ·  Perfect! 🌟' : score >= qs.length * .7 ? '  ·  Great work!' : '  ·  Revisit the stations and try again') : '');
+  root.classList.add('quiz');
+  qs.forEach((q, i) => { const c = document.createElement('div'); c.className = 'qcard';
+    c.innerHTML = `<div class="qn">Question ${i + 1}</div><div class="qt">${q.q}</div><div class="opts">${q.o.map((o, j) => `<button class="opt" data-j="${j}">${String.fromCharCode(65 + j)}. ${o}</button>`).join('')}</div><div class="why">${q.why || ''}</div>`;
+    $$('.opt', c).forEach(b => b.addEventListener('click', () => { if (c.classList.contains('done')) return; c.classList.add('done'); done++;
+      const j = +b.dataset.j; if (j === q.a) { score++; b.classList.add('right'); Sound.good(); } else { b.classList.add('wrong'); $$('.opt', c)[q.a].classList.add('right'); Sound.bad(); }
+      upd(); }));
+    root.appendChild(c); });
+  const r = document.createElement('button'); r.className = 'btn ghost'; r.textContent = '↺ Reset quiz'; r.style.marginTop = '6px';
+  r.onclick = () => { root.innerHTML = ''; head.remove(); r.remove(); makeQuiz(root, qs); }; root.after(r);
+  upd();
+}
+
+/* Logging helper */
+function addRow(tbody, cells, max = 12) { const tr = document.createElement('tr'); tr.className = 'new'; tr.innerHTML = cells.map(c => `<td>${c}</td>`).join(''); tbody.prepend(tr); while (tbody.children.length > max) tbody.lastChild.remove(); }
+
+/* Range binding: bindRange('#id', v=>..., fmt) */
+function bindRange(sel, fn, fmt = v => v) { const el = $(sel); const out = $(sel + '-v'); const go = () => { const v = +el.value; if (out) out.textContent = fmt(v); fn(v); }; el.addEventListener('input', go); go(); return el; }
+
+document.addEventListener('DOMContentLoaded', () => {
+  initTabs();
+  const o = $('.hero .orbits'); if (o) { [[420, 30, 70, -120], [620, 50, 40, -250], [260, 18, 80, 30]].forEach(([s, d, x, y]) => { const sp = document.createElement('span'); sp.style.cssText = `width:${s}px;height:${s}px;left:${x}%;top:${y}px;animation-duration:${d}s`; o.appendChild(sp); }); }
+});
+</script>
+<script>
+/* S1 */
+makeSorter($('#sorter'),[
+ {t:'Melting ice cubes',cat:'p'},{t:'Chopping vegetables',cat:'p'},{t:'Boiling water',cat:'p'},{t:'Cutting paper',cat:'p'},{t:'Drying wet clothes',cat:'p'},{t:'Rolling dough into chapati',cat:'p'},{t:'Folding clothes',cat:'p'},{t:'Dissolving sugar in water',cat:'p'},{t:'Crushing chalk',cat:'p'},
+ {t:'Burning wood',cat:'c'},{t:'Rusting of iron',cat:'c',why:'Rust (iron oxide) is a new substance.'},{t:'Curdling of milk',cat:'c',why:'Curd is a new substance with different properties.'},{t:'Ripening of fruits',cat:'c'},{t:'Burning magnesium',cat:'c'},{t:'Baking soda + vinegar',cat:'c',why:'Carbon dioxide gas forms — a new substance.'},{t:'Cooking food',cat:'c'},{t:'Leaves turning to compost',cat:'c'},
+ {t:'Burning a candle',cat:'b',why:'Wax melts (physical) and wax vapour burns (chemical).'},{t:'Weathering of rocks',cat:'b',why:'Rocks crack (physical) and iron in them forms red iron oxide (chemical).'}],
+ [{id:'p',label:'A · Physical'},{id:'b',label:'C · Both'},{id:'c',label:'B · Chemical'}]);
+[['Melting ice',1,'Freeze the water again → ice.'],['Chopping vegetables',0,'Pieces can’t become a whole vegetable again.'],['Boiling water',1,'Condense the steam → water.'],['Making popcorn',0,'Popcorn can’t turn back into corn.'],['Inflating a balloon',1,'Let the air out → same balloon.'],['Pricking a balloon',0,'A burst balloon can’t be restored.'],['Making idlis from batter',0,'Cooking forms new substances.'],['Rolling up a mat',1,'Unroll it!'],['Twisting a string',1,'Untwist it.'],['Grinding wheat to flour',0,'Flour can’t become grains again.'],['Dissolving sugar',1,'Evaporate the water to get sugar back.'],['Forming soil from rocks',0,'Takes thousands of years; can’t be undone.']].forEach(([n,r,w])=>{const b=document.createElement('button');b.className='chip';b.textContent=n;b.onclick=()=>{b.classList.toggle('on');b.textContent=b.classList.contains('on')?(r?'↺ Reversible: ':'✖ Not reversible: ')+w:n;};$('#rev').appendChild(b);});
+
+/* S2 lime water */
+const SRC={breath:{n:'Exhaled breath (straw)',co2:1},soda:{n:'Vinegar + baking soda',co2:1.6},water:{n:'Baking soda + water',co2:0},pump:{n:'Room air (pichkari)',co2:0.05}};
+let src='breath',milk=0,bub=[],going=0;const c2=$('#c2'),x2=setupCanvas(c2,700,440);
+Object.entries(SRC).forEach(([k,v],i)=>{const b=document.createElement('button');b.className='chip'+(i?'':' on');b.textContent=v.n;b.onclick=()=>{src=k;$$('#src2 .chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');};$('#src2').appendChild(b);});
+$('#go2').onclick=()=>{going=3;if(src==='soda')Sound.noise(2.5,.07,2500);};$('#rs2').onclick=()=>{milk=0;$('#m2').innerHTML='<span class="t">Predict</span>Which tumbler will change?';};
+Loop.add('s2',(dt,t)=>{const c=x2;c.clearRect(0,0,700,440);const S=SRC[src];
+  if(going>0){going-=dt;const rate=src==='water'?0:1;if(rate){for(let i=0;i<3;i++){bub.push({x:200+rand(-8,8),y:360,v:rand(60,120)});bub.push({x:500+rand(-8,8),y:360,v:rand(60,120)});}}milk=clamp(milk+dt*S.co2*0.3,0,1);
+    if(going<=0){$('#m2').innerHTML=S.co2>=1?'<span class="t">Observation ✅</span>Tap water (A) only shows bubbles. Lime water (B) turns <b>milky</b>: carbon dioxide reacted with it to form a new insoluble substance, calcium carbonate. A <b>chemical change</b>! Leave it and a white solid settles.':src==='water'?'<span class="t">Observation</span>No bubbles at all! Baking soda just dissolves in water — no carbon dioxide forms. That is a <b>physical change</b>.':'<span class="t">Observation</span>Room air has very little carbon dioxide (about 0.04%), so the lime water barely changes. Your breath has much more (4–5%).';}}
+  const T=(x,lab,lime)=>{c.fillStyle='rgba(255,255,255,.08)';c.beginPath();c.moveTo(x-80,170);c.lineTo(x+80,170);c.lineTo(x+68,390);c.lineTo(x-68,390);c.closePath();c.fill();
+    const col=lime?`rgba(${lerp(200,245,milk)},${lerp(230,245,milk)},${lerp(255,240,milk)},${lerp(.35,.95,milk)})`:'rgba(116,192,252,.35)';c.fillStyle=col;c.beginPath();c.moveTo(x-76,250);c.lineTo(x+76,250);c.lineTo(x+68,388);c.lineTo(x-68,388);c.closePath();c.fill();
+    if(lime&&milk>.6&&going<=0){c.fillStyle='rgba(255,255,255,.9)';c.fillRect(x-66,378,132,10);}
+    c.strokeStyle='rgba(255,255,255,.6)';c.lineWidth=3;c.beginPath();c.moveTo(x-80,170);c.lineTo(x-68,390);c.lineTo(x+68,390);c.lineTo(x+80,170);c.stroke();
+    c.strokeStyle='#ffd8a8';c.lineWidth=7;c.beginPath();c.moveTo(x,365);c.lineTo(x,120);c.lineTo(x-30,95);c.stroke();
+    c.fillStyle='#fff';c.font='800 22px "Baloo 2","Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText(lab+' · '+(lime?'Lime water':'Tap water'),x,425);};
+  T(200,'A',false);T(500,'B',true);
+  bub.forEach(b=>{b.y-=b.v*dt;c.strokeStyle='rgba(255,255,255,.8)';c.lineWidth=1.5;c.beginPath();c.arc(b.x+3*Math.sin(b.y/9),b.y,4,0,TAU);c.stroke();});bub=bub.filter(b=>b.y>252);
+  if(src==='soda'){c.fillStyle='rgba(255,255,255,.08)';rr(c,315,40,70,90,10);c.fill();c.fillStyle='#f5f0e1';c.globalAlpha=.6;rr(c,318,80,64,48,8);c.fill();c.globalAlpha=1;if(going>0){for(let i=0;i<8;i++){c.fillStyle='#fff';c.beginPath();c.arc(325+rand(0,50),rand(78,125),rand(1,3),0,TAU);c.fill();}}c.fillStyle='#c9d3e8';c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText('vinegar + soda',350,30);}
+  c.fillStyle='#fff';c.font='800 15px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='left';c.fillText('Source: '+S.n,20,30);
+});
+
+/* S3 candle tumbler */
+let covered=false,o2=21,co2=0.04,flameB=1,lw=0;const c3=$('#c3'),x3=setupCanvas(c3,700,440);
+$('#cover').onclick=()=>{covered=true;};$('#rs3').onclick=()=>{covered=false;o2=21;co2=.04;flameB=1;lw=0;$('#m3').innerHTML='<span class="t">Observe</span>Cover candle B and watch.';};
+$('#lw3').onclick=()=>{if(flameB>0.05){toast('Wait until the flame goes out.');return;}lw=0.01;};
+function flame(c,x,y,s,t){if(s<=0.02)return;const h=48*s;const g=c.createRadialGradient(x,y-h*.4,2,x,y-h*.4,h*1.6);g.addColorStop(0,'rgba(255,220,120,.45)');g.addColorStop(1,'rgba(255,200,80,0)');c.fillStyle=g;c.beginPath();c.arc(x,y-h*.4,h*1.6,0,TAU);c.fill();
+  c.fillStyle='#ffd43b';c.beginPath();c.moveTo(x,y-h+3*Math.sin(t*14));c.quadraticCurveTo(x+14*s,y-h*.3,x,y);c.quadraticCurveTo(x-14*s,y-h*.3,x,y-h+3*Math.sin(t*14));c.fill();c.fillStyle='#ff922b';c.beginPath();c.ellipse(x,y-6*s,5*s,9*s,0,0,TAU);c.fill();c.fillStyle='#4dabf7';c.beginPath();c.ellipse(x,y-2,3*s,4*s,0,0,TAU);c.fill();}
+Loop.add('s3',(dt,t)=>{const c=x3;c.clearRect(0,0,700,440);
+  if(covered&&flameB>0){o2=Math.max(15.5,o2-dt*1.2);co2=Math.min(3,co2+dt*0.6);flameB=clamp((o2-16)/5,0,1);if(flameB<=0.02&&$('#fl').textContent!=='Out'){$('#m3').innerHTML='<span class="t">Observation</span>Candle B went out! Without a continuous supply of air, the flame is extinguished. The component of air that supports combustion is <b>oxygen</b>. Now test the gas inside with lime water.';Sound.tone(300,.3);}}
+  $('#o2').textContent=o2.toFixed(1)+'%';$('#co2').textContent=co2.toFixed(2)+'%';$('#fl').textContent=flameB>0.02?'Burning':'Out';
+  if(lw>0){lw=Math.min(1,lw+dt*.4);if(lw>.95&&!$('#m3').innerHTML.includes('milky'))$('#m3').innerHTML='<span class="t">Confirmed ✅</span>The lime water turns <b>milky</b> — carbon dioxide formed from the carbon in the wax and oxygen from the air. So oxygen was used up in combustion.';}
+  [[220,'A',1],[480,'B',flameB]].forEach(([x,l,f])=>{c.fillStyle='#e9ecef';c.beginPath();c.ellipse(x,380,90,16,0,0,TAU);c.fill();
+    if(l==='B'&&lw>0){c.fillStyle=`rgba(255,255,255,${.4+lw*.5})`;c.beginPath();c.ellipse(x,377,80,11,0,0,TAU);c.fill();}
+    c.fillStyle='#fff9db';rr(c,x-20,250,40,128,6);c.fill();c.strokeStyle='#333';c.lineWidth=2;c.beginPath();c.moveTo(x,250);c.lineTo(x,238);c.stroke();flame(c,x,238,f,t+x);
+    if(l==='B'&&f<.05&&covered){for(let i=0;i<3;i++){c.strokeStyle='rgba(200,200,200,.4)';c.beginPath();for(let y=0;y<60;y+=3)c.lineTo(x+6*Math.sin(y/8+t*2+i),232-y);c.stroke();}}
+    c.fillStyle='#fff';c.font='800 22px "Baloo 2","Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText(l,x,420);});
+  if(covered){c.fillStyle='rgba(200,230,255,.12)';rr(c,390,110,180,268,14);c.fill();c.strokeStyle='rgba(255,255,255,.7)';c.lineWidth=3;c.beginPath();c.moveTo(390,378);c.lineTo(390,124);c.quadraticCurveTo(390,110,404,110);c.lineTo(556,110);c.quadraticCurveTo(570,110,570,124);c.lineTo(570,378);c.stroke();
+    for(let i=0;i<Math.floor((21-o2)*6);i++){c.fillStyle='rgba(255,140,140,.6)';c.beginPath();c.arc(400+((i*53)%160),130+((i*37)%220),3,0,TAU);c.fill();}}
+  // gauge
+  c.fillStyle='rgba(255,255,255,.08)';rr(c,620,120,30,240,10);c.fill();const h=(o2/21)*230;c.fillStyle='#4dabf7';rr(c,624,355-h,22,h,8);c.fill();c.fillStyle='#c9d3e8';c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText('O₂ in',635,100);c.fillText('tumbler',635,114);
+});
+
+/* S4 magnifier */
+let lh=80,pt=30,burning=false,ash=0,useMatch=false;const fire={F:true,O:true,H:true};const c4=$('#c4'),x4=setupCanvas(c4,700,440);
+bindRange('#lh',v=>lh=v,v=>v+' mm');
+$('#rs4').onclick=()=>{pt=30;burning=false;ash=0;useMatch=false;fire.F=fire.O=fire.H=true;['fF','fO','fH'].forEach(i=>$('#'+i).classList.add('on'));$('#m4').innerHTML='<span class="t">Try</span>Lower the lens slowly.';};
+$('#match').onclick=()=>{useMatch=true;};
+[['fF','F'],['fO','O'],['fH','H']].forEach(([id,k])=>$('#'+id).onclick=()=>{fire[k]=!fire[k];$('#'+id).classList.toggle('on',fire[k]);if(burning&&!fire[k]){burning=false;$('#m4').innerHTML={F:'<span class="t">Fire out</span>No fuel left to burn — the fire stops.',O:'<span class="t">Fire out</span>Without oxygen (like covering with a blanket), combustion stops.',H:'<span class="t">Fire out</span>Cooling it below its ignition temperature (like pouring water) stops the fire.'}[k];Sound.tone(250,.3);}});
+Loop.add('s4',(dt,t)=>{const c=x4;c.clearRect(0,0,700,440);const focus=50;const spot=Math.abs(lh-focus)*0.9+3;const intensity=clamp(900/(spot*spot),0,40);
+  if(!burning&&ash<1){ if(useMatch){pt=Math.min(400,pt+dt*600);} else pt+= (intensity*14 - (pt-30)*0.25)*dt; pt=Math.max(30,pt);
+    if(pt>=233&&fire.F&&fire.O){burning=true;Sound.noise(.8,.08,1000);$('#m4').innerHTML=useMatch?'<span class="t">Instant fire!</span>A lit matchstick is already hotter than the paper’s ignition temperature, so the paper catches fire almost immediately.':'<span class="t">It caught fire! 🔥</span>The focused sunlight heated the paper until it reached its <b>ignition temperature</b> — the lowest temperature at which a substance catches fire. A substance can burn even without fire!';}}
+  if(burning){ash=Math.min(1,ash+dt*0.08);pt=600;if(ash>=1)burning=false;}
+  $('#spot').textContent=spot<6?'tiny & bright':spot<15?'small':'large & dim';$('#ptemp').textContent=Math.round(Math.min(pt,600))+' °C';
+  // sun rays
+  c.fillStyle='#ffe066';c.beginPath();c.arc(80,60,30,0,TAU);c.fill();
+  const ly=330-lh*2.4; for(let i=-4;i<=4;i++){c.strokeStyle='rgba(255,224,102,.35)';c.lineWidth=2;c.beginPath();c.moveTo(350+i*16,20);c.lineTo(350+i*16,ly);c.lineTo(350+i*(spot/9),330);c.stroke();}
+  // lens
+  c.fillStyle='rgba(165,216,255,.5)';c.beginPath();c.ellipse(350,ly,80,12,0,0,TAU);c.fill();c.strokeStyle='#495057';c.lineWidth=5;c.stroke();c.strokeStyle='#8b5a2b';c.lineWidth=10;c.beginPath();c.moveTo(430,ly);c.lineTo(520,ly-30);c.stroke();
+  // paper
+  c.fillStyle=mixColor('#fffdf5','#3b2f2f',ash);c.beginPath();c.moveTo(200,320);c.lineTo(520,320);c.lineTo(560,350);c.lineTo(160,350);c.closePath();c.fill();
+  const tk=clamp((pt-30)/200,0,1);c.fillStyle=`rgba(255,${255-tk*200},${120-tk*120},.9)`;c.beginPath();c.ellipse(350,335,spot,spot*.35,0,0,TAU);c.fill();
+  if(pt>180&&!burning&&ash<1){for(let i=0;i<3;i++){c.strokeStyle='rgba(200,200,200,.5)';c.lineWidth=2;c.beginPath();for(let y=0;y<50;y+=3)c.lineTo(350+5*Math.sin(y/7+t*3+i*2),330-y);c.stroke();}}
+  if(burning){for(let i=0;i<9;i++){const fx=300+i*12,fh=30+20*Math.sin(t*9+i);c.fillStyle=i%2?'#ff922b':'#ffd43b';c.beginPath();c.moveTo(fx-8,332);c.quadraticCurveTo(fx,332-fh*1.3,fx+8,332);c.fill();}}
+  if(useMatch&&!burning&&ash<1){c.fillStyle='#ff922b';c.beginPath();c.arc(350,320,8,0,TAU);c.fill();}
+  // fire triangle
+  const tx=600,ty=120;c.lineWidth=6;[['Heat',fire.H,[tx-60,ty+50],[tx+60,ty+50]],['Oxygen',fire.O,[tx+60,ty+50],[tx,ty-50]],['Fuel',fire.F,[tx,ty-50],[tx-60,ty+50]]].forEach(([n,on,a,b])=>{c.strokeStyle=on?'#ff922b':'rgba(255,255,255,.15)';c.beginPath();c.moveTo(a[0],a[1]);c.lineTo(b[0],b[1]);c.stroke();});
+  c.fillStyle='#fff';c.font='800 12px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText('Heat',tx,ty+70);c.fillText('Oxygen',tx+52,ty-6);c.fillText('Fuel',tx-48,ty-6);
+  c.fillStyle='#c9d3e8';c.font='800 14px Nunito,"Segoe UI",system-ui,sans-serif';c.fillText('Ignition temp of paper ≈ 233 °C',350,400);
+});
+
+/* S5 candle labels */
+const L5=[{x:350,y:110,n:'Wax vapour burns in the flame',k:'c',d:'The vapour of wax reacts with oxygen, forming new substances (carbon dioxide, water) with heat and light.'},{x:350,y:205,n:'Solid wax melts near the wick',k:'p',d:'Only the state changes: solid → liquid.'},{x:350,y:168,n:'Liquid wax is drawn up the wick',k:'p',d:'The wick carries the liquid wax up — no new substance.'},{x:350,y:140,n:'Liquid wax evaporates',k:'p',d:'Heat of the flame turns liquid wax into vapour — a change of state.'},{x:420,y:300,n:'Dripping wax solidifies',k:'p',d:'Liquid wax freezes back into solid wax in new shapes.'}];
+let sel5=-1,done5={},score5=0;const c5=$('#c5'),x5=setupCanvas(c5,700,440);
+c5.addEventListener('click',e=>{const p=canvasPoint(c5,e);L5.forEach((l,i)=>{const lx=i%2?l.x-180:l.x+180;if(Math.abs(p.x-lx)<100&&Math.abs(p.y-l.y)<18){sel5=i;$('#p5t').textContent=l.n;$('#p5d').textContent='Physical or chemical?';Sound.click();}});});
+const ans5=k=>{if(sel5<0){toast('Tap a label on the candle first');return;}const l=L5[sel5];if(done5[sel5]){toast('Already answered');return;}done5[sel5]=1;const ok=l.k===k;if(ok){score5++;Sound.good();}else Sound.bad();$('#p5d').innerHTML=(ok?'✅ ':'❌ ')+`It is a <b>${l.k==='p'?'physical':'chemical'}</b> change. `+l.d;$('#sc5').textContent=score5+' / 5'+(Object.keys(done5).length===5?' — A burning candle involves both physical and chemical changes!':'');};
+$('#bp').onclick=()=>ans5('p');$('#bc').onclick=()=>ans5('c');
+Loop.add('s5',(dt,t)=>{const c=x5;c.clearRect(0,0,700,440);
+  c.fillStyle='#fff9db';rr(c,310,200,80,200,8);c.fill();c.fillStyle='#ffe8a3';c.beginPath();c.ellipse(350,202,40,9,0,0,TAU);c.fill();
+  c.fillStyle='#fff3bf';c.beginPath();c.moveTo(390,215);c.quadraticCurveTo(402,240,398,260);c.quadraticCurveTo(410,290,420,300);c.lineTo(408,300);c.quadraticCurveTo(396,280,392,262);c.fill();c.beginPath();c.ellipse(414,302,10,5,0,0,TAU);c.fill();
+  c.strokeStyle='#222';c.lineWidth=3;c.beginPath();c.moveTo(350,202);c.lineTo(350,170);c.stroke();flame(c,350,172,1.6,t);
+  for(let i=0;i<5;i++){const u=((t*.6+i/5)%1);c.fillStyle=`rgba(255,240,200,${.7*(1-u)})`;c.beginPath();c.arc(350+3*Math.sin(t*5+i),200-u*30,2,0,TAU);c.fill();}
+  L5.forEach((l,i)=>{const lx=i%2?l.x-180:l.x+180;c.strokeStyle='rgba(255,255,255,.4)';c.lineWidth=1.5;c.beginPath();c.moveTo(i%2?lx+100:lx-100,l.y);c.lineTo(l.x+(i%2?-8:8),l.y);c.stroke();
+    const on=i===sel5,d=done5[i];c.fillStyle=on?'#ffe066':d?(l.k==='p'?'#4dabf7':'#ff8787'):'rgba(255,255,255,.12)';rr(c,lx-100,l.y-16,200,32,16);c.fill();c.fillStyle=on?'#111':'#fff';c.font='700 11.5px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText(l.n,lx,l.y+4);});
+});
+
+/* S6 weathering */
+let yr=0;const c6=$('#c6'),x6=setupCanvas(c6,700,440);
+bindRange('#yr',v=>{yr=v;const m=$('#m6');m.innerHTML=v<20?'<span class="t">Now</span>A solid cliff of rock stands by the river.':v<45?'<span class="t">Physical weathering</span>Temperature changes, water freezing in cracks and growing tree roots break the rock into pieces. No new substance forms.':v<70?'<span class="t">Chemical weathering</span>Iron in the black basalt reacts with water and air over a long time, forming a <b>red layer of iron oxide</b> — a new substance.':'<span class="t">Erosion & new rocks</span>Flowing water and wind carry pebbles, sand and soil away, smoothing river rocks. Where the water slows (a lake or ocean), sediments settle and, over time, harden into new rocks. Weathering also forms <b>soil</b>.';},v=>Math.round(v*1000).toLocaleString('en-IN')+' yrs');
+Loop.add('s6',(dt,t)=>{const c=x6,k=yr/100;c.clearRect(0,0,700,440);const g=c.createLinearGradient(0,0,0,440);g.addColorStop(0,'#74c0fc');g.addColorStop(1,'#d0ebff');c.fillStyle=g;rr(c,0,0,700,440,12);c.fill();
+  // cliff
+  const top=90+k*50;c.fillStyle='#343a40';c.beginPath();c.moveTo(0,440);c.lineTo(0,top);c.lineTo(180-k*40,top+5);c.lineTo(260-k*60,250+k*30);c.lineTo(300-k*40,440);c.fill();
+  if(k>.45){c.fillStyle=`rgba(201,72,32,${clamp((k-.45)*2.5,0,.85)})`;c.beginPath();c.moveTo(0,top);c.lineTo(180-k*40,top+5);c.lineTo(200-k*45,top+40);c.lineTo(0,top+34);c.fill();}
+  if(k>.15){c.strokeStyle='#adb5bd';c.lineWidth=2;for(let i=0;i<Math.floor(k*14);i++){const x=30+i*15%220,y=top+20+(i*47)%200;c.beginPath();c.moveTo(x,y);c.lineTo(x+10,y+16);c.lineTo(x+4,y+30);c.stroke();}}
+  if(k>.2){c.strokeStyle='#5c3d2e';c.lineWidth=3;c.beginPath();c.moveTo(120,top);c.quadraticCurveTo(110,top+40,130,top+90*k);c.stroke();c.fillStyle='#2b8a3e';c.beginPath();c.arc(120,top-20,24,0,TAU);c.fill();}
+  // sediments pile
+  c.fillStyle='#868e96';for(let i=0;i<k*40;i++){c.beginPath();c.arc(260+(i*31)%110,410-(i%5)*6,rand(3,4),0,TAU);c.fill();}
+  // river
+  c.fillStyle='#4dabf7';c.beginPath();c.moveTo(300,440);c.quadraticCurveTo(450,370,700,390);c.lineTo(700,440);c.fill();
+  for(let i=0;i<10;i++){const u=((t*.15+i/10)%1);c.fillStyle='#ced4da';c.beginPath();c.ellipse(320+u*360,425-u*20,5,3.5,0,0,TAU);c.fill();}
+  c.fillStyle='#c9a66b';c.globalAlpha=k*.8;c.fillRect(560,430-k*20,140,k*20);c.globalAlpha=1;
+  c.fillStyle='#1b2232';c.font='800 15px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='left';c.fillText('Sediments settle in the lake →',470,360);
+});
+
+makeQuiz($('#quiz'),[
+ {q:"Which pair are characteristics of a physical change?",o:["A new substance forms; it undergoes a reaction","The state may or may not change; no new substance forms","A substance with different properties forms; no new substance","It undergoes a reaction; the state changes"],a:1,why:"Physical changes alter shape, size or state but make no new substance."},
+ {q:"In which case will lime water turn milky?",o:["Lemon juice + vinegar","Vinegar + common salt","Vinegar + baking soda","Plain tap water"],a:2,why:"Only vinegar + baking soda produces carbon dioxide."},
+ {q:"Collecting water vapour by condensing it is a…",o:["chemical change","physical change","combustion","neutralisation"],a:1,why:"Only the state changes (gas → liquid)."},
+ {q:"Curdling of milk is a chemical change because…",o:["milk changes shape","a new substance with new properties (curd) forms","it can be reversed easily","it needs a fire"],a:1,why:"Curd is a new substance; you can't get milk back."},
+ {q:"The minimum temperature at which a substance catches fire is called its…",o:["boiling point","melting point","ignition temperature","fire triangle"],a:2,why:"Ignition temperature — paper reaches it under focused sunlight."},
+ {q:"Formation of soil from rocks by wind and rain involves…",o:["only physical changes","only chemical changes","both physical and chemical changes","no change"],a:2,why:"Rocks break up (physical) and react with water and air (chemical) — weathering."}]);
+</script>
+<a href="../index.html#/class-7" style="position:fixed;right:16px;bottom:16px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;background:rgba(255,255,255,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.95);box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font:900 14px/1 Nunito,'Segoe UI',system-ui,sans-serif;text-decoration:none">🏠 Lab Home</a></body></html>

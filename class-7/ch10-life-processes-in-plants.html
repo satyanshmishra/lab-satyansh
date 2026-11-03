@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Life Processes in Plants · Virtual Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>:root{
+  --paper:#f7f2e8; --paper2:#efe7d6; --ink:#1b2232; --ink2:#4a5468; --muted:#7a8296;
+  --card:#ffffff; --line:#e3dac6; --bench:#101a2c; --bench2:#18243b; --benchline:rgba(255,255,255,.06);
+  --good:#1f9d63; --bad:#d64545; --warn:#e3a21a;
+  --r:18px; --shadow:0 1px 0 rgba(0,0,0,.04),0 10px 30px -12px rgba(40,30,10,.25);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 "Nunito","Segoe UI",system-ui,sans-serif;
+  background-image:radial-gradient(circle at 1px 1px,rgba(120,100,60,.12) 1px,transparent 0);background-size:22px 22px}
+h1,h2,h3,h4{font-family:"Baloo 2","Nunito","Segoe UI",sans-serif;line-height:1.15;margin:0 0 .4em;letter-spacing:-.01em}
+button,input,select{font:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);color:#fff;padding:46px 0 40px}
+.hero .wrap{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+.hero .eyebrow{display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);padding:5px 14px;border-radius:99px;font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.hero h1{font-size:clamp(34px,5.2vw,64px);margin:14px 0 8px;font-weight:800;text-shadow:0 2px 0 rgba(0,0,0,.08)}
+.hero p.q{font-size:clamp(17px,2vw,21px);max-width:720px;opacity:.95;margin:0}
+.hero .bignum{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:clamp(110px,16vw,210px);line-height:.8;color:transparent;-webkit-text-stroke:3px rgba(255,255,255,.55);user-select:none}
+.hero .orbits{position:absolute;inset:0;z-index:1;pointer-events:none}
+.hero .orbits span{position:absolute;border:2px solid rgba(255,255,255,.18);border-radius:50%;animation:spin linear infinite}
+.hero .orbits span::after{content:"";position:absolute;top:-6px;left:50%;width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.7)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hero .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+.hero .meta span{background:rgba(0,0,0,.16);padding:4px 12px;border-radius:99px;font-size:14px;font-weight:700}
+
+/* ---------- TABS ---------- */
+.tabbar{position:sticky;top:0;z-index:30;background:rgba(247,242,232,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:12px 0;scrollbar-width:thin}
+.tabs button{flex:0 0 auto;border:1.5px solid var(--line);background:#fff;color:var(--ink2);padding:8px 16px;border-radius:99px;cursor:pointer;font-weight:800;font-size:14px;transition:.2s;display:flex;gap:8px;align-items:center}
+.tabs button .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--paper2);font-size:12px}
+.tabs button:hover{border-color:var(--accent);color:var(--ink)}
+.tabs button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tabs button.active .n{background:var(--accent);color:#fff}
+
+/* ---------- STATIONS ---------- */
+main{padding:28px 0 60px}
+.station{display:none;animation:rise .45s ease}
+.station.active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.st-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.st-head h2{font-size:clamp(26px,3vw,36px);margin:0}
+.st-head .tag{font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;font-size:13px}
+.st-head p{margin:4px 0 0;color:var(--ink2);max-width:760px}
+.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:20px;align-items:start}
+.grid.even{grid-template-columns:1fr 1fr}
+.grid.wide{grid-template-columns:1fr}
+@media(max-width:940px){.grid,.grid.even{grid-template-columns:1fr}.hero .wrap{grid-template-columns:1fr}.hero .bignum{display:none}}
+
+.stage{position:relative;background:var(--bench);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);overflow:hidden;
+  background-image:linear-gradient(var(--benchline) 1px,transparent 1px),linear-gradient(90deg,var(--benchline) 1px,transparent 1px);background-size:28px 28px}
+.stage canvas,.stage svg{display:block;width:100%;height:auto;border-radius:12px}
+.stage .hud{position:absolute;top:22px;left:24px;color:#fff;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.75;pointer-events:none}
+.stage .hint{color:#c9d3e8;font-size:13.5px;text-align:center;padding:8px 6px 2px}
+.stage.light{background:#fff;background-image:none;border:1px solid var(--line)}
+.stage.light .hint{color:var(--ink2)}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 16px;box-shadow:var(--shadow)}
+.panel + .panel{margin-top:16px}
+.panel h3{font-size:20px;display:flex;align-items:center;gap:8px}
+.panel h3 .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.stack > * + *{margin-top:16px}
+
+.ctrl{margin:12px 0}
+.ctrl label{display:flex;justify-content:space-between;font-weight:800;font-size:14px;color:var(--ink2);margin-bottom:4px}
+.ctrl label b{color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent);height:26px;cursor:pointer}
+select{width:100%;padding:9px 12px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-weight:700}
+
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;background:var(--accent);color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;cursor:pointer;transition:transform .12s,filter .2s,box-shadow .2s;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.btn:hover{filter:brightness(1.07)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
+.btn.dark{background:var(--ink)}
+.btn.sm{padding:6px 12px;font-size:14px;border-radius:10px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:#fff;padding:7px 13px;border-radius:99px;cursor:pointer;font-weight:700;font-size:14px;transition:.15s;color:var(--ink)}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.explain{border-left:5px solid var(--accent);background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 10%,#fff),#fff);border-radius:12px;padding:12px 14px;margin-top:12px}
+.explain b.k{color:var(--accent)}
+.explain .t{font-weight:900;text-transform:uppercase;font-size:12px;letter-spacing:.1em;color:var(--accent);display:block;margin-bottom:2px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:12px 0}
+.readout div{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.readout small{display:block;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.readout b{font-size:21px;font-family:"Baloo 2",sans-serif;font-variant-numeric:tabular-nums}
+
+table.log{width:100%;border-collapse:collapse;font-size:14px}
+table.log th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:2px solid var(--line);padding:6px}
+table.log td{border-bottom:1px solid var(--line);padding:7px 6px}
+table.log tr.new td{animation:flash 1.2s ease}
+@keyframes flash{from{background:color-mix(in srgb,var(--accent) 25%,#fff)}to{background:transparent}}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-weight:800;font-size:12.5px}
+.pill.g{background:#dcf5e8;color:#11663f}.pill.r{background:#fde2e2;color:#9b1c1c}.pill.y{background:#fff1cc;color:#7a5200}.pill.b{background:#dde9ff;color:#1d3f8f}.pill.n{background:#eee;color:#444}
+
+/* ---------- SORTER ---------- */
+.sorter .pool{display:flex;flex-wrap:wrap;gap:8px;min-height:48px;padding:10px;border:2px dashed var(--line);border-radius:14px;background:var(--paper)}
+.sorter .card{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:8px 12px;font-weight:700;cursor:grab;user-select:none;transition:.15s;font-size:14.5px}
+.sorter .card.sel{outline:3px solid var(--accent);transform:translateY(-2px)}
+.sorter .card.ok{border-color:var(--good);background:#e9f8f0}
+.sorter .card.no{border-color:var(--bad);background:#fdeaea;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.sorter .bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+.sorter .bin{border:2px solid var(--line);border-radius:14px;padding:10px;min-height:120px;background:#fff;transition:.15s}
+.sorter .bin.hot{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,#fff)}
+.sorter .bin h4{font-size:16px;margin:0 0 8px;display:flex;justify-content:space-between}
+.sorter .bin .cards{display:flex;flex-wrap:wrap;gap:6px}
+.sorter .score{font-weight:800;color:var(--ink2);margin-top:10px}
+
+/* ---------- QUIZ ---------- */
+.quiz{display:grid;gap:14px}
+.qcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow)}
+.qcard .qn{font-weight:900;color:var(--accent);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+.qcard .qt{font-weight:800;font-size:17px;margin:4px 0 10px}
+.qcard .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:640px){.qcard .opts{grid-template-columns:1fr}}
+.qcard .opt{text-align:left;border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:700;transition:.15s;color:var(--ink)}
+.qcard .opt:hover{border-color:var(--accent)}
+.qcard .opt.right{background:#dcf5e8;border-color:var(--good)}
+.qcard .opt.wrong{background:#fde2e2;border-color:var(--bad)}
+.qcard .why{display:none;margin-top:10px;font-size:15px;color:var(--ink2)}
+.qcard.done .why{display:block}
+.qscore{position:sticky;top:64px;z-index:5;background:var(--paper);padding:8px 0;font-family:"Baloo 2","Segoe UI",sans-serif;font-size:22px;font-weight:800}
+
+.keyideas{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:8px}
+.keyideas div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-weight:600;position:relative;padding-left:40px}
+.keyideas div::before{content:"✦";position:absolute;left:14px;top:10px;color:var(--accent);font-size:18px}
+
+footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--muted);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;opacity:0;transition:.3s;z-index:99;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.muted{color:var(--muted)}
+.center{text-align:center}
+.mt0{margin-top:0}
+.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:#c9d3e8;padding:6px 6px 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.caution{background:#fff5df;border:1px solid #f0d79a;border-radius:12px;padding:10px 12px;font-size:14px;margin-top:12px}
+.caution b{color:#8a5a00}
+
+:root{--accent:#2f9e44;--accent2:#0c8599}
+</style>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"></head><body>
+<header class="hero"><div class="orbits"></div><div class="wrap"><div>
+<a href="../index.html#/class-7" style="color:#fff;font-weight:800;text-decoration:none;opacity:.9;margin-right:10px">← All labs</a><span class="eyebrow">Class 7 Science · Chapter 10 · Virtual Lab</span>
+<h1>Life Processes in Plants</h1><p class="q">Plants don't eat like animals — so where does their food come from? Do they breathe? How does water climb all the way up a tree?</p>
+<div class="meta"><span>Growth test</span><span>Starch test</span><span>Photosynthesis factory</span><span>Stomata</span><span>Transport</span><span>Respiration</span></div></div><div class="bignum">10</div></div></header>
+<nav class="tabbar"><div class="wrap tabs"><button data-tab="s1"><span class="n">1</span>Three-Pot Growth Test</button><button data-tab="s2"><span class="n">2</span>Leaf Starch Test</button><button data-tab="s3"><span class="n">3</span>Photosynthesis Factory</button><button data-tab="s4"><span class="n">4</span>Stomata Microscope</button><button data-tab="s5"><span class="n">5</span>Xylem & Phloem</button><button data-tab="s6"><span class="n">6</span>Do Plants Respire?</button><button data-tab="s7"><span class="n">7</span>Check Yourself</button></div></nav>
+<main class="wrap">
+
+
+<section class="station" id="s1">
+  <div class="st-head"><div><div class="tag">Station 1 · Activity 10.1</div><h2>The Three-Pot Growth Test</h2>
+  <p>Pot A: sunlight + water. Pot B: sunlight, no water. Pot C: dark + water. Fast-forward two weeks and compare height, leaves and colour.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c1"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Time</h3>
+      <div class="ctrl"><label>Day <b id="d1-v"></b></label><input type="range" id="d1" min="1" max="14" step="0.1" value="1"></div>
+      <div class="btnrow"><button class="btn" id="p1">▶ Grow for 2 weeks</button></div>
+      <table class="log"><thead><tr><th>Pot</th><th>Height</th><th>Leaves</th><th>Colour</th></tr></thead><tbody id="t1"></tbody></table>
+      <div class="explain" id="m1"><span class="t">Predict</span>Which plant will grow best?</div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s2">
+  <div class="st-head"><div><div class="tag">Station 2 · Activities 10.2, 10.3, 10.4</div><h2>The Leaf Starch Test</h2>
+  <p>Boil a leaf, decolourise it in alcohol (in a water bath), then add iodine. <b>Blue-black</b> means starch — food made by photosynthesis. Choose a leaf and run the test step by step.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c2"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Choose the leaf</h3><div class="chips" id="leaf"></div>
+      <div class="btnrow"><button class="btn sm" id="st1">1. Boil in water</button><button class="btn sm" id="st2">2. Alcohol (water bath)</button><button class="btn sm dark" id="st3">3. Add iodine</button></div>
+      <div class="explain" id="m2"></div>
+      <div class="caution"><b>Caution —</b> Alcohol catches fire easily. Never put it directly near a flame; heat it in a water bath. Teacher demonstration only.</div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s3">
+  <div class="st-head"><div><div class="tag">Station 3 · Activity 10.5 & Fig. 10.5</div><h2>The Photosynthesis Factory</h2>
+  <p>A water plant in a funnel releases gas bubbles in light. Control the <b>light</b>, <b>carbon dioxide</b> and <b>water</b>, and count the oxygen bubbles. Chlorophyll in leaves is the factory’s machine.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c3"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Factory controls</h3>
+      <div class="ctrl"><label>Sunlight <b id="lt-v"></b></label><input type="range" id="lt" min="0" max="100" value="70"></div>
+      <div class="ctrl"><label>Carbon dioxide <b id="co-v"></b></label><input type="range" id="co" min="0" max="100" value="60"></div>
+      <div class="ctrl"><label>Water <b id="wa-v"></b></label><input type="range" id="wa" min="0" max="100" value="80"></div>
+      <div class="readout"><div><small>O₂ bubbles / min</small><b id="bub">0</b></div><div><small>Gas collected</small><b id="gas">0 mL</b></div></div>
+      <div class="btnrow"><button class="btn dark" id="splint">🔥 Test gas with a glowing matchstick</button></div>
+      <div class="explain" id="m3"></div></div>
+      <div class="panel"><h3><span class="dot"></span>Word equation</h3><p class="mt0" style="font-weight:800">Carbon dioxide + Water —(sunlight, chlorophyll)→ Glucose + Oxygen</p><p class="mt0 muted">Glucose gives instant energy and is later stored as starch.</p></div></div>
+  </div>
+</section>
+
+<section class="station" id="s4">
+  <div class="st-head"><div><div class="tag">Station 4 · Activity 10.6</div><h2>Stomata under the Microscope</h2>
+  <p>A thin peel from the lower surface of a leaf shows tiny pores called <b>stomata</b>. They let carbon dioxide in and oxygen (and water vapour) out. Focus the microscope and switch between day and night.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c4"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Microscope</h3>
+      <div class="ctrl"><label>Focus <b id="fo-v"></b></label><input type="range" id="fo" min="0" max="100" value="35"></div>
+      <div class="ctrl"><label>Magnification <b id="mg-v"></b></label><input type="range" id="mg" min="1" max="3" value="2"></div>
+      <div class="chips"><button class="chip on" id="day">☀ Sunlight</button><button class="chip" id="night">🌙 Dark</button></div>
+      <div class="explain" id="m4"><span class="t">Look</span>Turn the focus knob until the cells look sharp.</div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s5">
+  <div class="st-head"><div><div class="tag">Station 5 · Activity 10.7</div><h2>Xylem & Phloem: The Plant’s Pipes</h2>
+  <p>Place a white-flowered twig in red-ink water and watch it overnight. Then cut the stem. <b>Xylem</b> carries water and minerals up; <b>phloem</b> carries food from leaves to all parts.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c5"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Controls</h3>
+      <div class="btnrow"><button class="btn" id="ink">🔴 Put twig in red ink</button><button class="btn ghost" id="rs5">Reset</button></div>
+      <div class="ctrl"><label>Temperature <b id="tp-v"></b></label><input type="range" id="tp" min="10" max="40" value="25"></div>
+      <div class="chips"><button class="chip on" id="vX">Show xylem (water up)</button><button class="chip" id="vP">Show phloem (food)</button></div>
+      <div class="explain" id="m5"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s6">
+  <div class="st-head"><div><div class="tag">Station 6 · Activity 10.8</div><h2>Do Plants Respire?</h2>
+  <p>Germinating moong seeds sit on wet cotton in a closed flask, in the dark. The air from the flask is led into lime water. A second tube of lime water is the control.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c6"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Time</h3>
+      <div class="ctrl"><label>Hours <b id="h6-v"></b></label><input type="range" id="h6" min="0" max="24" step="0.1" value="0"></div>
+      <div class="btnrow"><button class="btn" id="p6">▶ Wait 24 hours</button></div>
+      <div class="explain" id="m6"></div></div>
+      <div class="panel"><h3><span class="dot"></span>Two processes</h3><table class="log"><thead><tr><th></th><th>Photosynthesis</th><th>Respiration</th></tr></thead><tbody>
+        <tr><td><b>Takes in</b></td><td>CO₂ + water</td><td>Glucose + O₂</td></tr><tr><td><b>Gives out</b></td><td>Glucose + O₂</td><td>CO₂ + water + energy</td></tr><tr><td><b>When</b></td><td>Only in light</td><td>All the time</td></tr><tr><td><b>Where</b></td><td>Green parts</td><td>All parts</td></tr></tbody></table></div></div>
+  </div>
+</section>
+
+<section class="station" id="s7">
+  <div class="st-head"><div><div class="tag">Station 7</div><h2>Check Yourself</h2></div></div>
+  <div id="quiz"></div>
+  <h3 style="margin-top:28px">Key ideas</h3>
+  <div class="keyideas"><div>Plants need sunlight and water to grow.</div><div>Leaves are the ‘food factories’; chlorophyll captures sunlight.</div><div>Photosynthesis needs CO₂, water, sunlight and chlorophyll; it gives glucose and oxygen.</div><div>Starch shows up blue-black with iodine.</div><div>Stomata exchange gases; xylem carries water up; phloem carries food.</div><div>All parts of a plant respire, day and night.</div></div>
+</section>
+
+
+
+</main>
+<footer class="wrap">Class 7 Science · Chapter 10: Life Processes in Plants · Interactive Virtual Lab · Explore, predict, observe, explain.</footer>
+<script>/* ===== Shared lab toolkit ===== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const rand = (a, b) => a + Math.random() * (b - a);
+const TAU = Math.PI * 2;
+
+/* Canvas with crisp DPR scaling; draw in logical W x H units */
+function setupCanvas(cv, W, H) {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = W * dpr; cv.height = H * dpr;
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  cv._W = W; cv._H = H; ctx.W = W; ctx.H = H;
+  return ctx;
+}
+function canvasPoint(cv, e) {
+  const r = cv.getBoundingClientRect();
+  const p = e.touches ? e.touches[0] : e;
+  return { x: (p.clientX - r.left) * cv._W / r.width, y: (p.clientY - r.top) * cv._H / r.height };
+}
+function svgPoint(svg, e) {
+  const pt = svg.createSVGPoint(); const p = e.touches ? e.touches[0] : e;
+  pt.x = p.clientX; pt.y = p.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+function mixColor(c1, c2, t) { // hex colours
+  const a = parseInt(c1.slice(1), 16), b = parseInt(c2.slice(1), 16);
+  const r = Math.round(lerp(a >> 16, b >> 16, t)), g = Math.round(lerp((a >> 8) & 255, (b >> 8) & 255, t)), bl = Math.round(lerp(a & 255, b & 255, t));
+  return `rgb(${r},${g},${bl})`;
+}
+
+/* Animation loop: callbacks receive dt (s). Each registered with a station id; runs only when that station is visible */
+const Loop = { fns: [], last: 0,
+  add(stationId, fn) { this.fns.push({ id: stationId, fn }); },
+  tick(t) { const dt = Math.min(.05, (t - (Loop.last || t)) / 1000); Loop.last = t;
+    for (const f of Loop.fns) { const el = f.id ? document.getElementById(f.id) : null; if (!f.id || (el && el.classList.contains('active'))) f.fn(dt, t / 1000); }
+    requestAnimationFrame(Loop.tick); } };
+requestAnimationFrame(Loop.tick);
+
+/* Tabs */
+function initTabs() {
+  const btns = $$('.tabs button');
+  const show = id => {
+    btns.forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+    $$('.station').forEach(s => s.classList.toggle('active', s.id === id));
+    document.dispatchEvent(new CustomEvent('station', { detail: id }));
+    try { history.replaceState(null, '', '#' + id); } catch (e) {}
+  };
+  btns.forEach(b => b.addEventListener('click', () => { show(b.dataset.tab); window.scrollTo({ top: $('.tabbar').offsetTop, behavior: 'smooth' }); }));
+  const h = location.hash.slice(1);
+  show(btns.some(b => b.dataset.tab === h) ? h : btns[0].dataset.tab);
+}
+
+/* Toast */
+let _tt; function toast(msg, ms = 2200) { let t = $('.toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add('show'); clearTimeout(_tt); _tt = setTimeout(() => t.classList.remove('show'), ms); }
+
+/* Sound (Web Audio) */
+let _ac; function ac() { if (!_ac) { try { _ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (_ac && _ac.state === 'suspended') _ac.resume(); return _ac; }
+const Sound = {
+  on: true,
+  tone(f = 440, d = .15, type = 'sine', v = .15) { const a = ac(); if (!a || !this.on) return; const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(v, a.currentTime); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + d); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + d); },
+  ring(f = 880) { [1, 2.76, 5.4].forEach((m, i) => setTimeout(() => this.tone(f * m, 1.6 - i * .4, 'sine', .12 / (i + 1)), 0)); },
+  thud() { const a = ac(); if (!a || !this.on) return; const o = a.createOscillator(), g = a.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(140, a.currentTime); o.frequency.exponentialRampToValueAtTime(40, a.currentTime + .15); g.gain.setValueAtTime(.35, a.currentTime); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + .18); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + .2); },
+  noise(d = .5, v = .08, hp = 2000) { const a = ac(); if (!a || !this.on) return; const b = a.createBuffer(1, a.sampleRate * d, a.sampleRate), ch = b.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / ch.length); const s = a.createBufferSource(); s.buffer = b; const f = a.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = hp; const g = a.createGain(); g.gain.value = v; s.connect(f).connect(g).connect(a.destination); s.start(); },
+  good() { this.tone(660, .12, 'sine', .12); setTimeout(() => this.tone(990, .18, 'sine', .12), 110); },
+  bad() { this.tone(200, .22, 'square', .05); },
+  click() { this.tone(1200, .03, 'square', .03); }
+};
+
+/* Click-or-drag sorter. items: [{t, cat}], cats: [{id,label}] */
+function makeSorter(root, items, cats, opts = {}) {
+  root.classList.add('sorter');
+  root.innerHTML = `<div class="pool"></div><div class="bins">${cats.map(c => `<div class="bin" data-cat="${c.id}"><h4>${c.label}<span class="cnt">0</span></h4><div class="cards"></div></div>`).join('')}</div><div class="score"></div>`;
+  const pool = $('.pool', root); let sel = null, right = 0, tries = 0;
+  const shuffled = items.map(x => ({ ...x })).sort(() => Math.random() - .5);
+  shuffled.forEach((it, i) => { const c = document.createElement('div'); c.className = 'card'; c.textContent = it.t; c.draggable = true; c.dataset.i = i;
+    c.addEventListener('click', () => { if (c.classList.contains('ok')) return; $$('.card.sel', root).forEach(x => x.classList.remove('sel')); sel = c; c.classList.add('sel'); });
+    c.addEventListener('dragstart', e => { sel = c; e.dataTransfer.setData('text', i); }); pool.appendChild(c); });
+  const drop = bin => { if (!sel) return; const it = shuffled[+sel.dataset.i]; tries++;
+    const ok = Array.isArray(it.cat) ? it.cat.includes(bin.dataset.cat) : it.cat === bin.dataset.cat;
+    if (ok) { right++; sel.classList.remove('sel', 'no'); sel.classList.add('ok'); sel.draggable = false; $('.cards', bin).appendChild(sel); $('.cnt', bin).textContent = $$('.card', bin).length; Sound.good(); if (it.why) toast(it.why, 3000); }
+    else { sel.classList.remove('no'); void sel.offsetWidth; sel.classList.add('no'); Sound.bad(); toast(it.hint || 'Not quite — think again!'); }
+    sel = null; $$('.card.sel', root).forEach(x => x.classList.remove('sel'));
+    $('.score', root).textContent = `Sorted ${right} / ${items.length}` + (right === items.length ? `  ·  🎉 Done in ${tries} tries!` : '');
+    if (right === items.length && opts.onDone) opts.onDone(tries);
+  };
+  $$('.bin', root).forEach(b => { b.addEventListener('click', () => drop(b)); b.addEventListener('dragover', e => { e.preventDefault(); b.classList.add('hot'); }); b.addEventListener('dragleave', () => b.classList.remove('hot')); b.addEventListener('drop', e => { e.preventDefault(); b.classList.remove('hot'); drop(b); }); });
+  $('.score', root).textContent = `Sorted 0 / ${items.length}  ·  Tip: tap a card, then tap a box (or drag it).`;
+}
+
+/* Quiz: [{q, o:[..], a:index, why}] */
+function makeQuiz(root, qs) {
+  let score = 0, done = 0;
+  const head = document.createElement('div'); head.className = 'qscore'; root.before(head);
+  const upd = () => head.textContent = `Score: ${score} / ${qs.length}` + (done === qs.length ? (score === qs.length ? '  ·  Perfect! 🌟' : score >= qs.length * .7 ? '  ·  Great work!' : '  ·  Revisit the stations and try again') : '');
+  root.classList.add('quiz');
+  qs.forEach((q, i) => { const c = document.createElement('div'); c.className = 'qcard';
+    c.innerHTML = `<div class="qn">Question ${i + 1}</div><div class="qt">${q.q}</div><div class="opts">${q.o.map((o, j) => `<button class="opt" data-j="${j}">${String.fromCharCode(65 + j)}. ${o}</button>`).join('')}</div><div class="why">${q.why || ''}</div>`;
+    $$('.opt', c).forEach(b => b.addEventListener('click', () => { if (c.classList.contains('done')) return; c.classList.add('done'); done++;
+      const j = +b.dataset.j; if (j === q.a) { score++; b.classList.add('right'); Sound.good(); } else { b.classList.add('wrong'); $$('.opt', c)[q.a].classList.add('right'); Sound.bad(); }
+      upd(); }));
+    root.appendChild(c); });
+  const r = document.createElement('button'); r.className = 'btn ghost'; r.textContent = '↺ Reset quiz'; r.style.marginTop = '6px';
+  r.onclick = () => { root.innerHTML = ''; head.remove(); r.remove(); makeQuiz(root, qs); }; root.after(r);
+  upd();
+}
+
+/* Logging helper */
+function addRow(tbody, cells, max = 12) { const tr = document.createElement('tr'); tr.className = 'new'; tr.innerHTML = cells.map(c => `<td>${c}</td>`).join(''); tbody.prepend(tr); while (tbody.children.length > max) tbody.lastChild.remove(); }
+
+/* Range binding: bindRange('#id', v=>..., fmt) */
+function bindRange(sel, fn, fmt = v => v) { const el = $(sel); const out = $(sel + '-v'); const go = () => { const v = +el.value; if (out) out.textContent = fmt(v); fn(v); }; el.addEventListener('input', go); go(); return el; }
+
+document.addEventListener('DOMContentLoaded', () => {
+  initTabs();
+  const o = $('.hero .orbits'); if (o) { [[420, 30, 70, -120], [620, 50, 40, -250], [260, 18, 80, 30]].forEach(([s, d, x, y]) => { const sp = document.createElement('span'); sp.style.cssText = `width:${s}px;height:${s}px;left:${x}%;top:${y}px;animation-duration:${d}s`; o.appendChild(sp); }); }
+});
+</script>
+<script>
+/* S1 pots */
+let day=1,p1=false;const c1=$('#c1'),x1=setupCanvas(c1,700,440);
+const POT=[{l:'A',sun:1,w:1,sub:'sunlight + water'},{l:'B',sun:1,w:0,sub:'sunlight, no water'},{l:'C',sun:0,w:1,sub:'dark + water'}];
+function st(p,d){const k=(d-1)/13;if(p.sun&&p.w)return{h:8+k*14,n:Math.round(5+k*7),col:'#2f9e44',droop:0,txt:'Green'};if(p.w)return{h:8+k*9,n:Math.round(5+k*1),col:mixColor('#2f9e44','#f2d230',k),droop:k*.2,txt:k>.4?'Yellow, weak':'Pale'};return{h:8+k*.5,n:Math.max(1,Math.round(5-k*4)),col:mixColor('#2f9e44','#a47148',k),droop:k*1.1,txt:k>.5?'Brown, wilted':'Drooping'};}
+bindRange('#d1',v=>{day=v;upd1();},v=>v.toFixed(0));$('#p1').onclick=()=>{day=1;p1=true;};
+function upd1(){$('#t1').innerHTML=POT.map(p=>{const s=st(p,day);return `<tr><td><b>${p.l}</b></td><td>${s.h.toFixed(0)} cm</td><td>${s.n}</td><td>${s.txt}</td></tr>`}).join('');
+ $('#m1').innerHTML=day<10?'<span class="t">Observing…</span>Keep watching the three pots.':'<span class="t">Conclusion</span>Pot A grows best. Pot C (no sunlight) grows thin and yellow; pot B (no water) wilts and may die. Plants need <b>both sunlight and water</b> to grow.';}
+upd1();
+Loop.add('s1',(dt,t)=>{const c=x1;c.clearRect(0,0,700,440);if(p1){day=Math.min(14,day+dt*2);$('#d1').value=day;$('#d1-v').textContent=day.toFixed(0);upd1();if(day>=14)p1=false;}
+  c.fillStyle='#0b1220';c.fillRect(470,0,230,440);c.fillStyle='#c9d3e8';c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText('dark cupboard',585,24);
+  c.fillStyle='#ffe066';c.beginPath();c.arc(60,50,26,0,TAU);c.fill();
+  POT.forEach((p,i)=>{const x=[130,350,585][i];const s=st(p,day);const H=s.h*10;
+    c.fillStyle='#a0522d';c.beginPath();c.moveTo(x-50,330);c.lineTo(x+50,330);c.lineTo(x+38,400);c.lineTo(x-38,400);c.fill();c.fillStyle=p.w?'#5c3d2e':'#c9a66b';c.fillRect(x-48,326,96,8);
+    c.strokeStyle=s.col;c.lineWidth=5;c.beginPath();c.moveTo(x,328);const tipx=x+Math.sin(s.droop)*H*.6,tipy=328-H*Math.cos(s.droop*0.8);c.quadraticCurveTo(x,328-H*.6,tipx,tipy);c.stroke();
+    for(let k=0;k<s.n;k++){const u=(k+1)/(s.n+1);const lx=lerp(x,tipx,u*u),ly=lerp(328,tipy,u);const side=k%2?1:-1;c.fillStyle=s.col;c.save();c.translate(lx,ly);c.rotate(side*(0.9+s.droop));c.beginPath();c.ellipse(side*12,0,13,6,0,0,TAU);c.fill();c.restore();}
+    c.fillStyle='#fff';c.font='800 22px "Baloo 2","Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText(p.l,x,428);c.fillStyle='#c9d3e8';c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';c.fillText(p.sub,x,316-H-14>40?316-H-14:40);});
+});
+
+/* S2 starch test */
+const LEAVES={sun:['Plant kept in sunlight',1,0],dark:['Plant kept in dark (36 h)',0,0],varg:['Variegated leaf (green & white), sunlight',1,1],half:['Destarched leaf, half inside CO₂-absorber bottle',1,2]};
+let leaf='sun',step=0,sk=0;const c2=$('#c2'),x2=setupCanvas(c2,700,440);
+Object.entries(LEAVES).forEach(([k,v],i)=>{const b=document.createElement('button');b.className='chip'+(i?'':' on');b.textContent=v[0];b.onclick=()=>{leaf=k;step=0;sk=0;$$('#leaf .chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');msg2();};$('#leaf').appendChild(b);});
+const go=n=>{if(n!==step+1){toast('Do the steps in order!');return;}step=n;sk=0;msg2();Sound.tone(500+n*100,.1);};
+$('#st1').onclick=()=>go(1);$('#st2').onclick=()=>go(2);$('#st3').onclick=()=>go(3);
+function msg2(){const L=LEAVES[leaf];$('#m2').innerHTML=step===0?'<span class="t">Start</span>Begin with step 1.':step===1?'<span class="t">Step 1</span>Boiling softens the leaf.':step===2?'<span class="t">Step 2</span>Hot alcohol removes the green chlorophyll, so the leaf becomes pale — now a colour change will be easy to see.':
+ leaf==='sun'?'<span class="t">Result</span>The whole leaf turns <b>blue-black</b>: starch is present. The leaf made food in sunlight.':leaf==='dark'?'<span class="t">Result</span>No blue-black colour — no starch. Without sunlight, no food was made.':leaf==='varg'?'<span class="t">Result</span>Only the parts that were <b>green</b> turn blue-black. The white parts have too little chlorophyll — so <b>chlorophyll is essential</b> for making starch.':'<span class="t">Result</span>The half outside the bottle turns blue-black. The half inside, where caustic soda absorbed the CO₂, does not. So <b>carbon dioxide is essential</b> for photosynthesis.';}
+msg2();
+Loop.add('s2',(dt,t)=>{const c=x2;c.clearRect(0,0,700,440);sk=Math.min(1,sk+dt*.8);const L=LEAVES[leaf];
+  const pale=step>=2?sk*(step===2?1:1):0;const starch=step===3?sk:0;
+  // leaf shape
+  c.save();c.translate(350,220);c.rotate(-.35);const path=()=>{c.beginPath();c.moveTo(-170,0);c.quadraticCurveTo(-40,-120,170,0);c.quadraticCurveTo(-40,120,-170,0);c.closePath();};
+  path();c.save();c.clip();
+  for(let x=-180;x<180;x+=6)for(let y=-120;y<120;y+=6){let green=1;if(L[2]===1)green=(Math.sin(x/30)+Math.cos(y/22))>0.4?0:1;let st0=L[1]*green;if(L[2]===2&&x>0)st0=0;
+    let col=green?'#2f9e44':'#f1f3f5';if(L[2]===2&&x>0&&step<3)col='#2f9e44';
+    const decol=step>=2?mixColor(green?'#2f9e44':'#f1f3f5','#f3f0d6',step===2?pale:1):col;const fin=step===3&&st0?mixColor('#f3f0d6','#1d2a5c',starch):step===3?mixColor('#f3f0d6','#c9a14a',starch*.6):decol;c.fillStyle=step===1?mixColor(col,'#3c8d4a',sk*.3):fin;c.fillRect(x,y,6,6);}
+  c.restore();path();c.strokeStyle='rgba(0,0,0,.25)';c.lineWidth=2;c.stroke();c.beginPath();c.moveTo(-170,0);c.lineTo(190,0);c.stroke();c.restore();
+  if(L[2]===2&&step<3){c.strokeStyle='rgba(255,255,255,.6)';c.setLineDash([6,6]);c.strokeRect(360,90,220,260);c.setLineDash([]);c.fillStyle='#c9d3e8';c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText('inside bottle (no CO₂)',470,80);}
+  if(step===1&&sk<1){for(let i=0;i<10;i++){c.strokeStyle='rgba(255,255,255,.5)';c.beginPath();c.arc(150+i*45,380-((t*60+i*20)%60),5,0,TAU);c.stroke();}}
+  if(step===3&&sk<.5){c.fillStyle='#8b4513';c.beginPath();c.arc(350,lerp(30,200,sk*2),6,0,TAU);c.fill();}
+  c.fillStyle='#fff';c.font='800 15px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='left';c.fillText(['Fresh leaf','Boiled','Decolourised','Iodine added'][step],20,30);
+});
+
+/* S3 factory */
+let lt=70,co=60,wa=80,gas=0,bub=[];const c3=$('#c3'),x3=setupCanvas(c3,700,440);
+bindRange('#lt',v=>lt=v,v=>v+'%');bindRange('#co',v=>co=v,v=>v+'%');bindRange('#wa',v=>wa=v,v=>v+'%');
+const rate=()=>Math.round(40*Math.min(lt,co*1.2,wa*1.2)/100);
+$('#splint').onclick=()=>{if(gas<3){toast('Collect more gas first');return;}Sound.good();$('#m3').innerHTML+='<br><b>Glowing matchstick bursts into a bright flame!</b> The gas is rich in <b>oxygen</b>.';};
+let lastR=-1;
+Loop.add('s3',(dt,t)=>{const c=x3;c.clearRect(0,0,700,440);const r=rate();$('#bub').textContent=r;
+  if(r!==lastR){lastR=r;const lim=Math.min(lt,co*1.2,wa*1.2)===lt?'sunlight':Math.min(co*1.2,wa*1.2)===co*1.2?'carbon dioxide':'water';$('#m3').innerHTML=r===0?`<span class="t">Factory stopped</span>No ${lt===0?'sunlight':co===0?'carbon dioxide':'water'} — no photosynthesis, no oxygen bubbles. ${lt===0?'(Like set-up B kept in the dark.)':''}`:`<span class="t">Working</span>Oxygen bubbles rise and collect in the test tube. Right now the factory is limited by <b>${lim}</b> — raise it to speed things up.`;}
+  c.fillStyle=`rgba(255,224,102,${lt/100})`;c.beginPath();c.arc(70,60,30,0,TAU);c.fill();for(let i=0;i<6;i++){c.strokeStyle=`rgba(255,224,102,${lt/180})`;c.lineWidth=3;c.beginPath();c.moveTo(110,80+i*12);c.lineTo(260,150+i*20);c.stroke();}
+  c.fillStyle='rgba(255,255,255,.06)';rr(c,200,120,300,280,10);c.fill();c.fillStyle=`rgba(116,192,252,${.15+wa/300})`;c.fillRect(204,400-260*wa/100,292,260*wa/100);c.strokeStyle='rgba(255,255,255,.6)';c.lineWidth=3;c.beginPath();c.moveTo(200,110);c.lineTo(200,400);c.lineTo(500,400);c.lineTo(500,110);c.stroke();
+  c.strokeStyle='rgba(255,255,255,.7)';c.beginPath();c.moveTo(270,380);c.lineTo(330,250);c.lineTo(330,200);c.moveTo(430,380);c.lineTo(370,250);c.lineTo(370,200);c.stroke();
+  c.fillStyle='rgba(255,255,255,.12)';rr(c,325,60,50,160,20);c.fill();c.strokeStyle='#fff';rr(c,325,60,50,160,20);c.stroke();
+  gas=Math.min(20,gas+dt*r*0.01);c.fillStyle='rgba(116,192,252,.6)';c.fillRect(329,80+gas*6,42,136-gas*6);$('#gas').textContent=gas.toFixed(1)+' mL';
+  for(let k=0;k<7;k++){const a=k*.9;c.strokeStyle='#2f9e44';c.lineWidth=4;c.beginPath();c.moveTo(350,380);c.quadraticCurveTo(350+60*Math.cos(a+3.6),330,350+40*Math.cos(a+3.6),280+k*8);c.stroke();}
+  if(Math.random()<dt*r/6)bub.push({x:350+rand(-10,10),y:290});bub.forEach(b=>{b.y-=dt*80;c.strokeStyle='#fff';c.lineWidth=1.5;c.beginPath();c.arc(b.x+2*Math.sin(b.y/8),b.y,4,0,TAU);c.stroke();});bub=bub.filter(b=>b.y>85+gas*6);
+  c.fillStyle='#fff';c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='left';c.fillText('CO₂ '+co+'%',520,200);c.fillText('inverted test tube (O₂)',385,90);c.fillText('water plant',395,330);
+});
+
+/* S4 stomata */
+let fo=35,mg=2,dayS=true,open=1;const c4=$('#c4'),x4=setupCanvas(c4,700,440);
+bindRange('#fo',v=>{fo=v;$('#m4').innerHTML=Math.abs(v-70)<10?'<span class="t">In focus ✅</span>You can see jigsaw-shaped cells and many tiny pores — <b>stomata</b>. Each pore is guarded by two bean-shaped cells.':'<span class="t">Look</span>Turn the focus knob until the cells look sharp.';},v=>Math.abs(v-70)<10?'sharp':'blurry');bindRange('#mg',v=>mg=v,v=>['','×100','×400','×1000'][v]);
+$('#day').onclick=()=>{dayS=true;$('#day').classList.add('on');$('#night').classList.remove('on');};$('#night').onclick=()=>{dayS=false;$('#night').classList.add('on');$('#day').classList.remove('on');};
+Loop.add('s4',(dt,t)=>{const c=x4;c.clearRect(0,0,700,440);open+=((dayS?1:0.1)-open)*dt*1.5;const blur=Math.abs(fo-70)/8;const z=[0,.6,1,1.6][mg];
+  c.save();c.beginPath();c.arc(350,220,200,0,TAU);c.clip();c.fillStyle='#e6f4d9';c.fillRect(0,0,700,440);c.filter=`blur(${blur}px)`;
+  c.translate(350,220);c.scale(z,z);c.translate(-350,-220);
+  c.strokeStyle='#8fbf72';c.lineWidth=2;for(let i=0;i<9;i++)for(let j=0;j<7;j++){const x=100+i*60+(j%2)*30,y=40+j*60;c.beginPath();for(let a=0;a<=6;a++){const an=a/6*TAU;c.lineTo(x+28*Math.cos(an)+4*Math.sin(an*3),y+26*Math.sin(an));}c.stroke();}
+  [[200,140],[380,110],[300,280],[480,250],[150,320],[560,150],[420,370]].forEach(([x,y])=>{c.fillStyle='#4f9d3a';c.beginPath();c.ellipse(x-9*open-5,y,8,18,0,0,TAU);c.ellipse(x+9*open+5,y,8,18,0,0,TAU);c.fill();c.fillStyle='#1b3a12';c.beginPath();c.ellipse(x,y,2+6*open,14,0,0,TAU);c.fill();
+    if(dayS&&blur<1.5){const u=(t*.5+x/100)%1;c.fillStyle='rgba(116,192,252,.9)';c.beginPath();c.arc(x+20,y-u*40,3,0,TAU);c.fill();c.fillStyle='rgba(173,181,189,.9)';c.beginPath();c.arc(x-20,y-40+u*40,3,0,TAU);c.fill();}});
+  c.restore();c.strokeStyle='#333';c.lineWidth=14;c.beginPath();c.arc(350,220,206,0,TAU);c.stroke();
+  c.fillStyle='#fff';c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='left';c.fillText('● O₂ out',590,380);c.fillStyle='#ced4da';c.fillText('● CO₂ in',590,400);c.fillStyle='#c9d3e8';c.fillText(dayS?'stomata open':'stomata mostly closed',590,420);
+});
+
+/* S5 xylem */
+let inked=false,rise=0,temp5=25,showP=false;const c5=$('#c5'),x5=setupCanvas(c5,700,440);
+bindRange('#tp',v=>temp5=v,v=>v+' °C');$('#ink').onclick=()=>{inked=true;};$('#rs5').onclick=()=>{inked=false;rise=0;};
+$('#vX').onclick=()=>{showP=false;$('#vX').classList.add('on');$('#vP').classList.remove('on');};$('#vP').onclick=()=>{showP=true;$('#vP').classList.add('on');$('#vX').classList.remove('on');};
+Loop.add('s5',(dt,t)=>{const c=x5;c.clearRect(0,0,700,440);if(inked)rise=Math.min(1,rise+dt*0.03*(temp5/15));
+  $('#m5').innerHTML=!inked?'<span class="t">Set-up</span>A twig with white flowers, cut slanting under water.':rise<1?`<span class="t">Rising…</span>Red-coloured water is moving up through the stem. ${temp5>30?'It is warm, so water moves up faster.':temp5<18?'It is cool, so water moves up slowly.':''}`:'<span class="t">Next day</span>Red colour appears in the veins of the leaves and in the petals! The cut stem shows red dots — the <b>xylem</b> tubes. Minerals dissolved in water move up the same way.';
+  c.fillStyle='rgba(255,255,255,.08)';rr(c,90,260,120,160,10);c.fill();c.fillStyle=inked?'rgba(224,49,49,.6)':'rgba(116,192,252,.45)';c.fillRect(94,320,112,96);
+  const top=60;c.strokeStyle='#2f9e44';c.lineWidth=12;c.beginPath();c.moveTo(150,400);c.lineTo(150,top+60);c.stroke();
+  if(inked){c.strokeStyle='#e03131';c.lineWidth=4;c.beginPath();c.moveTo(150,400);c.lineTo(150,lerp(400,top+60,rise));c.stroke();}
+  [[110,200],[190,240],[115,140]].forEach(([x,y],i)=>{c.fillStyle='#2f9e44';c.beginPath();c.ellipse(x,y,32,13,i%2?.4:-.4,0,TAU);c.fill();if(rise>.6){c.strokeStyle=`rgba(224,49,49,${(rise-.6)*2.5})`;c.lineWidth=2;c.beginPath();c.moveTo(150,y);c.lineTo(x+(x<150?-25:25),y);c.stroke();}});
+  for(let p=0;p<6;p++){const a=p/6*TAU;c.fillStyle=mixColor('#ffffff','#ff8fa3',rise>.85?(rise-.85)*6.6:0);c.beginPath();c.ellipse(150+22*Math.cos(a),top+22*Math.sin(a),16,9,a,0,TAU);c.fill();}c.fillStyle='#ffd43b';c.beginPath();c.arc(150,top,8,0,TAU);c.fill();
+  // cross-section
+  const cx=480,cy=210;c.fillStyle='#8ce99a';c.beginPath();c.arc(cx,cy,140,0,TAU);c.fill();c.fillStyle='#d3f9d8';c.beginPath();c.arc(cx,cy,110,0,TAU);c.fill();
+  for(let k=0;k<10;k++){const a=k/10*TAU;const x=cx+80*Math.cos(a),y=cy+80*Math.sin(a);c.fillStyle=inked&&rise>.3?'#e03131':'#69db7c';c.beginPath();c.arc(x,y,12,0,TAU);c.fill();c.fillStyle=showP?'#ffd43b':'#b2f2bb';c.beginPath();c.arc(cx+104*Math.cos(a),cy+104*Math.sin(a),6,0,TAU);c.fill();}
+  c.fillStyle='#fff';c.font='800 14px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText('Cut stem (magnified)',cx,cy+170);c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';c.fillText(showP?'yellow = phloem (food from leaves)':'red dots = xylem (water up)',cx,cy+190);
+  if(showP){for(let i=0;i<5;i++){const u=((t*.3+i/5)%1);c.fillStyle='#ffd43b';c.beginPath();c.arc(162,lerp(150,390,u),4,0,TAU);c.fill();}}
+});
+
+/* S6 respiration */
+let h6=0,p6=false;const c6=$('#c6'),x6=setupCanvas(c6,700,440);bindRange('#h6',v=>{h6=v;msg6();},v=>v.toFixed(0)+' h');$('#p6').onclick=()=>{h6=0;p6=true;};
+function msg6(){$('#m6').innerHTML=h6<12?'<span class="t">Waiting…</span>The seeds are germinating in the dark.':'<span class="t">Result</span>The lime water connected to the flask turns <b>milky</b>; the control stays clear. The respiring seeds released <b>carbon dioxide</b>: Glucose + Oxygen → Carbon dioxide + Water + Energy. All parts of a plant respire — green or not, day or night.';}
+msg6();
+Loop.add('s6',(dt,t)=>{const c=x6;c.clearRect(0,0,700,440);if(p6){h6=Math.min(24,h6+dt*3);$('#h6').value=h6;$('#h6-v').textContent=h6.toFixed(0)+' h';msg6();if(h6>=24)p6=false;}const m=clamp((h6-4)/16,0,1);
+  c.fillStyle='rgba(255,255,255,.08)';c.beginPath();c.moveTo(180,120);c.lineTo(220,120);c.lineTo(300,360);c.lineTo(100,360);c.closePath();c.fill();c.strokeStyle='rgba(255,255,255,.6)';c.lineWidth=3;c.stroke();
+  c.fillStyle='#f8f9fa';c.fillRect(112,320,176,38);for(let i=0;i<22;i++){const x=125+(i*29)%150,y=318-(i%3)*6;c.fillStyle='#69db7c';c.beginPath();c.ellipse(x,y,7,5,0,0,TAU);c.fill();c.strokeStyle='#d8f5a2';c.lineWidth=2;c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x+6,y-10-h6/2,x+2,y-14-h6/2);c.stroke();}
+  c.fillStyle='#a47148';c.fillRect(170,108,60,16);c.strokeStyle='#dee2e6';c.lineWidth=5;c.beginPath();c.moveTo(210,108);c.lineTo(210,70);c.lineTo(440,70);c.lineTo(440,230);c.stroke();
+  [[440,'connected to flask',m],[600,'control (room air)',m*.08]].forEach(([x,l,mm])=>{c.fillStyle='rgba(255,255,255,.1)';rr(c,x-30,180,60,200,30);c.fill();c.fillStyle=`rgba(${lerp(200,250,mm)},${lerp(230,250,mm)},${lerp(255,245,mm)},${lerp(.35,.95,mm)})`;rr(c,x-26,240,52,136,26);c.fill();c.strokeStyle='rgba(255,255,255,.6)';c.lineWidth=2;rr(c,x-30,180,60,200,30);c.stroke();c.fillStyle='#c9d3e8';c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText(l,x,405);});
+  if(h6>2){for(let i=0;i<4;i++){const u=((t*.4+i/4)%1);c.fillStyle='rgba(173,181,189,.9)';const pts=[[210,108],[210,70],[440,70],[440,300]];const s=u*3,k=Math.min(2,Math.floor(s)),f=s-k;c.beginPath();c.arc(lerp(pts[k][0],pts[k+1][0],f),lerp(pts[k][1],pts[k+1][1],f),4,0,TAU);c.fill();}}
+  c.fillStyle='#fff';c.font='800 14px Nunito,"Segoe UI",system-ui,sans-serif';c.textAlign='center';c.fillText('germinating moong seeds',200,395);c.fillStyle='#c9d3e8';c.font='700 12px Nunito,"Segoe UI",system-ui,sans-serif';c.fillText('kept in the dark',200,415);
+});
+
+makeQuiz($('#quiz'),[
+ {q:"A potato slice turns blue-black with iodine. Where was this starch made?",o:["In the potato itself from soil","In the leaves, then carried by phloem","In the roots from water","In the flowers"],a:1,why:"Leaves make food; phloem carries it to storage organs like potatoes."},
+ {q:"X + Y → Carbon dioxide + Z + Energy. X, Y and Z are…",o:["Glucose, oxygen, water","Water, glucose, oxygen","Oxygen, water, glucose","Starch, iodine, water"],a:0,why:"This is respiration: Glucose + Oxygen → CO₂ + Water + Energy."},
+ {q:"A plant is kept in sunlight but its leaf is in a bottle with caustic soda (absorbs CO₂). Starch forms in that leaf?",o:["Yes, lots","No — no carbon dioxide","Yes, only in the veins","Only at night"],a:1,why:"Carbon dioxide is a raw material of photosynthesis."},
+ {q:"Which tube carries water and minerals up from the roots?",o:["Phloem","Xylem","Stomata","Chlorophyll"],a:1,why:"Xylem — the red ink rises through it."},
+ {q:"The gas collected from a water plant in sunlight makes a glowing matchstick burn brightly. The gas is…",o:["Carbon dioxide","Nitrogen","Oxygen","Water vapour"],a:2,why:"Oxygen is released during photosynthesis."},
+ {q:"Which statement is TRUE?",o:["Plants respire only at night","Only green parts respire","All parts of a plant respire all the time","Plants never respire"],a:2,why:"Respiration happens in all living cells, day and night."}]);
+</script>
+<a href="../index.html#/class-7" style="position:fixed;right:16px;bottom:16px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;background:rgba(255,255,255,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.95);box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font:900 14px/1 Nunito,'Segoe UI',system-ui,sans-serif;text-decoration:none">🏠 Lab Home</a></body></html>
