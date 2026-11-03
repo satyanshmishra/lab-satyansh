@@ -1,0 +1,161 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Class 8 Science Virtual Labs</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>:root{
+  --paper:#f7f2e8; --paper2:#efe7d6; --ink:#1b2232; --ink2:#4a5468; --muted:#7a8296;
+  --card:#ffffff; --line:#e3dac6; --bench:#101a2c; --bench2:#18243b; --benchline:rgba(255,255,255,.06);
+  --good:#1f9d63; --bad:#d64545; --warn:#e3a21a;
+  --r:18px; --shadow:0 1px 0 rgba(0,0,0,.04),0 10px 30px -12px rgba(40,30,10,.25);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 "Nunito","Segoe UI",system-ui,sans-serif;
+  background-image:radial-gradient(circle at 1px 1px,rgba(120,100,60,.12) 1px,transparent 0);background-size:22px 22px}
+h1,h2,h3,h4{font-family:"Baloo 2","Nunito","Segoe UI",sans-serif;line-height:1.15;margin:0 0 .4em;letter-spacing:-.01em}
+button,input,select{font:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);color:#fff;padding:46px 0 40px}
+.hero .wrap{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+.hero .eyebrow{display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);padding:5px 14px;border-radius:99px;font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.hero h1{font-size:clamp(34px,5.2vw,64px);margin:14px 0 8px;font-weight:800;text-shadow:0 2px 0 rgba(0,0,0,.08)}
+.hero p.q{font-size:clamp(17px,2vw,21px);max-width:720px;opacity:.95;margin:0}
+.hero .bignum{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:clamp(110px,16vw,210px);line-height:.8;color:transparent;-webkit-text-stroke:3px rgba(255,255,255,.55);user-select:none}
+.hero .orbits{position:absolute;inset:0;z-index:1;pointer-events:none}
+.hero .orbits span{position:absolute;border:2px solid rgba(255,255,255,.18);border-radius:50%;animation:spin linear infinite}
+.hero .orbits span::after{content:"";position:absolute;top:-6px;left:50%;width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.7)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hero .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+.hero .meta span{background:rgba(0,0,0,.16);padding:4px 12px;border-radius:99px;font-size:14px;font-weight:700}
+
+/* ---------- TABS ---------- */
+.tabbar{position:sticky;top:0;z-index:30;background:rgba(247,242,232,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:12px 0;scrollbar-width:thin}
+.tabs button{flex:0 0 auto;border:1.5px solid var(--line);background:#fff;color:var(--ink2);padding:8px 16px;border-radius:99px;cursor:pointer;font-weight:800;font-size:14px;transition:.2s;display:flex;gap:8px;align-items:center}
+.tabs button .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--paper2);font-size:12px}
+.tabs button:hover{border-color:var(--accent);color:var(--ink)}
+.tabs button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tabs button.active .n{background:var(--accent);color:#fff}
+
+/* ---------- STATIONS ---------- */
+main{padding:28px 0 60px}
+.station{display:none;animation:rise .45s ease}
+.station.active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.st-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.st-head h2{font-size:clamp(26px,3vw,36px);margin:0}
+.st-head .tag{font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;font-size:13px}
+.st-head p{margin:4px 0 0;color:var(--ink2);max-width:760px}
+.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:20px;align-items:start}
+.grid.even{grid-template-columns:1fr 1fr}
+.grid.wide{grid-template-columns:1fr}
+@media(max-width:940px){.grid,.grid.even{grid-template-columns:1fr}.hero .wrap{grid-template-columns:1fr}.hero .bignum{display:none}}
+
+.stage{position:relative;background:var(--bench);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);overflow:hidden;
+  background-image:linear-gradient(var(--benchline) 1px,transparent 1px),linear-gradient(90deg,var(--benchline) 1px,transparent 1px);background-size:28px 28px}
+.stage canvas,.stage svg{display:block;width:100%;height:auto;border-radius:12px}
+.stage .hud{position:absolute;top:22px;left:24px;color:#fff;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.75;pointer-events:none}
+.stage .hint{color:#c9d3e8;font-size:13.5px;text-align:center;padding:8px 6px 2px}
+.stage.light{background:#fff;background-image:none;border:1px solid var(--line)}
+.stage.light .hint{color:var(--ink2)}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 16px;box-shadow:var(--shadow)}
+.panel + .panel{margin-top:16px}
+.panel h3{font-size:20px;display:flex;align-items:center;gap:8px}
+.panel h3 .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.stack > * + *{margin-top:16px}
+
+.ctrl{margin:12px 0}
+.ctrl label{display:flex;justify-content:space-between;font-weight:800;font-size:14px;color:var(--ink2);margin-bottom:4px}
+.ctrl label b{color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent);height:26px;cursor:pointer}
+select{width:100%;padding:9px 12px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-weight:700}
+
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;background:var(--accent);color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;cursor:pointer;transition:transform .12s,filter .2s,box-shadow .2s;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.btn:hover{filter:brightness(1.07)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
+.btn.dark{background:var(--ink)}
+.btn.sm{padding:6px 12px;font-size:14px;border-radius:10px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:#fff;padding:7px 13px;border-radius:99px;cursor:pointer;font-weight:700;font-size:14px;transition:.15s;color:var(--ink)}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.explain{border-left:5px solid var(--accent);background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 10%,#fff),#fff);border-radius:12px;padding:12px 14px;margin-top:12px}
+.explain b.k{color:var(--accent)}
+.explain .t{font-weight:900;text-transform:uppercase;font-size:12px;letter-spacing:.1em;color:var(--accent);display:block;margin-bottom:2px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:12px 0}
+.readout div{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.readout small{display:block;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.readout b{font-size:21px;font-family:"Baloo 2",sans-serif;font-variant-numeric:tabular-nums}
+
+table.log{width:100%;border-collapse:collapse;font-size:14px}
+table.log th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:2px solid var(--line);padding:6px}
+table.log td{border-bottom:1px solid var(--line);padding:7px 6px}
+table.log tr.new td{animation:flash 1.2s ease}
+@keyframes flash{from{background:color-mix(in srgb,var(--accent) 25%,#fff)}to{background:transparent}}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-weight:800;font-size:12.5px}
+.pill.g{background:#dcf5e8;color:#11663f}.pill.r{background:#fde2e2;color:#9b1c1c}.pill.y{background:#fff1cc;color:#7a5200}.pill.b{background:#dde9ff;color:#1d3f8f}.pill.n{background:#eee;color:#444}
+
+/* ---------- SORTER ---------- */
+.sorter .pool{display:flex;flex-wrap:wrap;gap:8px;min-height:48px;padding:10px;border:2px dashed var(--line);border-radius:14px;background:var(--paper)}
+.sorter .card{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:8px 12px;font-weight:700;cursor:grab;user-select:none;transition:.15s;font-size:14.5px}
+.sorter .card.sel{outline:3px solid var(--accent);transform:translateY(-2px)}
+.sorter .card.ok{border-color:var(--good);background:#e9f8f0}
+.sorter .card.no{border-color:var(--bad);background:#fdeaea;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.sorter .bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+.sorter .bin{border:2px solid var(--line);border-radius:14px;padding:10px;min-height:120px;background:#fff;transition:.15s}
+.sorter .bin.hot{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,#fff)}
+.sorter .bin h4{font-size:16px;margin:0 0 8px;display:flex;justify-content:space-between}
+.sorter .bin .cards{display:flex;flex-wrap:wrap;gap:6px}
+.sorter .score{font-weight:800;color:var(--ink2);margin-top:10px}
+
+/* ---------- QUIZ ---------- */
+.quiz{display:grid;gap:14px}
+.qcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow)}
+.qcard .qn{font-weight:900;color:var(--accent);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+.qcard .qt{font-weight:800;font-size:17px;margin:4px 0 10px}
+.qcard .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:640px){.qcard .opts{grid-template-columns:1fr}}
+.qcard .opt{text-align:left;border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:700;transition:.15s;color:var(--ink)}
+.qcard .opt:hover{border-color:var(--accent)}
+.qcard .opt.right{background:#dcf5e8;border-color:var(--good)}
+.qcard .opt.wrong{background:#fde2e2;border-color:var(--bad)}
+.qcard .why{display:none;margin-top:10px;font-size:15px;color:var(--ink2)}
+.qcard.done .why{display:block}
+.qscore{position:sticky;top:64px;z-index:5;background:var(--paper);padding:8px 0;font-family:"Baloo 2","Segoe UI",sans-serif;font-size:22px;font-weight:800}
+
+.keyideas{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:8px}
+.keyideas div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-weight:600;position:relative;padding-left:40px}
+.keyideas div::before{content:"✦";position:absolute;left:14px;top:10px;color:var(--accent);font-size:18px}
+
+footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--muted);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;opacity:0;transition:.3s;z-index:99;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.muted{color:var(--muted)}
+.center{text-align:center}
+.mt0{margin-top:0}
+.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:#c9d3e8;padding:6px 6px 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.caution{background:#fff5df;border:1px solid #f0d79a;border-radius:12px;padding:10px 12px;font-size:14px;margin-top:12px}
+.caution b{color:#8a5a00}
+
+:root{--accent:#5f3dc4;--accent2:#e8590c}
+.labs{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;margin:30px 0 60px}
+.lab{display:flex;flex-direction:column;text-decoration:none;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s}
+.lab:hover{transform:translateY(-4px);box-shadow:0 18px 40px -16px rgba(40,30,10,.35)}
+.lab .top{background:linear-gradient(135deg,var(--a),var(--b));color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.lab .top b{font-family:"Baloo 2",sans-serif;font-size:42px;line-height:1;color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.8)}
+.lab h3{margin:14px 18px 4px;font-size:21px} .lab p{margin:0 18px;color:var(--ink2);font-size:14.5px;flex:1} .lab .st{margin:12px 18px 16px;font-size:12.5px;font-weight:800;color:var(--muted)}
+</style><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"></head><body>
+<header class="hero"><div class="orbits"></div><div class="wrap"><div><span class="eyebrow">Curiosity · Textbook of Science · Grade 8</span><h1>Class 8 Science Virtual Labs</h1><p class="q">Thirteen interactive labs, one for each chapter. Predict, experiment, observe and explain — right in your browser.</p></div><div class="bignum">08</div></div></header>
+<main class="wrap"><div class="labs"><a class="lab" href="ch01-exploring-the-investigative-world-of-science.html" style="--a:#7048e8;--b:#12b886"><div class="top"><span>Chapter 1</span><b>01</b></div><h3>Exploring the Investigative World of Science</h3><p>Sharpen questions, run a fair dough-rise test, order the investigation cycle and estimate the uncountable.</p><div class="st">5 stations · Sharpen the Question · Dough-Rise Fair Test · Investigation Cycle…</div></a><a class="lab" href="ch02-the-invisible-living-world.html" style="--a:#0ca678;--b:#5f3dc4"><div class="top"><span>Chapter 2</span><b>02</b></div><h3>The Invisible Living World: Beyond Our Naked Eye</h3><p>Focus a microscope on onion and cheek cells, explore cell parts, meet microbes and make curd.</p><div class="st">6 stations · Microscope · Inside a Cell · Shape Fits the Job…</div></a><a class="lab" href="ch03-health-the-ultimate-treasure.html" style="--a:#f76707;--b:#1098ad"><div class="top"><span>Chapter 3</span><b>03</b></div><h3>Health: The Ultimate Treasure</h3><p>Balance the health triangle, tell signs from symptoms, stop a germ outbreak and see how vaccines train the body.</p><div class="st">6 stations · Health Triangle · Sign or Symptom? · Outbreak Simulator…</div></a><a class="lab" href="ch04-electricity-magnetic-and-heating-effects.html" style="--a:#f59f00;--b:#1c7ed6"><div class="top"><span>Chapter 4</span><b>04</b></div><h3>Electricity: Magnetic and Heating Effects</h3><p>Deflect a compass with current, build an electromagnet, heat a wire and light an LED with lemons.</p><div class="st">6 stations · Compass &amp; Current · Build an Electromagnet · Hot Wires…</div></a><a class="lab" href="ch05-exploring-forces.html" style="--a:#3b5bdb;--b:#e64980"><div class="top"><span>Chapter 5</span><b>05</b></div><h3>Exploring Forces</h3><p>Push a ball around, pull blocks over rough and smooth surfaces, charge a balloon, weigh things on the Moon and feel upthrust.</p><div class="st">6 stations · Push &amp; Pull · Friction Track · Charged Balloon…</div></a><a class="lab" href="ch06-pressure-winds-storms-and-cyclones.html" style="--a:#1971c2;--b:#12b886"><div class="top"><span>Chapter 6</span><b>06</b></div><h3>Pressure, Winds, Storms, and Cyclones</h3><p>Sink bricks in sand, squirt water from a bottle, make a sea breeze, guide lightning safely and grow a cyclone.</p><div class="st">6 stations · Brick in Sand · Leaky Bottle · Make the Wind…</div></a><a class="lab" href="ch07-particulate-nature-of-matter.html" style="--a:#ae3ec9;--b:#1098ad"><div class="top"><span>Chapter 7</span><b>07</b></div><h3>Particulate Nature of Matter</h3><p>Dilute a purple crystal, heat and cool particles, squeeze a syringe, race ink in hot and cold water.</p><div class="st">6 stations · One Crystal, Many Particles · Particle Zoom · Squeeze the Syringe…</div></a><a class="lab" href="ch08-nature-of-matter-elements-compounds-mixtures.html" style="--a:#2f9e44;--b:#f08c00"><div class="top"><span>Chapter 8</span><b>08</b></div><h3>Nature of Matter: Elements, Compounds, and Mixtures</h3><p>Identify particle pictures, turn iron and sulfur into a new compound, char sugar and split water with electricity.</p><div class="st">6 stations · Particle Detective · Iron + Sulfur · Heat the Sugar…</div></a><a class="lab" href="ch09-solutes-solvents-and-solutions.html" style="--a:#0c8599;--b:#e8590c"><div class="top"><span>Chapter 9</span><b>09</b></div><h3>The Amazing World of Solutes, Solvents, and Solutions</h3><p>Saturate a solution, warm it to dissolve more, fizz a soda, measure density and build a liquid rainbow tower.</p><div class="st">5 stations · Saturation Station · Fizz Test · Density Detective…</div></a><a class="lab" href="ch10-light-mirrors-and-lenses.html" style="--a:#f59f00;--b:#7048e8"><div class="top"><span>Chapter 10</span><b>10</b></div><h3>Light: Mirrors and Lenses</h3><p>Check the laws of reflection, move a candle in front of curved mirrors and lenses, and match them to their uses.</p><div class="st">5 stations · Laws of Reflection · Curved Mirror Bench · Lens Bench…</div></a><a class="lab" href="ch11-keeping-time-with-the-skies.html" style="--a:#364fc7;--b:#f08c00"><div class="top"><span>Chapter 11</span><b>11</b></div><h3>Keeping Time with the Skies</h3><p>Spin the Moon through its phases, name the phases, watch festivals drift, convert dates to the Indian National Calendar and launch satellites.</p><div class="st">6 stations · Moon Phase Machine · Name That Phase · Drifting Festivals…</div></a><a class="lab" href="ch12-how-nature-works-in-harmony.html" style="--a:#2b8a3e;--b:#f59f00"><div class="top"><span>Chapter 12</span><b>12</b></div><h3>How Nature Works in Harmony</h3><p>Sort a pond into living and non-living parts, build food chains, balance a forest, match partnerships and watch decomposers recycle.</p><div class="st">6 stations · Pond Ecosystem · Food Chain Builder · Forest Balance…</div></a><a class="lab" href="ch13-our-home-earth-a-unique-planet.html" style="--a:#1971c2;--b:#2f9e44"><div class="top"><span>Chapter 13</span><b>13</b></div><h3>Our Home: Earth, a Unique Life Sustaining Planet</h3><p>Find the Goldilocks zone, switch on Earth’s shields, sort the four spheres, explore reproduction and the triple planetary crisis.</p><div class="st">6 stations · Goldilocks Zone · Earth’s Shields · Four Spheres…</div></a></div></main>
+<footer class="wrap">Open any lab in a web browser (Chrome, Edge or Firefox). Works offline too; fonts look best online.</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const o=document.querySelector('.hero .orbits');[[420,30,70,-120],[620,50,40,-250],[260,18,80,30]].forEach(([s,d,x,y])=>{const sp=document.createElement('span');sp.style.cssText=`width:${s}px;height:${s}px;left:${x}%;top:${y}px;animation-duration:${d}s`;o.appendChild(sp);});});</script>
+<a href="../index.html#/class-8" style="position:fixed;right:16px;bottom:16px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;background:rgba(255,255,255,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.95);box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font:900 14px/1 Nunito,'Segoe UI',system-ui,sans-serif;text-decoration:none">🏠 Lab Home</a></body></html>

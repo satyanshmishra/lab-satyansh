@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pressure, Winds, Storms, and Cyclones · Class 8 Virtual Lab</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>:root{
+  --paper:#f7f2e8; --paper2:#efe7d6; --ink:#1b2232; --ink2:#4a5468; --muted:#7a8296;
+  --card:#ffffff; --line:#e3dac6; --bench:#101a2c; --bench2:#18243b; --benchline:rgba(255,255,255,.06);
+  --good:#1f9d63; --bad:#d64545; --warn:#e3a21a;
+  --r:18px; --shadow:0 1px 0 rgba(0,0,0,.04),0 10px 30px -12px rgba(40,30,10,.25);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 "Nunito","Segoe UI",system-ui,sans-serif;
+  background-image:radial-gradient(circle at 1px 1px,rgba(120,100,60,.12) 1px,transparent 0);background-size:22px 22px}
+h1,h2,h3,h4{font-family:"Baloo 2","Nunito","Segoe UI",sans-serif;line-height:1.15;margin:0 0 .4em;letter-spacing:-.01em}
+button,input,select{font:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);color:#fff;padding:46px 0 40px}
+.hero .wrap{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+.hero .eyebrow{display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);padding:5px 14px;border-radius:99px;font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.hero h1{font-size:clamp(34px,5.2vw,64px);margin:14px 0 8px;font-weight:800;text-shadow:0 2px 0 rgba(0,0,0,.08)}
+.hero p.q{font-size:clamp(17px,2vw,21px);max-width:720px;opacity:.95;margin:0}
+.hero .bignum{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:clamp(110px,16vw,210px);line-height:.8;color:transparent;-webkit-text-stroke:3px rgba(255,255,255,.55);user-select:none}
+.hero .orbits{position:absolute;inset:0;z-index:1;pointer-events:none}
+.hero .orbits span{position:absolute;border:2px solid rgba(255,255,255,.18);border-radius:50%;animation:spin linear infinite}
+.hero .orbits span::after{content:"";position:absolute;top:-6px;left:50%;width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.7)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hero .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+.hero .meta span{background:rgba(0,0,0,.16);padding:4px 12px;border-radius:99px;font-size:14px;font-weight:700}
+
+/* ---------- TABS ---------- */
+.tabbar{position:sticky;top:0;z-index:30;background:rgba(247,242,232,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:12px 0;scrollbar-width:thin}
+.tabs button{flex:0 0 auto;border:1.5px solid var(--line);background:#fff;color:var(--ink2);padding:8px 16px;border-radius:99px;cursor:pointer;font-weight:800;font-size:14px;transition:.2s;display:flex;gap:8px;align-items:center}
+.tabs button .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--paper2);font-size:12px}
+.tabs button:hover{border-color:var(--accent);color:var(--ink)}
+.tabs button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tabs button.active .n{background:var(--accent);color:#fff}
+
+/* ---------- STATIONS ---------- */
+main{padding:28px 0 60px}
+.station{display:none;animation:rise .45s ease}
+.station.active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.st-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.st-head h2{font-size:clamp(26px,3vw,36px);margin:0}
+.st-head .tag{font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;font-size:13px}
+.st-head p{margin:4px 0 0;color:var(--ink2);max-width:760px}
+.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:20px;align-items:start}
+.grid.even{grid-template-columns:1fr 1fr}
+.grid.wide{grid-template-columns:1fr}
+@media(max-width:940px){.grid,.grid.even{grid-template-columns:1fr}.hero .wrap{grid-template-columns:1fr}.hero .bignum{display:none}}
+
+.stage{position:relative;background:var(--bench);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);overflow:hidden;
+  background-image:linear-gradient(var(--benchline) 1px,transparent 1px),linear-gradient(90deg,var(--benchline) 1px,transparent 1px);background-size:28px 28px}
+.stage canvas,.stage svg{display:block;width:100%;height:auto;border-radius:12px}
+.stage .hud{position:absolute;top:22px;left:24px;color:#fff;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.75;pointer-events:none}
+.stage .hint{color:#c9d3e8;font-size:13.5px;text-align:center;padding:8px 6px 2px}
+.stage.light{background:#fff;background-image:none;border:1px solid var(--line)}
+.stage.light .hint{color:var(--ink2)}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 16px;box-shadow:var(--shadow)}
+.panel + .panel{margin-top:16px}
+.panel h3{font-size:20px;display:flex;align-items:center;gap:8px}
+.panel h3 .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.stack > * + *{margin-top:16px}
+
+.ctrl{margin:12px 0}
+.ctrl label{display:flex;justify-content:space-between;font-weight:800;font-size:14px;color:var(--ink2);margin-bottom:4px}
+.ctrl label b{color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent);height:26px;cursor:pointer}
+select{width:100%;padding:9px 12px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-weight:700}
+
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;background:var(--accent);color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;cursor:pointer;transition:transform .12s,filter .2s,box-shadow .2s;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.btn:hover{filter:brightness(1.07)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
+.btn.dark{background:var(--ink)}
+.btn.sm{padding:6px 12px;font-size:14px;border-radius:10px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:#fff;padding:7px 13px;border-radius:99px;cursor:pointer;font-weight:700;font-size:14px;transition:.15s;color:var(--ink)}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.explain{border-left:5px solid var(--accent);background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 10%,#fff),#fff);border-radius:12px;padding:12px 14px;margin-top:12px}
+.explain b.k{color:var(--accent)}
+.explain .t{font-weight:900;text-transform:uppercase;font-size:12px;letter-spacing:.1em;color:var(--accent);display:block;margin-bottom:2px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:12px 0}
+.readout div{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.readout small{display:block;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.readout b{font-size:21px;font-family:"Baloo 2",sans-serif;font-variant-numeric:tabular-nums}
+
+table.log{width:100%;border-collapse:collapse;font-size:14px}
+table.log th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:2px solid var(--line);padding:6px}
+table.log td{border-bottom:1px solid var(--line);padding:7px 6px}
+table.log tr.new td{animation:flash 1.2s ease}
+@keyframes flash{from{background:color-mix(in srgb,var(--accent) 25%,#fff)}to{background:transparent}}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-weight:800;font-size:12.5px}
+.pill.g{background:#dcf5e8;color:#11663f}.pill.r{background:#fde2e2;color:#9b1c1c}.pill.y{background:#fff1cc;color:#7a5200}.pill.b{background:#dde9ff;color:#1d3f8f}.pill.n{background:#eee;color:#444}
+
+/* ---------- SORTER ---------- */
+.sorter .pool{display:flex;flex-wrap:wrap;gap:8px;min-height:48px;padding:10px;border:2px dashed var(--line);border-radius:14px;background:var(--paper)}
+.sorter .card{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:8px 12px;font-weight:700;cursor:grab;user-select:none;transition:.15s;font-size:14.5px}
+.sorter .card.sel{outline:3px solid var(--accent);transform:translateY(-2px)}
+.sorter .card.ok{border-color:var(--good);background:#e9f8f0}
+.sorter .card.no{border-color:var(--bad);background:#fdeaea;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.sorter .bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+.sorter .bin{border:2px solid var(--line);border-radius:14px;padding:10px;min-height:120px;background:#fff;transition:.15s}
+.sorter .bin.hot{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,#fff)}
+.sorter .bin h4{font-size:16px;margin:0 0 8px;display:flex;justify-content:space-between}
+.sorter .bin .cards{display:flex;flex-wrap:wrap;gap:6px}
+.sorter .score{font-weight:800;color:var(--ink2);margin-top:10px}
+
+/* ---------- QUIZ ---------- */
+.quiz{display:grid;gap:14px}
+.qcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow)}
+.qcard .qn{font-weight:900;color:var(--accent);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+.qcard .qt{font-weight:800;font-size:17px;margin:4px 0 10px}
+.qcard .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:640px){.qcard .opts{grid-template-columns:1fr}}
+.qcard .opt{text-align:left;border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:700;transition:.15s;color:var(--ink)}
+.qcard .opt:hover{border-color:var(--accent)}
+.qcard .opt.right{background:#dcf5e8;border-color:var(--good)}
+.qcard .opt.wrong{background:#fde2e2;border-color:var(--bad)}
+.qcard .why{display:none;margin-top:10px;font-size:15px;color:var(--ink2)}
+.qcard.done .why{display:block}
+.qscore{position:sticky;top:64px;z-index:5;background:var(--paper);padding:8px 0;font-family:"Baloo 2","Segoe UI",sans-serif;font-size:22px;font-weight:800}
+
+.keyideas{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:8px}
+.keyideas div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-weight:600;position:relative;padding-left:40px}
+.keyideas div::before{content:"✦";position:absolute;left:14px;top:10px;color:var(--accent);font-size:18px}
+
+footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--muted);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;opacity:0;transition:.3s;z-index:99;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.muted{color:var(--muted)}
+.center{text-align:center}
+.mt0{margin-top:0}
+.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:#c9d3e8;padding:6px 6px 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.caution{background:#fff5df;border:1px solid #f0d79a;border-radius:12px;padding:10px 12px;font-size:14px;margin-top:12px}
+.caution b{color:#8a5a00}
+
+
+.homefab{position:fixed;right:16px;bottom:16px;z-index:60;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;
+  background:rgba(255,255,255,.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.9);
+  box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font-weight:900;text-decoration:none;font-size:14px}
+.homefab:hover{transform:translateY(-2px)}
+.mini{font-size:13px;color:var(--muted)}
+.bar{height:14px;border-radius:99px;background:var(--paper2);overflow:hidden}.bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.steps{display:grid;gap:8px}.steps button{text-align:left}
+.orderlist{display:grid;gap:8px;margin-top:10px}.orderlist .slot{border:2px dashed var(--line);border-radius:12px;padding:9px 12px;min-height:42px;font-weight:800;background:#fff}
+.orderlist .slot.ok{border-style:solid;border-color:var(--good);background:#e9f8f0}
+@media(max-width:640px){.hero{padding:30px 0 26px}.stage{padding:8px}}
+
+:root{--accent:#1971c2;--accent2:#12b886}
+</style>
+</head><body>
+<header class="hero"><div class="orbits"></div><div class="wrap"><div>
+<a href="../index.html#/class-8" style="color:#fff;font-weight:800;text-decoration:none;opacity:.9;margin-right:10px">← All labs</a><span class="eyebrow">Class 8 Science · Chapter 6 · Virtual Lab</span>
+<h1>Pressure, Winds, Storms, and Cyclones</h1><p class="q">Why does a sharp knife cut better? Why does water shoot farther from a lower hole? What makes wind blow, lightning strike and a cyclone spin?</p>
+<div class="meta"><span>Pressure = force ÷ area</span><span>Liquid pressure</span><span>Air pressure &amp; wind</span><span>Thunderstorms &amp; lightning</span><span>Cyclones</span></div></div><div class="bignum">6</div></div></header>
+<nav class="tabbar"><div class="wrap tabs"><button data-tab="s1"><span class="n">1</span>Brick in Sand</button><button data-tab="s2"><span class="n">2</span>Leaky Bottle</button><button data-tab="s3"><span class="n">3</span>Make the Wind</button><button data-tab="s4"><span class="n">4</span>Lightning Lab</button><button data-tab="s5"><span class="n">5</span>Cyclone Maker</button><button data-tab="s6"><span class="n">6</span>Check Yourself</button></div></nav>
+<main class="wrap">
+<section class="station" id="s1">
+  <div class="st-head"><div><div class="tag">Station 1 · Section 6.1 · Activities 6.1 & 6.2</div><h2>Brick in Sand</h2>
+  <p>Place a brick on wet sand in different ways. The weight (force) stays the same — so why does it sink deeper one way?</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c1"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Place the brick</h3><div class="chips" id="face"></div>
+      <div class="chips" style="margin-top:8px"><button class="chip" id="two">➕ Put a second brick on top</button></div>
+      <div class="readout"><div><small>Force (weight)</small><b id="F1">—</b></div><div><small>Area</small><b id="A1">—</b></div><div><small>Pressure</small><b id="P1">—</b></div></div>
+      <div class="explain" id="m1"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s2">
+  <div class="st-head"><div><div class="tag">Station 2 · Activity 6.3</div><h2>The Leaky Bottle</h2>
+  <p>A bottle has three holes, one above the other. Tap a hole to open or close it. Which jet goes the farthest? What happens as the water level drops?</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c2"></canvas><div class="hint">Tap a hole to open/close it.</div></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Controls</h3>
+      <div class="chips"><button class="chip on" id="tap">🚰 Keep topping up</button></div>
+      <div class="btnrow"><button class="btn ghost" id="fill">Fill to the top</button></div>
+      <div class="readout"><div><small>Water level</small><b id="lvl">—</b></div><div><small>Strongest jet</small><b id="far">—</b></div></div>
+      <div class="explain" id="m2"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s3">
+  <div class="st-head"><div><div class="tag">Station 3 · Sections 6.2 – 6.4</div><h2>Make the Wind</h2>
+  <p>Land heats up faster than the sea in the day and cools faster at night. Warm air rises, leaving low pressure behind. Watch which way the breeze blows.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c3"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Time of day</h3><div class="chips"><button class="chip on" id="day">☀️ Day</button><button class="chip" id="night">🌙 Night</button></div>
+      <div class="ctrl"><label>Sunshine strength <b id="sun-v"></b></label><input type="range" id="sun" min="0" max="10" value="6"></div>
+      <div class="readout"><div><small>Land</small><b id="tl">—</b></div><div><small>Sea</small><b id="ts">—</b></div><div><small>Breeze</small><b id="br">—</b></div></div>
+      <div class="explain" id="m3"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s4">
+  <div class="st-head"><div><div class="tag">Station 4 · Section 6.5</div><h2>Lightning Lab</h2>
+  <p>Strong winds moving up and down rub ice particles and water droplets in a cloud, building up electric charges. Build up the charge and see where lightning strikes!</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c4"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Storm controls</h3>
+      <div class="ctrl"><label>Moisture <b id="mo-v"></b></label><input type="range" id="mo" min="0" max="10" value="7"></div>
+      <div class="ctrl"><label>Up & down winds <b id="ud-v"></b></label><input type="range" id="ud" min="0" max="10" value="6"></div>
+      <div class="chips"><button class="chip" id="rod">⚡ Lightning conductor on the building</button></div>
+      <div class="readout"><div><small>Charge in cloud</small><b id="q4">0%</b></div><div><small>Last strike</small><b id="hit4">—</b></div></div>
+      <div class="explain" id="m4"></div></div>
+      <div class="panel"><h3><span class="dot"></span>Safe or unsafe in a thunderstorm?</h3><div id="safe"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s5">
+  <div class="st-head"><div><div class="tag">Station 5 · Section 6.6</div><h2>Cyclone Maker</h2>
+  <p>Cyclones form over warm oceans. Warm, moist air rises fast, creating very low pressure at the centre. Surrounding air rushes in and spins. Warm the sea and watch!</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c5"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Ocean</h3>
+      <div class="ctrl"><label>Sea surface temperature <b id="sst-v"></b></label><input type="range" id="sst" min="22" max="32" step=".5" value="25"></div>
+      <div class="readout"><div><small>Centre pressure</small><b id="cp">—</b></div><div><small>Wind speed</small><b id="ws">—</b></div><div><small>IMD says</small><b id="imd">—</b></div></div>
+      <div class="explain" id="m5"></div></div></div>
+  </div>
+</section>
+<section class="station" id="s6">
+  <div class="st-head"><div><div class="tag">Station 6</div><h2>Check Yourself</h2></div></div>
+  <div id="quiz"></div>
+  <h3 style="margin-top:28px">Key ideas</h3>
+  <div class="keyideas"><div>Pressure is force per unit area; its SI unit is N/m², called the pascal (Pa).</div><div>The same force on a smaller area gives more pressure.</div><div>Liquids and gases exert pressure on the walls of their container; liquid pressure increases with depth.</div><div>Air around us exerts atmospheric pressure.</div><div>Wind blows from high pressure to low pressure; warm air rises, creating low pressure.</div><div>Lightning is caused by electric charges built up in clouds; a lightning conductor protects buildings.</div><div>Cyclones form over warm seas around a centre of very low pressure; IMD monitors them.</div></div>
+</section>
+</main>
+<footer class="wrap">Class 8 Science · Chapter 6: Pressure, Winds, Storms, and Cyclones · Interactive Virtual Lab · Explore, predict, observe, explain.</footer>
+<a class="homefab" href="../index.html#/class-8">🏠 Lab Home</a>
+<script>/* ===== Shared lab toolkit ===== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const rand = (a, b) => a + Math.random() * (b - a);
+const TAU = Math.PI * 2;
+
+/* Canvas with crisp DPR scaling; draw in logical W x H units */
+function setupCanvas(cv, W, H) {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = W * dpr; cv.height = H * dpr;
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  cv._W = W; cv._H = H; ctx.W = W; ctx.H = H;
+  return ctx;
+}
+function canvasPoint(cv, e) {
+  const r = cv.getBoundingClientRect();
+  const p = e.touches ? e.touches[0] : e;
+  return { x: (p.clientX - r.left) * cv._W / r.width, y: (p.clientY - r.top) * cv._H / r.height };
+}
+function svgPoint(svg, e) {
+  const pt = svg.createSVGPoint(); const p = e.touches ? e.touches[0] : e;
+  pt.x = p.clientX; pt.y = p.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+function mixColor(c1, c2, t) { // hex colours
+  const a = parseInt(c1.slice(1), 16), b = parseInt(c2.slice(1), 16);
+  const r = Math.round(lerp(a >> 16, b >> 16, t)), g = Math.round(lerp((a >> 8) & 255, (b >> 8) & 255, t)), bl = Math.round(lerp(a & 255, b & 255, t));
+  return `rgb(${r},${g},${bl})`;
+}
+
+/* Animation loop: callbacks receive dt (s). Each registered with a station id; runs only when that station is visible */
+const Loop = { fns: [], last: 0,
+  add(stationId, fn) { this.fns.push({ id: stationId, fn }); },
+  tick(t) { const dt = Math.min(.05, (t - (Loop.last || t)) / 1000); Loop.last = t;
+    for (const f of Loop.fns) { const el = f.id ? document.getElementById(f.id) : null; if (!f.id || (el && el.classList.contains('active'))) f.fn(dt, t / 1000); }
+    requestAnimationFrame(Loop.tick); } };
+requestAnimationFrame(Loop.tick);
+
+/* Tabs */
+function initTabs() {
+  const btns = $$('.tabs button');
+  const show = id => {
+    btns.forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+    $$('.station').forEach(s => s.classList.toggle('active', s.id === id));
+    document.dispatchEvent(new CustomEvent('station', { detail: id }));
+    try { history.replaceState(null, '', '#' + id); } catch (e) {}
+  };
+  btns.forEach(b => b.addEventListener('click', () => { show(b.dataset.tab); window.scrollTo({ top: $('.tabbar').offsetTop, behavior: 'smooth' }); }));
+  const h = location.hash.slice(1);
+  show(btns.some(b => b.dataset.tab === h) ? h : btns[0].dataset.tab);
+}
+
+/* Toast */
+let _tt; function toast(msg, ms = 2200) { let t = $('.toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add('show'); clearTimeout(_tt); _tt = setTimeout(() => t.classList.remove('show'), ms); }
+
+/* Sound (Web Audio) */
+let _ac; function ac() { if (!_ac) { try { _ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (_ac && _ac.state === 'suspended') _ac.resume(); return _ac; }
+const Sound = {
+  on: true,
+  tone(f = 440, d = .15, type = 'sine', v = .15) { const a = ac(); if (!a || !this.on) return; const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(v, a.currentTime); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + d); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + d); },
+  ring(f = 880) { [1, 2.76, 5.4].forEach((m, i) => setTimeout(() => this.tone(f * m, 1.6 - i * .4, 'sine', .12 / (i + 1)), 0)); },
+  thud() { const a = ac(); if (!a || !this.on) return; const o = a.createOscillator(), g = a.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(140, a.currentTime); o.frequency.exponentialRampToValueAtTime(40, a.currentTime + .15); g.gain.setValueAtTime(.35, a.currentTime); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + .18); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + .2); },
+  noise(d = .5, v = .08, hp = 2000) { const a = ac(); if (!a || !this.on) return; const b = a.createBuffer(1, a.sampleRate * d, a.sampleRate), ch = b.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / ch.length); const s = a.createBufferSource(); s.buffer = b; const f = a.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = hp; const g = a.createGain(); g.gain.value = v; s.connect(f).connect(g).connect(a.destination); s.start(); },
+  good() { this.tone(660, .12, 'sine', .12); setTimeout(() => this.tone(990, .18, 'sine', .12), 110); },
+  bad() { this.tone(200, .22, 'square', .05); },
+  click() { this.tone(1200, .03, 'square', .03); }
+};
+
+/* Click-or-drag sorter. items: [{t, cat}], cats: [{id,label}] */
+function makeSorter(root, items, cats, opts = {}) {
+  root.classList.add('sorter');
+  root.innerHTML = `<div class="pool"></div><div class="bins">${cats.map(c => `<div class="bin" data-cat="${c.id}"><h4>${c.label}<span class="cnt">0</span></h4><div class="cards"></div></div>`).join('')}</div><div class="score"></div>`;
+  const pool = $('.pool', root); let sel = null, right = 0, tries = 0;
+  const shuffled = items.map(x => ({ ...x })).sort(() => Math.random() - .5);
+  shuffled.forEach((it, i) => { const c = document.createElement('div'); c.className = 'card'; c.textContent = it.t; c.draggable = true; c.dataset.i = i;
+    c.addEventListener('click', () => { if (c.classList.contains('ok')) return; $$('.card.sel', root).forEach(x => x.classList.remove('sel')); sel = c; c.classList.add('sel'); });
+    c.addEventListener('dragstart', e => { sel = c; e.dataTransfer.setData('text', i); }); pool.appendChild(c); });
+  const drop = bin => { if (!sel) return; const it = shuffled[+sel.dataset.i]; tries++;
+    const ok = Array.isArray(it.cat) ? it.cat.includes(bin.dataset.cat) : it.cat === bin.dataset.cat;
+    if (ok) { right++; sel.classList.remove('sel', 'no'); sel.classList.add('ok'); sel.draggable = false; $('.cards', bin).appendChild(sel); $('.cnt', bin).textContent = $$('.card', bin).length; Sound.good(); if (it.why) toast(it.why, 3000); }
+    else { sel.classList.remove('no'); void sel.offsetWidth; sel.classList.add('no'); Sound.bad(); toast(it.hint || 'Not quite — think again!'); }
+    sel = null; $$('.card.sel', root).forEach(x => x.classList.remove('sel'));
+    $('.score', root).textContent = `Sorted ${right} / ${items.length}` + (right === items.length ? `  ·  🎉 Done in ${tries} tries!` : '');
+    if (right === items.length && opts.onDone) opts.onDone(tries);
+  };
+  $$('.bin', root).forEach(b => { b.addEventListener('click', () => drop(b)); b.addEventListener('dragover', e => { e.preventDefault(); b.classList.add('hot'); }); b.addEventListener('dragleave', () => b.classList.remove('hot')); b.addEventListener('drop', e => { e.preventDefault(); b.classList.remove('hot'); drop(b); }); });
+  $('.score', root).textContent = `Sorted 0 / ${items.length}  ·  Tip: tap a card, then tap a box (or drag it).`;
+}
+
+/* Quiz: [{q, o:[..], a:index, why}] */
+function makeQuiz(root, qs) {
+  let score = 0, done = 0;
+  const head = document.createElement('div'); head.className = 'qscore'; root.before(head);
+  const upd = () => head.textContent = `Score: ${score} / ${qs.length}` + (done === qs.length ? (score === qs.length ? '  ·  Perfect! 🌟' : score >= qs.length * .7 ? '  ·  Great work!' : '  ·  Revisit the stations and try again') : '');
+  root.classList.add('quiz');
+  qs.forEach((q, i) => { const c = document.createElement('div'); c.className = 'qcard';
+    c.innerHTML = `<div class="qn">Question ${i + 1}</div><div class="qt">${q.q}</div><div class="opts">${q.o.map((o, j) => `<button class="opt" data-j="${j}">${String.fromCharCode(65 + j)}. ${o}</button>`).join('')}</div><div class="why">${q.why || ''}</div>`;
+    $$('.opt', c).forEach(b => b.addEventListener('click', () => { if (c.classList.contains('done')) return; c.classList.add('done'); done++;
+      const j = +b.dataset.j; if (j === q.a) { score++; b.classList.add('right'); Sound.good(); } else { b.classList.add('wrong'); $$('.opt', c)[q.a].classList.add('right'); Sound.bad(); }
+      upd(); }));
+    root.appendChild(c); });
+  const r = document.createElement('button'); r.className = 'btn ghost'; r.textContent = '↺ Reset quiz'; r.style.marginTop = '6px';
+  r.onclick = () => { root.innerHTML = ''; head.remove(); r.remove(); makeQuiz(root, qs); }; root.after(r);
+  upd();
+}
+
+/* Logging helper */
+function addRow(tbody, cells, max = 12) { const tr = document.createElement('tr'); tr.className = 'new'; tr.innerHTML = cells.map(c => `<td>${c}</td>`).join(''); tbody.prepend(tr); while (tbody.children.length > max) tbody.lastChild.remove(); }
+
+/* Range binding: bindRange('#id', v=>..., fmt) */
+function bindRange(sel, fn, fmt = v => v) { const el = $(sel); const out = $(sel + '-v'); const go = () => { const v = +el.value; if (out) out.textContent = fmt(v); fn(v); }; el.addEventListener('input', go); go(); return el; }
+
+document.addEventListener('DOMContentLoaded', () => {
+  initTabs();
+  const o = $('.hero .orbits'); if (o) { [[420, 30, 70, -120], [620, 50, 40, -250], [260, 18, 80, 30]].forEach(([s, d, x, y]) => { const sp = document.createElement('span'); sp.style.cssText = `width:${s}px;height:${s}px;left:${x}%;top:${y}px;animation-duration:${d}s`; o.appendChild(sp); }); }
+});
+
+</script>
+<script>
+/* S1 brick */
+const FA={flat:['Lying flat',.2*.1,240,60],side:['On its side',.2*.05,240,30],end:['Standing on end',.1*.05,60,30]};let fa='flat',two=false,sink=0;const c1=$('#c1'),x1=setupCanvas(c1,700,400);
+Object.entries(FA).forEach(([k,v],i)=>{const b=document.createElement('button');b.className='chip'+(i?'':' on');b.textContent=v[0];b.onclick=()=>{fa=k;sink=0;$$('#face .chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');Sound.thud();};$('#face').appendChild(b);});
+$('#two').onclick=()=>{two=!two;sink=0;$('#two').classList.toggle('on',two);};
+Loop.add('s1',(dt)=>{const F=(two?2:1)*25,A=FA[fa][1],P=F/A;sink+=(Math.min(110,P/45)-sink)*Math.min(1,dt*3);$('#F1').textContent=F+' N';$('#A1').textContent=A.toFixed(3)+' m²';$('#P1').textContent=Math.round(P)+' Pa';
+ const m=`<span class="t">Pressure = Force ÷ Area</span>${fa==='end'?'Smallest area → <b>greatest pressure</b> → sinks deepest.':fa==='flat'?'Largest area → least pressure → sinks least.':'Medium area, medium pressure.'} ${two?'Doubling the force doubles the pressure.':''}`;if($('#m1').innerHTML!==m)$('#m1').innerHTML=m;
+ const c=x1;c.clearRect(0,0,700,400);c.fillStyle='#e9c46a';c.fillRect(60,220,580,180);c.fillStyle='#c79b3b';for(let i=0;i<300;i++)c.fillRect(60+(i*53)%580,220+(i*31)%180,2,2);
+ const [,,w,h]=FA[fa];const H=fa==='end'?240:fa==='side'?120:60,W=fa==='flat'?240:fa==='side'?240:60;const vH=fa==='flat'?60:fa==='side'?120:240,vW=fa==='end'?60:240;
+ const top=220+sink-vH;c.fillStyle='rgba(0,0,0,.25)';c.fillRect(350-vW/2,220,vW,sink);c.fillStyle='#c0392b';c.fillRect(350-vW/2,top,vW,vH);c.strokeStyle='#8e2a1f';c.lineWidth=2;c.strokeRect(350-vW/2,top,vW,vH);
+ if(two){c.fillStyle='#d35445';c.fillRect(350-vW/2,top-vH,vW,vH);c.strokeRect(350-vW/2,top-vH,vW,vH);}
+ c.fillStyle='#c9d3e8';c.font='800 13px Nunito,"Segoe UI",sans-serif';c.textAlign='left';c.fillText('sinks '+(sink/10).toFixed(1)+' cm',360+vW/2+10,225+sink/2);});
+
+/* S2 bottle */
+const c2=$('#c2'),x2=setupCanvas(c2,700,420);let L=1,topUp=true;const holes=[{y:.75,o:true},{y:.5,o:true},{y:.25,o:true}];const BX=180,BY0=300,BH=250,GR=405;
+c2.addEventListener('pointerdown',e=>{const p=canvasPoint(c2,e);holes.forEach(h=>{if(Math.hypot(p.x-(BX+60),p.y-(BY0-h.y*BH))<16){h.o=!h.o;Sound.click();}});});
+$('#tap').onclick=()=>{topUp=!topUp;$('#tap').classList.toggle('on',topUp);};$('#fill').onclick=()=>L=1;
+Loop.add('s2',(dt,t)=>{const open=holes.filter(h=>h.o&&h.y<L);if(!topUp)L=Math.max(0,L-dt*.02*open.length);$('#lvl').textContent=Math.round(L*100)+'%';
+ const c=x2;c.clearRect(0,0,700,420);c.fillStyle='rgba(116,192,252,.55)';c.fillRect(BX-60,BY0-L*BH,120,L*BH);c.strokeStyle='#dee2e6';c.lineWidth=3;c.strokeRect(BX-60,BY0-BH-20,120,BH+20);c.fillStyle='#495057';c.fillRect(0,GR,700,20);c.fillStyle='#868e96';c.fillRect(BX-70,BY0,140,10);c.fillRect(BX-60,BY0+10,10,GR-BY0-10);c.fillRect(BX+50,BY0+10,10,GR-BY0-10);
+ let best=null,bd=0;holes.forEach((h,i)=>{const hy=BY0-h.y*BH;c.fillStyle=h.o?'#212529':'#adb5bd';c.beginPath();c.arc(BX+60,hy,7,0,TAU);c.fill();
+  if(h.o&&L>h.y){const depth=(L-h.y)*BH;const v=Math.sqrt(depth)*7.5;c.strokeStyle='rgba(116,192,252,.9)';c.lineWidth=5;c.beginPath();let x=BX+64,y=hy,vx=v,vy=0;c.moveTo(x,y);for(let k=0;k<120&&y<GR;k++){x+=vx*.05;vy+=9.8*.05*9;y+=vy*.05;c.lineTo(x,y);}c.stroke();if(depth>bd){bd=depth;best=i;}
+   c.fillStyle='rgba(116,192,252,.6)';c.beginPath();c.ellipse(x,GR+2,12,4,0,0,TAU);c.fill();}
+  c.fillStyle='#c9d3e8';c.font='700 12px Nunito,"Segoe UI",sans-serif';c.textAlign='right';c.fillText(['top','middle','bottom'][i],BX-70,hy+4);});
+ if(topUp){c.fillStyle='rgba(116,192,252,.8)';c.fillRect(BX-6,0,12,BY0-L*BH-20+20*Math.sin(t*10)*0);}
+ $('#far').textContent=best===null?'—':['top','middle','bottom'][best];
+ const m=best===null?'<span class="t">No jets</span>Open a hole below the water level.':`<span class="t">Deeper = more pressure</span>The ${['top','middle','bottom'][best]} jet is the strongest and shoots farthest because there is more water above it pushing down. Water also pushes <b>sideways</b> on the walls of the bottle.${!topUp?' As the level falls, all jets get weaker.':''}`;if($('#m2').innerHTML!==m)$('#m2').innerHTML=m;});
+
+/* S3 breeze */
+let isDay=true,sun=6;const c3=$('#c3'),x3=setupCanvas(c3,700,400);const AP=[...Array(70)].map(()=>({u:Math.random(),p:Math.random()}));
+$('#day').onclick=()=>{isDay=true;$('#day').classList.add('on');$('#night').classList.remove('on');};$('#night').onclick=()=>{isDay=false;$('#night').classList.add('on');$('#day').classList.remove('on');};bindRange('#sun',v=>sun=v,v=>v);
+Loop.add('s3',(dt,t)=>{const k=sun/10;const tl=isDay?28+k*12:18-k*4,ts=isDay?26+k*2:22-k*1;const dT=tl-ts;const dir=Math.sign(dT);const spd=Math.abs(dT)/14;
+ $('#tl').textContent=tl.toFixed(0)+' °C';$('#ts').textContent=ts.toFixed(0)+' °C';$('#br').textContent=Math.abs(dT)<.6?'calm':dir>0?'Sea → Land':'Land → Sea';
+ const m=Math.abs(dT)<.6?'<span class="t">Calm</span>Land and sea are at almost the same temperature — little pressure difference, so little wind.':isDay?'<span class="t">Sea breeze</span>Land is hotter. Warm air over land rises → <b>low pressure</b> over land. Cooler air from the sea (higher pressure) moves in.':'<span class="t">Land breeze</span>At night the land cools faster. Now the air over the sea is warmer and rises, so the breeze blows from land to sea.';if($('#m3').innerHTML!==m)$('#m3').innerHTML=m;
+ const c=x3;c.fillStyle=isDay?'#4dabf7':'#1b2a4a';c.fillRect(0,0,700,400);c.fillStyle=isDay?'#ffd43b':'#f1f3f5';c.beginPath();c.arc(600,60,30,0,TAU);c.fill();
+ c.fillStyle='#1c7ed6';c.fillRect(0,300,350,100);c.fillStyle='#8d6e3f';c.fillRect(350,290,350,110);
+ c.fillStyle='#fff';c.font='900 16px Nunito,"Segoe UI",sans-serif';c.textAlign='center';c.fillText('SEA',175,350);c.fillText('LAND',525,350);
+ c.fillStyle='rgba(255,255,255,.85)';c.font='900 14px Nunito,"Segoe UI",sans-serif';c.fillText(dir>0?'LOW pressure':'HIGH pressure',525,275);c.fillText(dir>0?'HIGH pressure':'LOW pressure',175,275);
+ for(const a of AP){a.u=(a.u+dt*spd*.25)%1;const u=dir>=0?a.u:1-a.u;let x,y;const loop=(u)=>{if(u<.25)return [175+u*4*350, 270];if(u<.5)return [525,270-(u-.25)*4*190];if(u<.75)return [525-(u-.5)*4*350,80];return [175,80+(u-.75)*4*190];};
+  [x,y]=loop(dir>=0?a.u:a.u);const pt=dir>=0?loop(a.u):loop(1-a.u);x=pt[0]+(a.p-.5)*40;y=pt[1]+(a.p-.5)*30;c.fillStyle=`rgba(255,255,255,${.3+spd*.6})`;c.beginPath();c.arc(x,y,3,0,TAU);c.fill();}
+ c.strokeStyle='rgba(255,255,255,.9)';c.lineWidth=4;const ax=dir>=0?1:-1;if(Math.abs(dT)>=.6){c.beginPath();c.moveTo(350-ax*60,250);c.lineTo(350+ax*60,250);c.lineTo(350+ax*45,240);c.moveTo(350+ax*60,250);c.lineTo(350+ax*45,260);c.stroke();}});
+
+/* S4 lightning */
+let mo=7,ud=6,rod=false,Q=0,bolt=null,lastHit='—';const c4=$('#c4'),x4=setupCanvas(c4,700,420);
+bindRange('#mo',v=>mo=v,v=>v);bindRange('#ud',v=>ud=v,v=>v);$('#rod').onclick=()=>{rod=!rod;$('#rod').classList.toggle('on',rod);};
+function strike(){const tgts=[{n:'tall tree',x:130,y:250},{n:'building',x:560,y:rod?150:170},{n:'open ground',x:rand(260,440),y:350}];const t=rod?tgts[1]:Math.random()<.65?tgts[0]:Math.random()<.6?tgts[1]:tgts[2];
+ const pts=[[t.x+rand(-120,120),70]];while(pts[pts.length-1][1]<t.y-20){const [px,py]=pts[pts.length-1];pts.push([px+(t.x-px)*.25+rand(-20,20),py+rand(20,40)]);}pts.push([t.x,t.y]);bolt={pts,life:.5,t};lastHit=t.n+(t.n==='building'&&rod?' (safely to earth)':'');Sound.noise(1.2,.15,200);Q=0;}
+Loop.add('s4',(dt,t)=>{Q=Math.min(100,Q+dt*mo*ud*.35);if(Q>=100&&!bolt)strike();$('#q4').textContent=Math.round(Q)+'%';$('#hit4').textContent=lastHit;
+ const m=mo<3||ud<3?'<span class="t">Weak storm</span>Thunderstorms need lots of <b>moisture</b> and strong <b>up-and-down winds</b>.':rod?'<span class="t">Protected</span>The lightning conductor — a metal rod on top connected by a thick wire to the ground — gives the charge a safe path into the earth.':'<span class="t">Charge builds up</span>Rubbing of ice and water particles separates charges. When enough builds up, a giant spark — lightning — jumps, often to the tallest object.';if($('#m4').innerHTML!==m)$('#m4').innerHTML=m;
+ const c=x4;c.fillStyle=bolt?'#495057':'#212529';c.fillRect(0,0,700,420);c.fillStyle='#2b8a3e';c.fillRect(0,350,700,70);
+ c.fillStyle=mixColor('#868e96','#343a40',Q/100);for(let i=0;i<9;i++){c.beginPath();c.arc(90+i*70,60+Math.sin(i*2)*12,50,0,TAU);c.fill();}
+ c.fillStyle='#ffd43b';c.font='900 14px Nunito,"Segoe UI",sans-serif';c.textAlign='center';for(let i=0;i<Q/8;i++)c.fillText(i%2?'+':'−',100+(i*97)%520,50+(i*29)%50+Math.sin(t*ud+i)*6);
+ c.fillStyle='#5c3d1e';c.fillRect(124,260,12,90);c.fillStyle='#2f9e44';c.beginPath();c.arc(130,250,40,0,TAU);c.fill();c.fillStyle='#adb5bd';c.fillRect(510,170,100,180);c.fillStyle='#ffe066';for(let i=0;i<8;i++)c.fillRect(522+(i%3)*28,190+Math.floor(i/3)*40,16,20);
+ if(rod){c.strokeStyle='#fab005';c.lineWidth=3;c.beginPath();c.moveTo(560,150);c.lineTo(560,170);c.lineTo(615,170);c.lineTo(615,370);c.stroke();}
+ if(bolt){bolt.life-=dt;c.strokeStyle=`rgba(255,255,220,${bolt.life*2})`;c.lineWidth=4;c.shadowColor='#fff';c.shadowBlur=20;c.beginPath();bolt.pts.forEach((p,i)=>i?c.lineTo(...p):c.moveTo(...p));c.stroke();c.shadowBlur=0;if(bolt.life<=0)bolt=null;}});
+makeSorter($('#safe'),[{t:'Staying inside a house',cat:'s'},{t:'Sitting in a closed car',cat:'s'},{t:'Crouching low in an open field, away from trees',cat:'s',why:'If caught outside, crouch low — don’t lie flat, don’t be the tallest thing around.'},{t:'Standing under a tall tree',cat:'u'},{t:'Holding an umbrella with a metal rod in an open field',cat:'u'},{t:'Swimming in a pond',cat:'u'},{t:'Standing on the rooftop',cat:'u'}],[{id:'s',label:'✅ Safer'},{id:'u',label:'⛔ Unsafe'}]);
+
+/* S5 cyclone */
+let sst=25,str=0;const c5=$('#c5'),x5=setupCanvas(c5,700,420);bindRange('#sst',v=>sst=v,v=>v+' °C');
+Loop.add('s5',(dt,t)=>{const tgt=clamp((sst-26.5)/5,0,1);str+=(tgt-str)*dt*.6;const wind=Math.round(20+str*200),pc=Math.round(1008-str*70);
+ $('#cp').textContent=pc+' hPa';$('#ws').textContent=wind+' km/h';$('#imd').textContent=wind<62?'No cyclone':wind<89?'Cyclonic storm':wind<118?'Severe cyclone':wind<166?'Very severe':'Super cyclone!';
+ const m=sst<26.5?'<span class="t">Sea too cool</span>Cyclones need very warm sea water (above about 26–27 °C) to supply warm, moist rising air.':'<span class="t">A cyclone is forming</span>Warm moist air rises, making a very <b>low-pressure</b> centre (the calm “eye”). Air rushes in from all around and spins. Warmer sea → stronger winds. The IMD tracks cyclones and warns people living on the coast.';if($('#m5').innerHTML!==m)$('#m5').innerHTML=m;
+ const c=x5;c.fillStyle=mixColor('#1864ab','#0b7285',clamp((sst-22)/10,0,1));c.fillRect(0,0,700,420);c.save();c.translate(350,210);c.rotate(-t*(.2+str*1.4));
+ for(let arm=0;arm<4;arm++){c.strokeStyle=`rgba(255,255,255,${.15+str*.6})`;c.lineWidth=10+str*24;c.beginPath();for(let k=0;k<=60;k++){const a=arm*Math.PI/2+k*.09,r=20+k*(2+str*1.4);k?c.lineTo(Math.cos(a)*r,Math.sin(a)*r):c.moveTo(Math.cos(a)*r,Math.sin(a)*r);}c.stroke();}
+ c.restore();if(str>.15){c.fillStyle=mixColor('#1864ab','#0b7285',clamp((sst-22)/10,0,1));c.beginPath();c.arc(350,210,16,0,TAU);c.fill();c.fillStyle='#fff';c.font='800 12px Nunito,"Segoe UI",sans-serif';c.textAlign='center';c.fillText('eye',350,214);}
+ c.fillStyle='#c9d3e8';c.font='700 12px Nunito,"Segoe UI",sans-serif';c.textAlign='left';c.fillText('view from a satellite above the Bay of Bengal',14,404);});
+makeQuiz($('#quiz'),[{"q": "The SI unit of pressure is…", "o": ["kilogram", "newton", "pascal", "joule"], "a": 2, "why": "1 pascal (Pa) = 1 N/m²."}, {"q": "Why does a school bag with broad straps feel more comfortable?", "o": ["Broad straps increase the weight", "Straps reduce gravity", "Broad straps are lighter", "The weight is spread over a larger area, so pressure is less"], "a": 3, "why": "Pressure = force ÷ area. More area → less pressure."}, {"q": "In a bottle with holes at different heights, water shoots farthest from the…", "o": ["bottom hole", "all go equally far", "top hole", "middle hole"], "a": 0, "why": "Liquid pressure increases with depth."}, {"q": "During the day, a sea breeze blows from…", "o": ["land to sea", "sea to land", "up to down", "nowhere"], "a": 1, "why": "Land heats faster; warm air over land rises (low pressure) and cooler air from the sea moves in."}, {"q": "Lightning is caused by…", "o": ["the Moon", "rainwater evaporating", "collision of electric charges in clouds or between cloud and ground", "hot air only"], "a": 2, "why": "Charges build up in clouds and are released as lightning."}, {"q": "Which is the SAFEST place during a thunderstorm?", "o": ["Standing on a rooftop", "Under a tall tree", "In an open field", "Inside a house or a closed car"], "a": 3, "why": "Stay indoors or in a closed vehicle; avoid tall trees and open spaces."}]);
+</script>
+</body></html>

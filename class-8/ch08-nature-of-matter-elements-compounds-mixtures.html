@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nature of Matter: Elements, Compounds, and Mixtures · Class 8 Virtual Lab</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>:root{
+  --paper:#f7f2e8; --paper2:#efe7d6; --ink:#1b2232; --ink2:#4a5468; --muted:#7a8296;
+  --card:#ffffff; --line:#e3dac6; --bench:#101a2c; --bench2:#18243b; --benchline:rgba(255,255,255,.06);
+  --good:#1f9d63; --bad:#d64545; --warn:#e3a21a;
+  --r:18px; --shadow:0 1px 0 rgba(0,0,0,.04),0 10px 30px -12px rgba(40,30,10,.25);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 "Nunito","Segoe UI",system-ui,sans-serif;
+  background-image:radial-gradient(circle at 1px 1px,rgba(120,100,60,.12) 1px,transparent 0);background-size:22px 22px}
+h1,h2,h3,h4{font-family:"Baloo 2","Nunito","Segoe UI",sans-serif;line-height:1.15;margin:0 0 .4em;letter-spacing:-.01em}
+button,input,select{font:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);color:#fff;padding:46px 0 40px}
+.hero .wrap{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+.hero .eyebrow{display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);padding:5px 14px;border-radius:99px;font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.hero h1{font-size:clamp(34px,5.2vw,64px);margin:14px 0 8px;font-weight:800;text-shadow:0 2px 0 rgba(0,0,0,.08)}
+.hero p.q{font-size:clamp(17px,2vw,21px);max-width:720px;opacity:.95;margin:0}
+.hero .bignum{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:clamp(110px,16vw,210px);line-height:.8;color:transparent;-webkit-text-stroke:3px rgba(255,255,255,.55);user-select:none}
+.hero .orbits{position:absolute;inset:0;z-index:1;pointer-events:none}
+.hero .orbits span{position:absolute;border:2px solid rgba(255,255,255,.18);border-radius:50%;animation:spin linear infinite}
+.hero .orbits span::after{content:"";position:absolute;top:-6px;left:50%;width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.7)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hero .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+.hero .meta span{background:rgba(0,0,0,.16);padding:4px 12px;border-radius:99px;font-size:14px;font-weight:700}
+
+/* ---------- TABS ---------- */
+.tabbar{position:sticky;top:0;z-index:30;background:rgba(247,242,232,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:12px 0;scrollbar-width:thin}
+.tabs button{flex:0 0 auto;border:1.5px solid var(--line);background:#fff;color:var(--ink2);padding:8px 16px;border-radius:99px;cursor:pointer;font-weight:800;font-size:14px;transition:.2s;display:flex;gap:8px;align-items:center}
+.tabs button .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--paper2);font-size:12px}
+.tabs button:hover{border-color:var(--accent);color:var(--ink)}
+.tabs button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tabs button.active .n{background:var(--accent);color:#fff}
+
+/* ---------- STATIONS ---------- */
+main{padding:28px 0 60px}
+.station{display:none;animation:rise .45s ease}
+.station.active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.st-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.st-head h2{font-size:clamp(26px,3vw,36px);margin:0}
+.st-head .tag{font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;font-size:13px}
+.st-head p{margin:4px 0 0;color:var(--ink2);max-width:760px}
+.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:20px;align-items:start}
+.grid.even{grid-template-columns:1fr 1fr}
+.grid.wide{grid-template-columns:1fr}
+@media(max-width:940px){.grid,.grid.even{grid-template-columns:1fr}.hero .wrap{grid-template-columns:1fr}.hero .bignum{display:none}}
+
+.stage{position:relative;background:var(--bench);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);overflow:hidden;
+  background-image:linear-gradient(var(--benchline) 1px,transparent 1px),linear-gradient(90deg,var(--benchline) 1px,transparent 1px);background-size:28px 28px}
+.stage canvas,.stage svg{display:block;width:100%;height:auto;border-radius:12px}
+.stage .hud{position:absolute;top:22px;left:24px;color:#fff;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.75;pointer-events:none}
+.stage .hint{color:#c9d3e8;font-size:13.5px;text-align:center;padding:8px 6px 2px}
+.stage.light{background:#fff;background-image:none;border:1px solid var(--line)}
+.stage.light .hint{color:var(--ink2)}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 16px;box-shadow:var(--shadow)}
+.panel + .panel{margin-top:16px}
+.panel h3{font-size:20px;display:flex;align-items:center;gap:8px}
+.panel h3 .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.stack > * + *{margin-top:16px}
+
+.ctrl{margin:12px 0}
+.ctrl label{display:flex;justify-content:space-between;font-weight:800;font-size:14px;color:var(--ink2);margin-bottom:4px}
+.ctrl label b{color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent);height:26px;cursor:pointer}
+select{width:100%;padding:9px 12px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-weight:700}
+
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;background:var(--accent);color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;cursor:pointer;transition:transform .12s,filter .2s,box-shadow .2s;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.btn:hover{filter:brightness(1.07)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
+.btn.dark{background:var(--ink)}
+.btn.sm{padding:6px 12px;font-size:14px;border-radius:10px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:#fff;padding:7px 13px;border-radius:99px;cursor:pointer;font-weight:700;font-size:14px;transition:.15s;color:var(--ink)}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.explain{border-left:5px solid var(--accent);background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 10%,#fff),#fff);border-radius:12px;padding:12px 14px;margin-top:12px}
+.explain b.k{color:var(--accent)}
+.explain .t{font-weight:900;text-transform:uppercase;font-size:12px;letter-spacing:.1em;color:var(--accent);display:block;margin-bottom:2px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:12px 0}
+.readout div{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.readout small{display:block;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.readout b{font-size:21px;font-family:"Baloo 2",sans-serif;font-variant-numeric:tabular-nums}
+
+table.log{width:100%;border-collapse:collapse;font-size:14px}
+table.log th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:2px solid var(--line);padding:6px}
+table.log td{border-bottom:1px solid var(--line);padding:7px 6px}
+table.log tr.new td{animation:flash 1.2s ease}
+@keyframes flash{from{background:color-mix(in srgb,var(--accent) 25%,#fff)}to{background:transparent}}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-weight:800;font-size:12.5px}
+.pill.g{background:#dcf5e8;color:#11663f}.pill.r{background:#fde2e2;color:#9b1c1c}.pill.y{background:#fff1cc;color:#7a5200}.pill.b{background:#dde9ff;color:#1d3f8f}.pill.n{background:#eee;color:#444}
+
+/* ---------- SORTER ---------- */
+.sorter .pool{display:flex;flex-wrap:wrap;gap:8px;min-height:48px;padding:10px;border:2px dashed var(--line);border-radius:14px;background:var(--paper)}
+.sorter .card{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:8px 12px;font-weight:700;cursor:grab;user-select:none;transition:.15s;font-size:14.5px}
+.sorter .card.sel{outline:3px solid var(--accent);transform:translateY(-2px)}
+.sorter .card.ok{border-color:var(--good);background:#e9f8f0}
+.sorter .card.no{border-color:var(--bad);background:#fdeaea;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.sorter .bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+.sorter .bin{border:2px solid var(--line);border-radius:14px;padding:10px;min-height:120px;background:#fff;transition:.15s}
+.sorter .bin.hot{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,#fff)}
+.sorter .bin h4{font-size:16px;margin:0 0 8px;display:flex;justify-content:space-between}
+.sorter .bin .cards{display:flex;flex-wrap:wrap;gap:6px}
+.sorter .score{font-weight:800;color:var(--ink2);margin-top:10px}
+
+/* ---------- QUIZ ---------- */
+.quiz{display:grid;gap:14px}
+.qcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow)}
+.qcard .qn{font-weight:900;color:var(--accent);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+.qcard .qt{font-weight:800;font-size:17px;margin:4px 0 10px}
+.qcard .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:640px){.qcard .opts{grid-template-columns:1fr}}
+.qcard .opt{text-align:left;border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:700;transition:.15s;color:var(--ink)}
+.qcard .opt:hover{border-color:var(--accent)}
+.qcard .opt.right{background:#dcf5e8;border-color:var(--good)}
+.qcard .opt.wrong{background:#fde2e2;border-color:var(--bad)}
+.qcard .why{display:none;margin-top:10px;font-size:15px;color:var(--ink2)}
+.qcard.done .why{display:block}
+.qscore{position:sticky;top:64px;z-index:5;background:var(--paper);padding:8px 0;font-family:"Baloo 2","Segoe UI",sans-serif;font-size:22px;font-weight:800}
+
+.keyideas{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:8px}
+.keyideas div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-weight:600;position:relative;padding-left:40px}
+.keyideas div::before{content:"✦";position:absolute;left:14px;top:10px;color:var(--accent);font-size:18px}
+
+footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--muted);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;opacity:0;transition:.3s;z-index:99;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.muted{color:var(--muted)}
+.center{text-align:center}
+.mt0{margin-top:0}
+.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:#c9d3e8;padding:6px 6px 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.caution{background:#fff5df;border:1px solid #f0d79a;border-radius:12px;padding:10px 12px;font-size:14px;margin-top:12px}
+.caution b{color:#8a5a00}
+
+
+.homefab{position:fixed;right:16px;bottom:16px;z-index:60;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;
+  background:rgba(255,255,255,.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.9);
+  box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font-weight:900;text-decoration:none;font-size:14px}
+.homefab:hover{transform:translateY(-2px)}
+.mini{font-size:13px;color:var(--muted)}
+.bar{height:14px;border-radius:99px;background:var(--paper2);overflow:hidden}.bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.steps{display:grid;gap:8px}.steps button{text-align:left}
+.orderlist{display:grid;gap:8px;margin-top:10px}.orderlist .slot{border:2px dashed var(--line);border-radius:12px;padding:9px 12px;min-height:42px;font-weight:800;background:#fff}
+.orderlist .slot.ok{border-style:solid;border-color:var(--good);background:#e9f8f0}
+@media(max-width:640px){.hero{padding:30px 0 26px}.stage{padding:8px}}
+
+:root{--accent:#2f9e44;--accent2:#f08c00}
+</style>
+</head><body>
+<header class="hero"><div class="orbits"></div><div class="wrap"><div>
+<a href="../index.html#/class-8" style="color:#fff;font-weight:800;text-decoration:none;opacity:.9;margin-right:10px">← All labs</a><span class="eyebrow">Class 8 Science · Chapter 8 · Virtual Lab</span>
+<h1>Nature of Matter: Elements, Compounds, and Mixtures</h1><p class="q">Is air one substance or many? What is sugar made of? Why does a magnet pick iron out of a mixture — but not out of iron sulfide?</p>
+<div class="meta"><span>Mixtures</span><span>Pure substances</span><span>Elements</span><span>Compounds</span><span>Splitting water</span></div></div><div class="bignum">8</div></div></header>
+<nav class="tabbar"><div class="wrap tabs"><button data-tab="s1"><span class="n">1</span>Particle Detective</button><button data-tab="s2"><span class="n">2</span>Iron + Sulfur</button><button data-tab="s3"><span class="n">3</span>Heat the Sugar</button><button data-tab="s4"><span class="n">4</span>Split Water</button><button data-tab="s5"><span class="n">5</span>Sort the Substances</button><button data-tab="s6"><span class="n">6</span>Check Yourself</button></div></nav>
+<main class="wrap">
+<section class="station" id="s1">
+  <div class="st-head"><div><div class="tag">Station 1 · Sections 8.2 & 8.3</div><h2>Particle Detective</h2>
+  <p>Each box is a zoomed-in view of a substance. Same coloured balls are atoms of the same element. Is the substance an element, a compound or a mixture?</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c1"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Your verdict</h3>
+      <div class="btnrow"><button class="btn" data-a="e">Element</button><button class="btn" data-a="c">Compound</button><button class="btn" data-a="m">Mixture</button></div>
+      <div class="readout"><div><small>Round</small><b id="rd">1 / 10</b></div><div><small>Score</small><b id="sc1">0</b></div></div>
+      <div class="explain" id="m1"><span class="t">Clues</span>Element: only one kind of atom. Compound: every particle is the same group of different atoms. Mixture: different kinds of particles mixed.</div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s2">
+  <div class="st-head"><div><div class="tag">Station 2 · Activity 8.5 (demonstration)</div><h2>Iron + Sulfur</h2>
+  <p>Mix iron filings (grey) with sulfur powder (yellow) — Sample A. Heat half of it to get Sample B. Bring a magnet near each. What changed?</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c2"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Steps</h3>
+      <div class="btnrow"><button class="btn" id="mix">1. Mix (Sample A)</button><button class="btn" id="heat">2. Heat it 🔥</button><button class="btn dark" id="mag">🧲 Bring a magnet</button><button class="btn ghost" id="rs2">↺ Reset</button></div>
+      <div class="readout"><div><small>Sample</small><b id="smp">—</b></div><div><small>Magnet picks up</small><b id="pk">—</b></div></div>
+      <div class="explain" id="m2"></div><div class="caution"><b>Teacher demo only:</b> heating sulfur gives off harmful gases. Do it in a fume hood.</div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s3">
+  <div class="st-head"><div><div class="tag">Station 3 · Activity 8.4</div><h2>Heat the Sugar</h2>
+  <p>Gently heat a teaspoon of sugar in a dry boiling tube. Watch the colour — and look near the mouth of the tube.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c3"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Heating</h3>
+      <div class="ctrl"><label>Heat for <b id="ht-v"></b></label><input type="range" id="ht" min="0" max="100" value="0"></div>
+      <div class="readout"><div><small>Sugar looks</small><b id="sg">White</b></div><div><small>Droplets</small><b id="dr">None</b></div></div>
+      <div class="explain" id="m3"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s4">
+  <div class="st-head"><div><div class="tag">Station 4 · Activity 8.3</div><h2>Split Water</h2>
+  <p>Pass electric current through water (with a little salt). Bubbles of gas collect in two tubes. Then test each gas.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c4"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Controls</h3>
+      <div class="btnrow"><button class="btn" id="on4">🔌 Switch ON</button><button class="btn ghost" id="rs4">↺ Reset</button></div>
+      <div class="btnrow"><button class="btn ghost" id="testA">🔥 Burning splint → Tube A</button><button class="btn ghost" id="testB">✨ Glowing splint → Tube B</button></div>
+      <div class="readout"><div><small>Tube A</small><b id="va">0 mL</b></div><div><small>Tube B</small><b id="vb">0 mL</b></div><div><small>Ratio</small><b id="ra">—</b></div></div>
+      <div class="explain" id="m4"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s5">
+  <div class="st-head"><div><div class="tag">Station 5 · Review</div><h2>Sort the Substances</h2>
+  <p>Put each substance into the right group. Then sort the mixtures as uniform or non-uniform.</p></div></div>
+  <div class="grid even"><div class="panel"><h3><span class="dot"></span>Element, compound or mixture?</h3><div id="ecm"></div></div><div class="panel"><h3><span class="dot"></span>Kinds of mixtures</h3><div id="mt"></div></div></div>
+</section>
+<section class="station" id="s6">
+  <div class="st-head"><div><div class="tag">Station 6</div><h2>Check Yourself</h2></div></div>
+  <div id="quiz"></div>
+  <h3 style="margin-top:28px">Key ideas</h3>
+  <div class="keyideas"><div>A mixture has two or more substances that keep their own properties and can be separated physically.</div><div>A pure substance is made of only one kind of particle.</div><div>Elements cannot be broken down into simpler substances; they are the building blocks of matter.</div><div>A compound is made of two or more elements chemically combined in a fixed ratio, with new properties.</div><div>Water is a compound of hydrogen and oxygen; sugar is a compound of carbon, hydrogen and oxygen.</div><div>Minerals are natural solids with a fixed chemical composition.</div></div>
+</section>
+</main>
+<footer class="wrap">Class 8 Science · Chapter 8: Nature of Matter: Elements, Compounds, and Mixtures · Interactive Virtual Lab · Explore, predict, observe, explain.</footer>
+<a class="homefab" href="../index.html#/class-8">🏠 Lab Home</a>
+<script>/* ===== Shared lab toolkit ===== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const rand = (a, b) => a + Math.random() * (b - a);
+const TAU = Math.PI * 2;
+
+/* Canvas with crisp DPR scaling; draw in logical W x H units */
+function setupCanvas(cv, W, H) {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = W * dpr; cv.height = H * dpr;
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  cv._W = W; cv._H = H; ctx.W = W; ctx.H = H;
+  return ctx;
+}
+function canvasPoint(cv, e) {
+  const r = cv.getBoundingClientRect();
+  const p = e.touches ? e.touches[0] : e;
+  return { x: (p.clientX - r.left) * cv._W / r.width, y: (p.clientY - r.top) * cv._H / r.height };
+}
+function svgPoint(svg, e) {
+  const pt = svg.createSVGPoint(); const p = e.touches ? e.touches[0] : e;
+  pt.x = p.clientX; pt.y = p.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+function mixColor(c1, c2, t) { // hex colours
+  const a = parseInt(c1.slice(1), 16), b = parseInt(c2.slice(1), 16);
+  const r = Math.round(lerp(a >> 16, b >> 16, t)), g = Math.round(lerp((a >> 8) & 255, (b >> 8) & 255, t)), bl = Math.round(lerp(a & 255, b & 255, t));
+  return `rgb(${r},${g},${bl})`;
+}
+
+/* Animation loop: callbacks receive dt (s). Each registered with a station id; runs only when that station is visible */
+const Loop = { fns: [], last: 0,
+  add(stationId, fn) { this.fns.push({ id: stationId, fn }); },
+  tick(t) { const dt = Math.min(.05, (t - (Loop.last || t)) / 1000); Loop.last = t;
+    for (const f of Loop.fns) { const el = f.id ? document.getElementById(f.id) : null; if (!f.id || (el && el.classList.contains('active'))) f.fn(dt, t / 1000); }
+    requestAnimationFrame(Loop.tick); } };
+requestAnimationFrame(Loop.tick);
+
+/* Tabs */
+function initTabs() {
+  const btns = $$('.tabs button');
+  const show = id => {
+    btns.forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+    $$('.station').forEach(s => s.classList.toggle('active', s.id === id));
+    document.dispatchEvent(new CustomEvent('station', { detail: id }));
+    try { history.replaceState(null, '', '#' + id); } catch (e) {}
+  };
+  btns.forEach(b => b.addEventListener('click', () => { show(b.dataset.tab); window.scrollTo({ top: $('.tabbar').offsetTop, behavior: 'smooth' }); }));
+  const h = location.hash.slice(1);
+  show(btns.some(b => b.dataset.tab === h) ? h : btns[0].dataset.tab);
+}
+
+/* Toast */
+let _tt; function toast(msg, ms = 2200) { let t = $('.toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add('show'); clearTimeout(_tt); _tt = setTimeout(() => t.classList.remove('show'), ms); }
+
+/* Sound (Web Audio) */
+let _ac; function ac() { if (!_ac) { try { _ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (_ac && _ac.state === 'suspended') _ac.resume(); return _ac; }
+const Sound = {
+  on: true,
+  tone(f = 440, d = .15, type = 'sine', v = .15) { const a = ac(); if (!a || !this.on) return; const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(v, a.currentTime); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + d); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + d); },
+  ring(f = 880) { [1, 2.76, 5.4].forEach((m, i) => setTimeout(() => this.tone(f * m, 1.6 - i * .4, 'sine', .12 / (i + 1)), 0)); },
+  thud() { const a = ac(); if (!a || !this.on) return; const o = a.createOscillator(), g = a.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(140, a.currentTime); o.frequency.exponentialRampToValueAtTime(40, a.currentTime + .15); g.gain.setValueAtTime(.35, a.currentTime); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + .18); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + .2); },
+  noise(d = .5, v = .08, hp = 2000) { const a = ac(); if (!a || !this.on) return; const b = a.createBuffer(1, a.sampleRate * d, a.sampleRate), ch = b.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / ch.length); const s = a.createBufferSource(); s.buffer = b; const f = a.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = hp; const g = a.createGain(); g.gain.value = v; s.connect(f).connect(g).connect(a.destination); s.start(); },
+  good() { this.tone(660, .12, 'sine', .12); setTimeout(() => this.tone(990, .18, 'sine', .12), 110); },
+  bad() { this.tone(200, .22, 'square', .05); },
+  click() { this.tone(1200, .03, 'square', .03); }
+};
+
+/* Click-or-drag sorter. items: [{t, cat}], cats: [{id,label}] */
+function makeSorter(root, items, cats, opts = {}) {
+  root.classList.add('sorter');
+  root.innerHTML = `<div class="pool"></div><div class="bins">${cats.map(c => `<div class="bin" data-cat="${c.id}"><h4>${c.label}<span class="cnt">0</span></h4><div class="cards"></div></div>`).join('')}</div><div class="score"></div>`;
+  const pool = $('.pool', root); let sel = null, right = 0, tries = 0;
+  const shuffled = items.map(x => ({ ...x })).sort(() => Math.random() - .5);
+  shuffled.forEach((it, i) => { const c = document.createElement('div'); c.className = 'card'; c.textContent = it.t; c.draggable = true; c.dataset.i = i;
+    c.addEventListener('click', () => { if (c.classList.contains('ok')) return; $$('.card.sel', root).forEach(x => x.classList.remove('sel')); sel = c; c.classList.add('sel'); });
+    c.addEventListener('dragstart', e => { sel = c; e.dataTransfer.setData('text', i); }); pool.appendChild(c); });
+  const drop = bin => { if (!sel) return; const it = shuffled[+sel.dataset.i]; tries++;
+    const ok = Array.isArray(it.cat) ? it.cat.includes(bin.dataset.cat) : it.cat === bin.dataset.cat;
+    if (ok) { right++; sel.classList.remove('sel', 'no'); sel.classList.add('ok'); sel.draggable = false; $('.cards', bin).appendChild(sel); $('.cnt', bin).textContent = $$('.card', bin).length; Sound.good(); if (it.why) toast(it.why, 3000); }
+    else { sel.classList.remove('no'); void sel.offsetWidth; sel.classList.add('no'); Sound.bad(); toast(it.hint || 'Not quite — think again!'); }
+    sel = null; $$('.card.sel', root).forEach(x => x.classList.remove('sel'));
+    $('.score', root).textContent = `Sorted ${right} / ${items.length}` + (right === items.length ? `  ·  🎉 Done in ${tries} tries!` : '');
+    if (right === items.length && opts.onDone) opts.onDone(tries);
+  };
+  $$('.bin', root).forEach(b => { b.addEventListener('click', () => drop(b)); b.addEventListener('dragover', e => { e.preventDefault(); b.classList.add('hot'); }); b.addEventListener('dragleave', () => b.classList.remove('hot')); b.addEventListener('drop', e => { e.preventDefault(); b.classList.remove('hot'); drop(b); }); });
+  $('.score', root).textContent = `Sorted 0 / ${items.length}  ·  Tip: tap a card, then tap a box (or drag it).`;
+}
+
+/* Quiz: [{q, o:[..], a:index, why}] */
+function makeQuiz(root, qs) {
+  let score = 0, done = 0;
+  const head = document.createElement('div'); head.className = 'qscore'; root.before(head);
+  const upd = () => head.textContent = `Score: ${score} / ${qs.length}` + (done === qs.length ? (score === qs.length ? '  ·  Perfect! 🌟' : score >= qs.length * .7 ? '  ·  Great work!' : '  ·  Revisit the stations and try again') : '');
+  root.classList.add('quiz');
+  qs.forEach((q, i) => { const c = document.createElement('div'); c.className = 'qcard';
+    c.innerHTML = `<div class="qn">Question ${i + 1}</div><div class="qt">${q.q}</div><div class="opts">${q.o.map((o, j) => `<button class="opt" data-j="${j}">${String.fromCharCode(65 + j)}. ${o}</button>`).join('')}</div><div class="why">${q.why || ''}</div>`;
+    $$('.opt', c).forEach(b => b.addEventListener('click', () => { if (c.classList.contains('done')) return; c.classList.add('done'); done++;
+      const j = +b.dataset.j; if (j === q.a) { score++; b.classList.add('right'); Sound.good(); } else { b.classList.add('wrong'); $$('.opt', c)[q.a].classList.add('right'); Sound.bad(); }
+      upd(); }));
+    root.appendChild(c); });
+  const r = document.createElement('button'); r.className = 'btn ghost'; r.textContent = '↺ Reset quiz'; r.style.marginTop = '6px';
+  r.onclick = () => { root.innerHTML = ''; head.remove(); r.remove(); makeQuiz(root, qs); }; root.after(r);
+  upd();
+}
+
+/* Logging helper */
+function addRow(tbody, cells, max = 12) { const tr = document.createElement('tr'); tr.className = 'new'; tr.innerHTML = cells.map(c => `<td>${c}</td>`).join(''); tbody.prepend(tr); while (tbody.children.length > max) tbody.lastChild.remove(); }
+
+/* Range binding: bindRange('#id', v=>..., fmt) */
+function bindRange(sel, fn, fmt = v => v) { const el = $(sel); const out = $(sel + '-v'); const go = () => { const v = +el.value; if (out) out.textContent = fmt(v); fn(v); }; el.addEventListener('input', go); go(); return el; }
+
+document.addEventListener('DOMContentLoaded', () => {
+  initTabs();
+  const o = $('.hero .orbits'); if (o) { [[420, 30, 70, -120], [620, 50, 40, -250], [260, 18, 80, 30]].forEach(([s, d, x, y]) => { const sp = document.createElement('span'); sp.style.cssText = `width:${s}px;height:${s}px;left:${x}%;top:${y}px;animation-duration:${d}s`; o.appendChild(sp); }); }
+});
+
+</script>
+<script>
+/* S1 particle detective */
+const c1=$('#c1'),x1=setupCanvas(c1,700,420);let round=1,sc=0,cur=null,locked=false;const COLS=['#ff6b6b','#4dabf7','#ffd43b','#69db7c','#da77f2'];
+function gen(){const k=['e','c','m'][Math.floor(Math.random()*3)];const ps=[];const a=Math.floor(Math.random()*5);let b=(a+1+Math.floor(Math.random()*4))%5;
+ for(let i=0;i<14;i++){const x=rand(70,630),y=rand(60,370);let atoms;
+  if(k==='e')atoms=Math.random()<.5&&i%2?[[0,0,a]]:[[0,0,a],[22,0,a]];
+  else if(k==='c')atoms=[[0,0,a],[22,0,b],[-11,-18,b]].slice(0,i%1===0?3:2);
+  else atoms=i%2?[[0,0,a],[22,0,a]]:[[0,0,b]];ps.push({x,y,r:rand(0,6),atoms,vx:rand(-20,20),vy:rand(-20,20)});}
+ if(k==='e'){const one=Math.random()<.5;ps.forEach(p=>p.atoms=one?[[0,0,a]]:[[0,0,a],[22,0,a]]);}
+ cur={k,ps};locked=false;}
+$$('#s1 [data-a]').forEach(b=>b.onclick=()=>{if(!cur||locked)return;locked=true;const ok=b.dataset.a===cur.k;if(ok){sc++;Sound.good();}else Sound.bad();
+ const why={e:'Only <b>one kind</b> of atom — an element (single atoms or pairs of the same atom, like O₂).',c:'Every particle is the <b>same group of different atoms</b> joined together — a compound.',m:'There are <b>different kinds</b> of particles mixed together — a mixture.'}[cur.k];
+ $('#m1').innerHTML=`<span class="t">${ok?'Correct ✅':'Not quite ❌'}</span>${why}`;$('#sc1').textContent=sc;setTimeout(()=>{if(round<10){round++;gen();}else{$('#m1').innerHTML+=`<br><b>Final score: ${sc}/10.</b> <button class="btn sm" id="again1">Play again</button>`;$('#again1').onclick=()=>{round=1;sc=0;$('#sc1').textContent=0;gen();};}$('#rd').textContent=round+' / 10';},1400);});
+gen();
+Loop.add('s1',(dt)=>{const c=x1;c.clearRect(0,0,700,420);c.strokeStyle='rgba(255,255,255,.3)';c.lineWidth=2;c.strokeRect(40,30,620,370);
+ for(const p of cur.ps){p.x+=p.vx*dt;p.y+=p.vy*dt;p.r+=dt*.5;if(p.x<70||p.x>630)p.vx*=-1;if(p.y<60||p.y>370)p.vy*=-1;c.save();c.translate(p.x,p.y);c.rotate(p.r);for(const [ax,ay,ci] of p.atoms){c.fillStyle=COLS[ci];c.beginPath();c.arc(ax,ay,12,0,TAU);c.fill();c.strokeStyle='rgba(0,0,0,.3)';c.stroke();}c.restore();}});
+
+/* S2 iron sulfur */
+let stage2=0,magOn=false,heatT=0;const c2=$('#c2'),x2=setupCanvas(c2,700,400);const grains=[...Array(260)].map((_,i)=>({x:rand(-150,150),y:rand(-30,30),fe:i%2===0,lx:0,ly:0}));
+$('#mix').onclick=()=>{stage2=1;magOn=false;heatT=0;Sound.click();};$('#heat').onclick=()=>{if(stage2<1){toast('Mix them first!');return;}stage2=2;heatT=0;magOn=false;};$('#mag').onclick=()=>{if(!stage2){toast('Make Sample A first');return;}magOn=!magOn;};$('#rs2').onclick=()=>{stage2=0;magOn=false;};
+Loop.add('s2',(dt,t)=>{if(stage2===2)heatT=Math.min(1,heatT+dt*.4);const black=stage2===2?heatT:0;
+ $('#smp').textContent=stage2===0?'Separate powders':stage2===1?'A: mixture':black<1?'Heating…':'B: iron sulfide';$('#pk').textContent=!magOn?'—':stage2===1?'Iron filings':black>=1?'Nothing!':'…';
+ const m=stage2===0?'<span class="t">Start</span>Iron is grey and magnetic. Sulfur is a yellow powder and not magnetic.':stage2===1?(magOn?'<span class="t">Mixture separated</span>The magnet pulls out the iron, leaving the yellow sulfur. In a mixture each substance keeps its own properties.':'<span class="t">Sample A</span>A non-uniform mixture — you can still see grey and yellow bits.'):black<1?'<span class="t">Glowing!</span>The mixture glows and turns into a black mass.':(magOn?'<span class="t">Not attracted!</span>The black solid is <b>iron sulfide</b>, a new compound. It does not behave like iron or like sulfur.':'<span class="t">Sample B</span>A uniform black solid. Can you still see iron or sulfur? Test it with the magnet.');if($('#m2').innerHTML!==m)$('#m2').innerHTML=m;
+ const c=x2;c.clearRect(0,0,700,400);c.fillStyle='#f1f3f5';c.beginPath();c.ellipse(350,270,200,50,0,0,TAU);c.fill();
+ if(stage2===0){c.fillStyle='#868e96';c.beginPath();c.arc(250,262,50,Math.PI,0);c.fill();c.fillStyle='#fcc419';c.beginPath();c.arc(450,262,50,Math.PI,0);c.fill();}
+ else{for(const g of grains){let x=350+g.x,y=262+g.y*.6;if(magOn&&stage2===1&&g.fe){g.lx+=(1-g.lx)*dt*3;x=lerp(x,330+g.x*.2,g.lx);y=lerp(y,120+g.y*.3,g.lx);}else g.lx*=.9;c.fillStyle=black>0?mixColor(g.fe?'#868e96':'#fcc419','#212529',black):g.fe?'#868e96':'#fcc419';c.fillRect(x,y,4,4);}}
+ if(stage2===2&&heatT<1){c.fillStyle=`rgba(255,120,30,${.4+.3*Math.sin(t*20)})`;c.beginPath();c.ellipse(350,262,150,26,0,0,TAU);c.fill();c.fillStyle='#ff922b';for(let i=0;i<8;i++){c.beginPath();c.moveTo(300+i*14,340);c.lineTo(306+i*14,322-Math.sin(t*20+i)*8);c.lineTo(312+i*14,340);c.fill();}}
+ if(magOn){c.fillStyle='#e03131';c.fillRect(280,40,40,70);c.fillStyle='#1c7ed6';c.fillRect(340,40,40,70);c.fillStyle='#adb5bd';c.fillRect(280,40,100,20);}});
+
+/* S3 sugar */
+let ht=0;const c3=$('#c3'),x3=setupCanvas(c3,700,400);bindRange('#ht',v=>ht=v,v=>Math.round(v/10)+' min');
+Loop.add('s3',(dt,t)=>{const k=ht/100;const col=k<.3?mixColor('#ffffff','#e9c46a',k/.3):k<.65?mixColor('#e9c46a','#7f4f24',(k-.3)/.35):mixColor('#7f4f24','#111111',(k-.65)/.35);
+ $('#sg').textContent=k<.15?'White':k<.4?'Melting, yellow':k<.65?'Brown (caramel)':k<.85?'Dark brown':'Black (charcoal)';$('#dr').textContent=k>.35?'Water drops near the mouth!':'None';
+ const m=k<.15?'<span class="t">Heat gently</span>Slide the heating time.':k<.85?'<span class="t">Changing</span>The sugar melts and turns brown. Tiny drops of water appear near the cooler mouth of the tube — they must come from the sugar itself!':'<span class="t">Sugar is a compound</span>Black <b>carbon</b> (charcoal) is left behind and water was given off. Water is hydrogen + oxygen, so sugar is made of <b>carbon, hydrogen and oxygen</b> chemically combined.';if($('#m3').innerHTML!==m)$('#m3').innerHTML=m;
+ const c=x3;c.clearRect(0,0,700,400);c.save();c.translate(350,200);c.rotate(-.35);c.strokeStyle='#dee2e6';c.lineWidth=3;c.beginPath();c.moveTo(-200,-26);c.lineTo(120,-26);c.arc(120,0,26,-Math.PI/2,Math.PI/2);c.lineTo(-200,26);c.stroke();
+ c.fillStyle=col;c.beginPath();c.moveTo(60,-24+k*8);c.lineTo(120,-24+k*8);c.arc(120,0,24,-Math.PI/2,Math.PI/2);c.lineTo(60,24);c.closePath();c.fill();
+ if(k>.35){c.fillStyle='rgba(165,216,255,.9)';for(let i=0;i<Math.round((k-.35)*24);i++){c.beginPath();c.arc(-190+(i*23)%110,-20+(i*11)%40,3,0,TAU);c.fill();}}c.restore();
+ if(k>0){c.fillStyle='#ff922b';for(let i=0;i<6;i++){c.beginPath();c.moveTo(440+i*10,330);c.lineTo(445+i*10,290-Math.sin(t*18+i)*10);c.lineTo(450+i*10,330);c.fill();}}c.fillStyle='#495057';c.fillRect(425,330,90,40);});
+
+/* S4 electrolysis */
+let on4=false,vA=0,flash=null;const c4=$('#c4'),x4=setupCanvas(c4,700,420);
+$('#on4').onclick=()=>{on4=!on4;$('#on4').textContent=on4?'🔌 Switch OFF':'🔌 Switch ON';};$('#rs4').onclick=()=>{vA=0;on4=false;$('#on4').textContent='🔌 Switch ON';};
+$('#testA').onclick=()=>{if(vA<4){toast('Collect more gas first');return;}flash={x:250,t:.6,c:'#ffd43b'};Sound.thud();$('#m4').innerHTML='<span class="t">Pop! 💥</span>The gas in tube A burns with a “pop” — it is <b>hydrogen</b>.';};
+$('#testB').onclick=()=>{if(vA<4){toast('Collect more gas first');return;}flash={x:450,t:1.2,c:'#ff922b'};Sound.good();$('#m4').innerHTML='<span class="t">Relights! ✨</span>The glowing splint bursts into flame — the gas in tube B is <b>oxygen</b>, which supports burning.';};
+$('#m4').innerHTML='<span class="t">Water → two gases</span>Switch on and watch bubbles rise at each electrode, then test each gas.';
+Loop.add('s4',(dt,t)=>{if(on4)vA=Math.min(20,vA+dt*1.6);const vB=vA/2;$('#va').textContent=vA.toFixed(1)+' mL';$('#vb').textContent=vB.toFixed(1)+' mL';$('#ra').textContent=vA>1?'2 : 1':'—';
+ const c=x4;c.clearRect(0,0,700,420);c.fillStyle='rgba(116,192,252,.3)';c.fillRect(140,200,420,190);c.strokeStyle='#dee2e6';c.lineWidth=3;c.strokeRect(140,170,420,220);
+ [[250,vA,'A (−)'],[450,vB,'B (+)']].forEach(([x,v,l])=>{c.strokeStyle='#dee2e6';c.strokeRect(x-26,40,52,300);c.fillStyle='rgba(116,192,252,.45)';c.fillRect(x-24,42+v*12,48,296-v*12);c.fillStyle='rgba(255,255,255,.08)';c.fillRect(x-24,42,48,v*12);
+  c.fillStyle='#868e96';c.fillRect(x-4,330,8,60);if(on4){c.fillStyle='rgba(255,255,255,.8)';for(let i=0;i<(x===250?10:5);i++){c.beginPath();c.arc(x+Math.sin(i*3+t*5)*10,330-((t*90+i*37)%(280-v*12)),3,0,TAU);c.fill();}}
+  c.fillStyle='#c9d3e8';c.font='800 13px Nunito,"Segoe UI",sans-serif';c.textAlign='center';c.fillText('Tube '+l,x,30);});
+ c.strokeStyle=on4?'#ffd43b':'#868e96';c.lineWidth=3;c.beginPath();c.moveTo(250,390);c.lineTo(250,410);c.lineTo(320,410);c.moveTo(380,410);c.lineTo(450,410);c.lineTo(450,390);c.stroke();c.fillStyle='#495057';c.fillRect(320,398,60,22);
+ if(flash){flash.t-=dt;c.fillStyle=flash.c;c.globalAlpha=Math.max(0,flash.t);c.beginPath();c.arc(flash.x,40,30,0,TAU);c.fill();c.globalAlpha=1;if(flash.t<=0)flash=null;}});
+
+/* S5 */
+makeSorter($('#ecm'),[{t:'Oxygen',cat:'e'},{t:'Iron',cat:'e'},{t:'Gold',cat:'e'},{t:'Carbon (charcoal)',cat:'e'},{t:'Water',cat:'c'},{t:'Common salt',cat:'c'},{t:'Sugar',cat:'c'},{t:'Carbon dioxide',cat:'c'},{t:'Air',cat:'m'},{t:'Sea water',cat:'m'},{t:'Brass',cat:'m',why:'Brass is a mixture (alloy) of copper and zinc.'},{t:'Soil',cat:'m'}],[{id:'e',label:'⚪ Element'},{id:'c',label:'🔗 Compound'},{id:'m',label:'🥗 Mixture'}]);
+makeSorter($('#mt'),[{t:'Sugar solution',cat:'u'},{t:'Salt water',cat:'u'},{t:'Air',cat:'u'},{t:'Brass',cat:'u'},{t:'Sand and water',cat:'n'},{t:'Oil and water',cat:'n'},{t:'Iron filings + sulfur',cat:'n'},{t:'Chana chaat',cat:'n'}],[{id:'u',label:'Uniform (homogeneous)'},{id:'n',label:'Non-uniform (heterogeneous)'}]);
+makeQuiz($('#quiz'),[{"q": "Which of these is an element?", "o": ["Copper", "Salt", "Air", "Water"], "a": 0, "why": "Copper cannot be broken down into simpler substances."}, {"q": "Air is a…", "o": ["compound of oxygen and nitrogen", "mixture of gases", "single element", "pure substance"], "a": 1, "why": "Air contains nitrogen, oxygen, carbon dioxide, water vapour etc., each keeping its properties."}, {"q": "After heating iron and sulfur together, a magnet does not attract the black mass because…", "o": ["the magnet got hot", "iron was lost", "a new compound (iron sulfide) with different properties formed", "sulfur is magnetic"], "a": 2, "why": "A compound has properties different from its elements."}, {"q": "On heating sugar, black charcoal and water droplets are formed. So sugar is…", "o": ["a mixture of charcoal and water", "a metal", "an element", "a compound of carbon, hydrogen and oxygen"], "a": 3, "why": "Sugar breaks down into carbon and water (hydrogen + oxygen)."}, {"q": "When water is split by electricity, the volumes of hydrogen and oxygen are in the ratio…", "o": ["2 : 1", "3 : 1", "1 : 1", "1 : 2"], "a": 0, "why": "Twice as much hydrogen as oxygen is collected."}, {"q": "Which is a uniform (homogeneous) mixture?", "o": ["Sand in water", "Sugar dissolved in water", "Oil and water", "Iron filings with sulfur"], "a": 1, "why": "A solution has the same composition throughout."}]);
+</script>
+</body></html>

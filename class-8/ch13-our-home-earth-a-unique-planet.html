@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Our Home: Earth, a Unique Life Sustaining Planet · Class 8 Virtual Lab</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>:root{
+  --paper:#f7f2e8; --paper2:#efe7d6; --ink:#1b2232; --ink2:#4a5468; --muted:#7a8296;
+  --card:#ffffff; --line:#e3dac6; --bench:#101a2c; --bench2:#18243b; --benchline:rgba(255,255,255,.06);
+  --good:#1f9d63; --bad:#d64545; --warn:#e3a21a;
+  --r:18px; --shadow:0 1px 0 rgba(0,0,0,.04),0 10px 30px -12px rgba(40,30,10,.25);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 "Nunito","Segoe UI",system-ui,sans-serif;
+  background-image:radial-gradient(circle at 1px 1px,rgba(120,100,60,.12) 1px,transparent 0);background-size:22px 22px}
+h1,h2,h3,h4{font-family:"Baloo 2","Nunito","Segoe UI",sans-serif;line-height:1.15;margin:0 0 .4em;letter-spacing:-.01em}
+button,input,select{font:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);color:#fff;padding:46px 0 40px}
+.hero .wrap{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+.hero .eyebrow{display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);padding:5px 14px;border-radius:99px;font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.hero h1{font-size:clamp(34px,5.2vw,64px);margin:14px 0 8px;font-weight:800;text-shadow:0 2px 0 rgba(0,0,0,.08)}
+.hero p.q{font-size:clamp(17px,2vw,21px);max-width:720px;opacity:.95;margin:0}
+.hero .bignum{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:clamp(110px,16vw,210px);line-height:.8;color:transparent;-webkit-text-stroke:3px rgba(255,255,255,.55);user-select:none}
+.hero .orbits{position:absolute;inset:0;z-index:1;pointer-events:none}
+.hero .orbits span{position:absolute;border:2px solid rgba(255,255,255,.18);border-radius:50%;animation:spin linear infinite}
+.hero .orbits span::after{content:"";position:absolute;top:-6px;left:50%;width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.7)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hero .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+.hero .meta span{background:rgba(0,0,0,.16);padding:4px 12px;border-radius:99px;font-size:14px;font-weight:700}
+
+/* ---------- TABS ---------- */
+.tabbar{position:sticky;top:0;z-index:30;background:rgba(247,242,232,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:12px 0;scrollbar-width:thin}
+.tabs button{flex:0 0 auto;border:1.5px solid var(--line);background:#fff;color:var(--ink2);padding:8px 16px;border-radius:99px;cursor:pointer;font-weight:800;font-size:14px;transition:.2s;display:flex;gap:8px;align-items:center}
+.tabs button .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--paper2);font-size:12px}
+.tabs button:hover{border-color:var(--accent);color:var(--ink)}
+.tabs button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tabs button.active .n{background:var(--accent);color:#fff}
+
+/* ---------- STATIONS ---------- */
+main{padding:28px 0 60px}
+.station{display:none;animation:rise .45s ease}
+.station.active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.st-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.st-head h2{font-size:clamp(26px,3vw,36px);margin:0}
+.st-head .tag{font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;font-size:13px}
+.st-head p{margin:4px 0 0;color:var(--ink2);max-width:760px}
+.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:20px;align-items:start}
+.grid.even{grid-template-columns:1fr 1fr}
+.grid.wide{grid-template-columns:1fr}
+@media(max-width:940px){.grid,.grid.even{grid-template-columns:1fr}.hero .wrap{grid-template-columns:1fr}.hero .bignum{display:none}}
+
+.stage{position:relative;background:var(--bench);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);overflow:hidden;
+  background-image:linear-gradient(var(--benchline) 1px,transparent 1px),linear-gradient(90deg,var(--benchline) 1px,transparent 1px);background-size:28px 28px}
+.stage canvas,.stage svg{display:block;width:100%;height:auto;border-radius:12px}
+.stage .hud{position:absolute;top:22px;left:24px;color:#fff;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.75;pointer-events:none}
+.stage .hint{color:#c9d3e8;font-size:13.5px;text-align:center;padding:8px 6px 2px}
+.stage.light{background:#fff;background-image:none;border:1px solid var(--line)}
+.stage.light .hint{color:var(--ink2)}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 16px;box-shadow:var(--shadow)}
+.panel + .panel{margin-top:16px}
+.panel h3{font-size:20px;display:flex;align-items:center;gap:8px}
+.panel h3 .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.stack > * + *{margin-top:16px}
+
+.ctrl{margin:12px 0}
+.ctrl label{display:flex;justify-content:space-between;font-weight:800;font-size:14px;color:var(--ink2);margin-bottom:4px}
+.ctrl label b{color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent);height:26px;cursor:pointer}
+select{width:100%;padding:9px 12px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-weight:700}
+
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;background:var(--accent);color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;cursor:pointer;transition:transform .12s,filter .2s,box-shadow .2s;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.btn:hover{filter:brightness(1.07)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
+.btn.dark{background:var(--ink)}
+.btn.sm{padding:6px 12px;font-size:14px;border-radius:10px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:#fff;padding:7px 13px;border-radius:99px;cursor:pointer;font-weight:700;font-size:14px;transition:.15s;color:var(--ink)}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.explain{border-left:5px solid var(--accent);background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 10%,#fff),#fff);border-radius:12px;padding:12px 14px;margin-top:12px}
+.explain b.k{color:var(--accent)}
+.explain .t{font-weight:900;text-transform:uppercase;font-size:12px;letter-spacing:.1em;color:var(--accent);display:block;margin-bottom:2px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:12px 0}
+.readout div{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.readout small{display:block;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.readout b{font-size:21px;font-family:"Baloo 2",sans-serif;font-variant-numeric:tabular-nums}
+
+table.log{width:100%;border-collapse:collapse;font-size:14px}
+table.log th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:2px solid var(--line);padding:6px}
+table.log td{border-bottom:1px solid var(--line);padding:7px 6px}
+table.log tr.new td{animation:flash 1.2s ease}
+@keyframes flash{from{background:color-mix(in srgb,var(--accent) 25%,#fff)}to{background:transparent}}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-weight:800;font-size:12.5px}
+.pill.g{background:#dcf5e8;color:#11663f}.pill.r{background:#fde2e2;color:#9b1c1c}.pill.y{background:#fff1cc;color:#7a5200}.pill.b{background:#dde9ff;color:#1d3f8f}.pill.n{background:#eee;color:#444}
+
+/* ---------- SORTER ---------- */
+.sorter .pool{display:flex;flex-wrap:wrap;gap:8px;min-height:48px;padding:10px;border:2px dashed var(--line);border-radius:14px;background:var(--paper)}
+.sorter .card{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:8px 12px;font-weight:700;cursor:grab;user-select:none;transition:.15s;font-size:14.5px}
+.sorter .card.sel{outline:3px solid var(--accent);transform:translateY(-2px)}
+.sorter .card.ok{border-color:var(--good);background:#e9f8f0}
+.sorter .card.no{border-color:var(--bad);background:#fdeaea;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.sorter .bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+.sorter .bin{border:2px solid var(--line);border-radius:14px;padding:10px;min-height:120px;background:#fff;transition:.15s}
+.sorter .bin.hot{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,#fff)}
+.sorter .bin h4{font-size:16px;margin:0 0 8px;display:flex;justify-content:space-between}
+.sorter .bin .cards{display:flex;flex-wrap:wrap;gap:6px}
+.sorter .score{font-weight:800;color:var(--ink2);margin-top:10px}
+
+/* ---------- QUIZ ---------- */
+.quiz{display:grid;gap:14px}
+.qcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow)}
+.qcard .qn{font-weight:900;color:var(--accent);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+.qcard .qt{font-weight:800;font-size:17px;margin:4px 0 10px}
+.qcard .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:640px){.qcard .opts{grid-template-columns:1fr}}
+.qcard .opt{text-align:left;border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:700;transition:.15s;color:var(--ink)}
+.qcard .opt:hover{border-color:var(--accent)}
+.qcard .opt.right{background:#dcf5e8;border-color:var(--good)}
+.qcard .opt.wrong{background:#fde2e2;border-color:var(--bad)}
+.qcard .why{display:none;margin-top:10px;font-size:15px;color:var(--ink2)}
+.qcard.done .why{display:block}
+.qscore{position:sticky;top:64px;z-index:5;background:var(--paper);padding:8px 0;font-family:"Baloo 2","Segoe UI",sans-serif;font-size:22px;font-weight:800}
+
+.keyideas{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:8px}
+.keyideas div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-weight:600;position:relative;padding-left:40px}
+.keyideas div::before{content:"✦";position:absolute;left:14px;top:10px;color:var(--accent);font-size:18px}
+
+footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--muted);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;opacity:0;transition:.3s;z-index:99;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.muted{color:var(--muted)}
+.center{text-align:center}
+.mt0{margin-top:0}
+.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:#c9d3e8;padding:6px 6px 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.caution{background:#fff5df;border:1px solid #f0d79a;border-radius:12px;padding:10px 12px;font-size:14px;margin-top:12px}
+.caution b{color:#8a5a00}
+
+
+.homefab{position:fixed;right:16px;bottom:16px;z-index:60;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;
+  background:rgba(255,255,255,.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.9);
+  box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font-weight:900;text-decoration:none;font-size:14px}
+.homefab:hover{transform:translateY(-2px)}
+.mini{font-size:13px;color:var(--muted)}
+.bar{height:14px;border-radius:99px;background:var(--paper2);overflow:hidden}.bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.steps{display:grid;gap:8px}.steps button{text-align:left}
+.orderlist{display:grid;gap:8px;margin-top:10px}.orderlist .slot{border:2px dashed var(--line);border-radius:12px;padding:9px 12px;min-height:42px;font-weight:800;background:#fff}
+.orderlist .slot.ok{border-style:solid;border-color:var(--good);background:#e9f8f0}
+@media(max-width:640px){.hero{padding:30px 0 26px}.stage{padding:8px}}
+
+:root{--accent:#1971c2;--accent2:#2f9e44}
+</style>
+</head><body>
+<header class="hero"><div class="orbits"></div><div class="wrap"><div>
+<a href="../index.html#/class-8" style="color:#fff;font-weight:800;text-decoration:none;opacity:.9;margin-right:10px">← All labs</a><span class="eyebrow">Class 8 Science · Chapter 13 · Virtual Lab</span>
+<h1>Our Home: Earth, a Unique Life Sustaining Planet</h1><p class="q">Why is Earth the only planet we know with life? What protects us from deadly rays from space — and what threatens life on Earth today?</p>
+<div class="meta"><span>Goldilocks zone</span><span>Ozone &amp; magnetic shield</span><span>Four spheres</span><span>Reproduction keeps life going</span><span>Triple planetary crisis</span></div></div><div class="bignum">13</div></div></header>
+<nav class="tabbar"><div class="wrap tabs"><button data-tab="s1"><span class="n">1</span>Goldilocks Zone</button><button data-tab="s2"><span class="n">2</span>Earth’s Shields</button><button data-tab="s3"><span class="n">3</span>Four Spheres</button><button data-tab="s4"><span class="n">4</span>Life Goes On</button><button data-tab="s5"><span class="n">5</span>Triple Planetary Crisis</button><button data-tab="s6"><span class="n">6</span>Check Yourself</button></div></nav>
+<main class="wrap">
+<section class="station" id="s1">
+  <div class="st-head"><div><div class="tag">Station 1 · Sections 13.1 – 13.3</div><h2>The Goldilocks Zone</h2>
+  <p>Drag the planet closer to or farther from the Sun. Where is it “just right” — not too hot, not too cold — for water to stay liquid?</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c1"></canvas><div class="hint">Drag the planet left or right.</div></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Your planet</h3>
+      <div class="readout"><div><small>Distance</small><b id="dist">—</b></div><div><small>Surface temp.</small><b id="tmp">—</b></div><div><small>Water is</small><b id="wat">—</b></div></div>
+      <div class="btnrow"><button class="btn ghost" id="snap">Put it where Earth is</button></div>
+      <div class="explain" id="m1"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s2">
+  <div class="st-head"><div><div class="tag">Station 2 · Sections 13.3.3 & 13.4</div><h2>Earth’s Shields</h2>
+  <p>Space is full of dangers: ultraviolet (UV) rays, high-energy particles from the Sun and rocky meteoroids. Switch Earth’s shields on and off and watch the living things below.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c2"></canvas><div class="legend"><span><i style="background:#be4bdb"></i>UV rays</span><span><i style="background:#ffd43b"></i>solar particles</span><span><i style="background:#ff922b"></i>meteoroids</span></div></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Shields</h3><div class="chips"><button class="chip on" id="sh-atm">🌫️ Atmosphere</button><button class="chip on" id="sh-oz">🟣 Ozone layer</button><button class="chip on" id="sh-mag">🧲 Magnetic field</button></div>
+      <div class="readout"><div><small>Living things OK</small><b id="ok2">—</b></div><div><small>Hits</small><b id="hits2">0</b></div></div>
+      <div class="explain" id="m2"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s3">
+  <div class="st-head"><div><div class="tag">Station 3 · Section 13.4</div><h2>The Four Spheres</h2>
+  <p>Life on Earth depends on four connected parts: air, water, land and life. Sort each item into its sphere.</p></div></div>
+  <div class="grid wide"><div class="panel"><div id="sph"></div><div class="explain"><span class="t">They work together</span>Rain (hydrosphere) falls from clouds (atmosphere), wears down rocks into soil (geosphere), where plants (biosphere) grow — and plants release water vapour and oxygen back into the air.</div></div></div>
+</section>
+
+<section class="station" id="s4">
+  <div class="st-head"><div><div class="tag">Station 4 · Section 13.5</div><h2>Life Goes On</h2>
+  <p>Watch one amoeba split again and again — that is asexual reproduction. Then sort the examples.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c4"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Binary fission</h3><div class="btnrow"><button class="btn" id="split">✂️ Next generation</button><button class="btn ghost" id="rs4">↺ One amoeba</button></div>
+      <div class="readout"><div><small>Generation</small><b id="gen">0</b></div><div><small>Amoebae</small><b id="cnt4">1</b></div></div>
+      <div class="explain" id="m4"><span class="t">One parent</span>In asexual reproduction a single parent produces offspring that are exact copies of itself.</div></div>
+      <div class="panel"><h3><span class="dot"></span>Asexual or sexual?</h3><div id="rep"></div></div></div>
+  </div>
+  <div class="panel" style="margin-top:16px"><h3><span class="dot"></span>Where does the zygote develop into an embryo?</h3><div id="emb"></div></div>
+</section>
+
+<section class="station" id="s5">
+  <div class="st-head"><div><div class="tag">Station 5 · Section 13.6</div><h2>The Triple Planetary Crisis</h2>
+  <p>Three big problems threaten life on Earth. Sort each news headline into its crisis. Then pick actions you can take.</p></div></div>
+  <div class="grid">
+    <div class="panel"><div id="cri"></div></div>
+    <div class="panel"><h3><span class="dot"></span>My Earth pledge</h3><div class="chips" id="pledge"></div><div class="explain" id="m5"><span class="t">Small actions add up</span>Tap the actions you will try this week.</div></div>
+  </div>
+</section>
+<section class="station" id="s6">
+  <div class="st-head"><div><div class="tag">Station 6</div><h2>Check Yourself</h2></div></div>
+  <div id="quiz"></div>
+  <h3 style="margin-top:28px">Key ideas</h3>
+  <div class="keyideas"><div>Earth is at a distance from the Sun where water can stay liquid — the habitable or Goldilocks zone.</div><div>Earth’s nearly circular orbit keeps it from getting too hot or too cold during the year.</div><div>Earth’s gravity holds the atmosphere; the ozone layer blocks harmful ultraviolet rays.</div><div>Earth’s magnetic field shields us from high-energy particles from the Sun.</div><div>Atmosphere, hydrosphere, geosphere and biosphere interact to sustain life.</div><div>Reproduction (asexual or sexual) ensures the continuity of life.</div><div>Climate change, biodiversity loss and pollution together form the triple planetary crisis.</div></div>
+</section>
+</main>
+<footer class="wrap">Class 8 Science · Chapter 13: Our Home: Earth, a Unique Life Sustaining Planet · Interactive Virtual Lab · Explore, predict, observe, explain.</footer>
+<a class="homefab" href="../index.html#/class-8">🏠 Lab Home</a>
+<script>/* ===== Shared lab toolkit ===== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const rand = (a, b) => a + Math.random() * (b - a);
+const TAU = Math.PI * 2;
+
+/* Canvas with crisp DPR scaling; draw in logical W x H units */
+function setupCanvas(cv, W, H) {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = W * dpr; cv.height = H * dpr;
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  cv._W = W; cv._H = H; ctx.W = W; ctx.H = H;
+  return ctx;
+}
+function canvasPoint(cv, e) {
+  const r = cv.getBoundingClientRect();
+  const p = e.touches ? e.touches[0] : e;
+  return { x: (p.clientX - r.left) * cv._W / r.width, y: (p.clientY - r.top) * cv._H / r.height };
+}
+function svgPoint(svg, e) {
+  const pt = svg.createSVGPoint(); const p = e.touches ? e.touches[0] : e;
+  pt.x = p.clientX; pt.y = p.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+function mixColor(c1, c2, t) { // hex colours
+  const a = parseInt(c1.slice(1), 16), b = parseInt(c2.slice(1), 16);
+  const r = Math.round(lerp(a >> 16, b >> 16, t)), g = Math.round(lerp((a >> 8) & 255, (b >> 8) & 255, t)), bl = Math.round(lerp(a & 255, b & 255, t));
+  return `rgb(${r},${g},${bl})`;
+}
+
+/* Animation loop: callbacks receive dt (s). Each registered with a station id; runs only when that station is visible */
+const Loop = { fns: [], last: 0,
+  add(stationId, fn) { this.fns.push({ id: stationId, fn }); },
+  tick(t) { const dt = Math.min(.05, (t - (Loop.last || t)) / 1000); Loop.last = t;
+    for (const f of Loop.fns) { const el = f.id ? document.getElementById(f.id) : null; if (!f.id || (el && el.classList.contains('active'))) f.fn(dt, t / 1000); }
+    requestAnimationFrame(Loop.tick); } };
+requestAnimationFrame(Loop.tick);
+
+/* Tabs */
+function initTabs() {
+  const btns = $$('.tabs button');
+  const show = id => {
+    btns.forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+    $$('.station').forEach(s => s.classList.toggle('active', s.id === id));
+    document.dispatchEvent(new CustomEvent('station', { detail: id }));
+    try { history.replaceState(null, '', '#' + id); } catch (e) {}
+  };
+  btns.forEach(b => b.addEventListener('click', () => { show(b.dataset.tab); window.scrollTo({ top: $('.tabbar').offsetTop, behavior: 'smooth' }); }));
+  const h = location.hash.slice(1);
+  show(btns.some(b => b.dataset.tab === h) ? h : btns[0].dataset.tab);
+}
+
+/* Toast */
+let _tt; function toast(msg, ms = 2200) { let t = $('.toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add('show'); clearTimeout(_tt); _tt = setTimeout(() => t.classList.remove('show'), ms); }
+
+/* Sound (Web Audio) */
+let _ac; function ac() { if (!_ac) { try { _ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (_ac && _ac.state === 'suspended') _ac.resume(); return _ac; }
+const Sound = {
+  on: true,
+  tone(f = 440, d = .15, type = 'sine', v = .15) { const a = ac(); if (!a || !this.on) return; const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(v, a.currentTime); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + d); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + d); },
+  ring(f = 880) { [1, 2.76, 5.4].forEach((m, i) => setTimeout(() => this.tone(f * m, 1.6 - i * .4, 'sine', .12 / (i + 1)), 0)); },
+  thud() { const a = ac(); if (!a || !this.on) return; const o = a.createOscillator(), g = a.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(140, a.currentTime); o.frequency.exponentialRampToValueAtTime(40, a.currentTime + .15); g.gain.setValueAtTime(.35, a.currentTime); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + .18); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + .2); },
+  noise(d = .5, v = .08, hp = 2000) { const a = ac(); if (!a || !this.on) return; const b = a.createBuffer(1, a.sampleRate * d, a.sampleRate), ch = b.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / ch.length); const s = a.createBufferSource(); s.buffer = b; const f = a.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = hp; const g = a.createGain(); g.gain.value = v; s.connect(f).connect(g).connect(a.destination); s.start(); },
+  good() { this.tone(660, .12, 'sine', .12); setTimeout(() => this.tone(990, .18, 'sine', .12), 110); },
+  bad() { this.tone(200, .22, 'square', .05); },
+  click() { this.tone(1200, .03, 'square', .03); }
+};
+
+/* Click-or-drag sorter. items: [{t, cat}], cats: [{id,label}] */
+function makeSorter(root, items, cats, opts = {}) {
+  root.classList.add('sorter');
+  root.innerHTML = `<div class="pool"></div><div class="bins">${cats.map(c => `<div class="bin" data-cat="${c.id}"><h4>${c.label}<span class="cnt">0</span></h4><div class="cards"></div></div>`).join('')}</div><div class="score"></div>`;
+  const pool = $('.pool', root); let sel = null, right = 0, tries = 0;
+  const shuffled = items.map(x => ({ ...x })).sort(() => Math.random() - .5);
+  shuffled.forEach((it, i) => { const c = document.createElement('div'); c.className = 'card'; c.textContent = it.t; c.draggable = true; c.dataset.i = i;
+    c.addEventListener('click', () => { if (c.classList.contains('ok')) return; $$('.card.sel', root).forEach(x => x.classList.remove('sel')); sel = c; c.classList.add('sel'); });
+    c.addEventListener('dragstart', e => { sel = c; e.dataTransfer.setData('text', i); }); pool.appendChild(c); });
+  const drop = bin => { if (!sel) return; const it = shuffled[+sel.dataset.i]; tries++;
+    const ok = Array.isArray(it.cat) ? it.cat.includes(bin.dataset.cat) : it.cat === bin.dataset.cat;
+    if (ok) { right++; sel.classList.remove('sel', 'no'); sel.classList.add('ok'); sel.draggable = false; $('.cards', bin).appendChild(sel); $('.cnt', bin).textContent = $$('.card', bin).length; Sound.good(); if (it.why) toast(it.why, 3000); }
+    else { sel.classList.remove('no'); void sel.offsetWidth; sel.classList.add('no'); Sound.bad(); toast(it.hint || 'Not quite — think again!'); }
+    sel = null; $$('.card.sel', root).forEach(x => x.classList.remove('sel'));
+    $('.score', root).textContent = `Sorted ${right} / ${items.length}` + (right === items.length ? `  ·  🎉 Done in ${tries} tries!` : '');
+    if (right === items.length && opts.onDone) opts.onDone(tries);
+  };
+  $$('.bin', root).forEach(b => { b.addEventListener('click', () => drop(b)); b.addEventListener('dragover', e => { e.preventDefault(); b.classList.add('hot'); }); b.addEventListener('dragleave', () => b.classList.remove('hot')); b.addEventListener('drop', e => { e.preventDefault(); b.classList.remove('hot'); drop(b); }); });
+  $('.score', root).textContent = `Sorted 0 / ${items.length}  ·  Tip: tap a card, then tap a box (or drag it).`;
+}
+
+/* Quiz: [{q, o:[..], a:index, why}] */
+function makeQuiz(root, qs) {
+  let score = 0, done = 0;
+  const head = document.createElement('div'); head.className = 'qscore'; root.before(head);
+  const upd = () => head.textContent = `Score: ${score} / ${qs.length}` + (done === qs.length ? (score === qs.length ? '  ·  Perfect! 🌟' : score >= qs.length * .7 ? '  ·  Great work!' : '  ·  Revisit the stations and try again') : '');
+  root.classList.add('quiz');
+  qs.forEach((q, i) => { const c = document.createElement('div'); c.className = 'qcard';
+    c.innerHTML = `<div class="qn">Question ${i + 1}</div><div class="qt">${q.q}</div><div class="opts">${q.o.map((o, j) => `<button class="opt" data-j="${j}">${String.fromCharCode(65 + j)}. ${o}</button>`).join('')}</div><div class="why">${q.why || ''}</div>`;
+    $$('.opt', c).forEach(b => b.addEventListener('click', () => { if (c.classList.contains('done')) return; c.classList.add('done'); done++;
+      const j = +b.dataset.j; if (j === q.a) { score++; b.classList.add('right'); Sound.good(); } else { b.classList.add('wrong'); $$('.opt', c)[q.a].classList.add('right'); Sound.bad(); }
+      upd(); }));
+    root.appendChild(c); });
+  const r = document.createElement('button'); r.className = 'btn ghost'; r.textContent = '↺ Reset quiz'; r.style.marginTop = '6px';
+  r.onclick = () => { root.innerHTML = ''; head.remove(); r.remove(); makeQuiz(root, qs); }; root.after(r);
+  upd();
+}
+
+/* Logging helper */
+function addRow(tbody, cells, max = 12) { const tr = document.createElement('tr'); tr.className = 'new'; tr.innerHTML = cells.map(c => `<td>${c}</td>`).join(''); tbody.prepend(tr); while (tbody.children.length > max) tbody.lastChild.remove(); }
+
+/* Range binding: bindRange('#id', v=>..., fmt) */
+function bindRange(sel, fn, fmt = v => v) { const el = $(sel); const out = $(sel + '-v'); const go = () => { const v = +el.value; if (out) out.textContent = fmt(v); fn(v); }; el.addEventListener('input', go); go(); return el; }
+
+document.addEventListener('DOMContentLoaded', () => {
+  initTabs();
+  const o = $('.hero .orbits'); if (o) { [[420, 30, 70, -120], [620, 50, 40, -250], [260, 18, 80, 30]].forEach(([s, d, x, y]) => { const sp = document.createElement('span'); sp.style.cssText = `width:${s}px;height:${s}px;left:${x}%;top:${y}px;animation-duration:${d}s`; o.appendChild(sp); }); }
+});
+
+</script>
+<script>
+/* S1 */
+const c1=$('#c1'),x1=setupCanvas(c1,700,360);let au=1,dg=false;const X=a=>60+a*200;
+c1.addEventListener('pointerdown',e=>{const p=canvasPoint(c1,e);if(Math.abs(p.x-X(au))<40)dg=true;});c1.addEventListener('pointermove',e=>{if(dg)au=clamp((canvasPoint(c1,e).x-60)/200,.3,3.1);});window.addEventListener('pointerup',()=>dg=false);$('#snap').onclick=()=>au=1;
+Loop.add('s1',(dt,t)=>{const T=Math.round(288/Math.sqrt(au)-273);const st=T<0?'Frozen ice ❄️':T<100?'Liquid 💧':'Steam (boils away) ♨️';$('#dist').textContent=(au*150).toFixed(0)+' million km';$('#tmp').textContent=T+' °C';$('#wat').textContent=st;
+ const m=T<0?'<span class="t">Too cold</span>Far from the Sun, water freezes. Mars is in this region.':T<100?(Math.abs(au-1)<.06?'<span class="t">Just right — that’s Earth!</span>At about 150 million km from the Sun, Earth can keep oceans of liquid water — essential for life.':'<span class="t">In the Goldilocks zone</span>Water can stay liquid here.'):'<span class="t">Too hot</span>Close to the Sun, water boils away.';if($('#m1').innerHTML!==m)$('#m1').innerHTML=m;
+ const c=x1;c.clearRect(0,0,700,360);const z0=X(.85),z1=X(1.5);c.fillStyle='rgba(81,207,102,.18)';c.fillRect(z0,0,z1-z0,360);c.fillStyle='#8ce99a';c.font='800 12px Nunito,"Segoe UI",sans-serif';c.textAlign='center';c.fillText('Goldilocks zone',(z0+z1)/2,24);
+ c.fillStyle='rgba(255,107,107,.12)';c.fillRect(0,0,z0,360);c.fillStyle='rgba(116,192,252,.12)';c.fillRect(z1,0,700-z1,360);
+ const g=c.createRadialGradient(0,180,10,0,180,90);g.addColorStop(0,'#fff3bf');g.addColorStop(1,'#f08c00');c.fillStyle=g;c.beginPath();c.arc(0,180,80,0,TAU);c.fill();
+ [['Venus',.72],['Earth',1],['Mars',1.52]].forEach(([n,a])=>{c.strokeStyle='rgba(255,255,255,.15)';c.beginPath();c.arc(0,180,X(a),-.5,.5);c.stroke();c.fillStyle='#c9d3e8';c.fillText(n,X(a),330);});
+ const col=T<0?'#e7f5ff':T<100?'#1c7ed6':'#e8590c';c.fillStyle=col;c.beginPath();c.arc(X(au),180,26,0,TAU);c.fill();if(T>=0&&T<100){c.fillStyle='#2f9e44';c.beginPath();c.arc(X(au)-8,172,9,0,TAU);c.arc(X(au)+10,190,7,0,TAU);c.fill();}
+ if(T>=100){c.fillStyle='rgba(255,255,255,.5)';for(let i=0;i<5;i++){c.beginPath();c.arc(X(au)+Math.sin(t*3+i)*12,150-((t*30+i*12)%40),4,0,TAU);c.fill();}}});
+
+/* S2 shields */
+const SH={atm:true,oz:true,mag:true};['atm','oz','mag'].forEach(k=>$('#sh-'+k).onclick=()=>{SH[k]=!SH[k];$('#sh-'+k).classList.toggle('on',SH[k]);hits2=0;});
+const c2=$('#c2'),x2=setupCanvas(c2,700,420);let P2=[],hits2=0,life=[...Array(7)].map((_,i)=>({x:70+i*95,hp:1}));
+Loop.add('s2',(dt,t)=>{if(Math.random()<dt*10)P2.push({k:['uv','sw','met'][Math.floor(Math.random()*3)],x:rand(20,680),y:-10,vx:0});
+ for(const p of P2){p.y+=(p.k==='met'?160:220)*dt;p.x+=p.vx*dt;
+  if(p.k==='sw'&&SH.mag&&p.y>70&&!p.dead){p.vx=(p.x<350?-1:1)*400;p.y-=200*dt;}
+  if(p.k==='uv'&&SH.oz&&p.y>150&&!p.dead){p.dead=.3;}
+  if(p.k==='met'&&SH.atm&&p.y>200&&!p.dead){p.dead=.4;}
+  if(p.dead){p.dead-=dt;}
+  if(p.y>350&&!p.hit&&!p.dead){p.hit=true;hits2++;const l=life.reduce((a,b)=>Math.abs(b.x-p.x)<Math.abs(a.x-p.x)?b:a);l.hp=Math.max(0,l.hp-.25);}}
+ P2=P2.filter(p=>p.y<420&&p.x>-20&&p.x<720&&!(p.dead!==undefined&&p.dead<=0)&&!p.hit);
+ const allOn=SH.atm&&SH.oz&&SH.mag;life.forEach(l=>{if(allOn)l.hp=Math.min(1,l.hp+dt*.15);});
+ $('#ok2').textContent=life.filter(l=>l.hp>.5).length+' / 7';$('#hits2').textContent=hits2;
+ const m=allOn?'<span class="t">Fully protected</span>The <b>magnetic field</b> turns away solar particles, the <b>ozone layer</b> soaks up UV rays, and the <b>atmosphere</b> burns up most meteoroids as shooting stars.':`<span class="t">Shield down!</span>${!SH.oz?'Without ozone, UV rays reach the surface and damage living cells. ':''}${!SH.mag?'Without the magnetic field, high-energy particles strike life directly. ':''}${!SH.atm?'Without an atmosphere, meteoroids crash to the ground — and there would be no air to breathe. ':''}`;if($('#m2').innerHTML!==m)$('#m2').innerHTML=m;
+ const c=x2;c.fillStyle='#0b0f18';c.fillRect(0,0,700,420);if(SH.mag){c.strokeStyle='rgba(116,192,252,.35)';c.lineWidth=2;for(let k=0;k<3;k++){c.beginPath();c.ellipse(350,420,380+k*30,350+k*20,0,Math.PI,TAU);c.stroke();}}
+ if(SH.oz){c.fillStyle='rgba(190,75,219,.25)';c.fillRect(0,150,700,22);}if(SH.atm){const g=c.createLinearGradient(0,180,0,360);g.addColorStop(0,'rgba(116,192,252,.05)');g.addColorStop(1,'rgba(116,192,252,.45)');c.fillStyle=g;c.fillRect(0,180,700,180);}
+ c.fillStyle='#2f9e44';c.fillRect(0,360,700,60);
+ life.forEach((l,i)=>{c.fillStyle=mixColor('#868e96','#51cf66',l.hp);c.beginPath();c.arc(l.x,345,14,0,TAU);c.fill();c.fillStyle='#5c3d1e';c.fillRect(l.x-3,355,6,10);});
+ for(const p of P2){c.globalAlpha=p.dead?Math.max(0,p.dead*2.5):1;if(p.k==='uv'){c.strokeStyle='#be4bdb';c.lineWidth=2;c.beginPath();for(let k=0;k<5;k++)c.lineTo(p.x+(k%2?5:-5),p.y-k*6);c.stroke();}else if(p.k==='sw'){c.fillStyle='#ffd43b';c.beginPath();c.arc(p.x,p.y,3,0,TAU);c.fill();}else{c.fillStyle=p.dead?'#ffe066':'#ff922b';c.beginPath();c.arc(p.x,p.y,6,0,TAU);c.fill();}c.globalAlpha=1;}});
+
+/* S3 */
+makeSorter($('#sph'),[{t:'Oxygen & nitrogen',cat:'a'},{t:'Clouds',cat:'a'},{t:'Ozone layer',cat:'a'},{t:'Oceans',cat:'h'},{t:'Glaciers',cat:'h'},{t:'Groundwater',cat:'h'},{t:'Rocks & minerals',cat:'g'},{t:'Soil',cat:'g'},{t:'Mountains',cat:'g'},{t:'Forests',cat:'b'},{t:'Microorganisms',cat:'b'},{t:'Humans & animals',cat:'b'}],[{id:'a',label:'🌬️ Atmosphere'},{id:'h',label:'💧 Hydrosphere'},{id:'g',label:'🪨 Geosphere'},{id:'b',label:'🌱 Biosphere'}]);
+
+/* S4 */
+let gen=0,anim=1;const c4=$('#c4'),x4=setupCanvas(c4,700,380);$('#split').onclick=()=>{if(gen<6){gen++;anim=0;Sound.click();}};$('#rs4').onclick=()=>{gen=0;anim=1;};
+Loop.add('s4',(dt,t)=>{anim=Math.min(1,anim+dt*.8);const n=Math.pow(2,gen);$('#gen').textContent=gen;$('#cnt4').textContent=n;if(gen>=5)$('#m4').innerHTML=`<span class="t">${n} copies!</span>After ${gen} splits, one amoeba became ${n} identical amoebae. Asexual reproduction is fast — but every offspring is the same. Sexual reproduction mixes features from two parents, so new features can appear.`;
+ const c=x4;c.clearRect(0,0,700,380);const cols=Math.ceil(Math.sqrt(n*1.8)),rows=Math.ceil(n/cols);const cw=660/cols,ch=340/rows;const r=Math.min(cw,ch)*.32;
+ for(let i=0;i<n;i++){const x=20+cw*(i%cols+.5),y=20+ch*(Math.floor(i/cols)+.5);const sep=(1-anim)*0;c.save();c.translate(x,y);const s=i%2===1&&anim<1?-1:1;c.translate(s*(anim<1?(anim-1)*r*.8:0),0);
+  c.beginPath();for(let k=0;k<=20;k++){const a=k/20*TAU,rr2=r*(1+.12*Math.sin(3*a+t*2+i));k?c.lineTo(Math.cos(a)*rr2,Math.sin(a)*rr2):c.moveTo(Math.cos(a)*rr2,Math.sin(a)*rr2);}c.fillStyle='rgba(177,151,252,.55)';c.fill();c.strokeStyle='#9775fa';c.lineWidth=2;c.stroke();c.fillStyle='#5f3dc4';c.beginPath();c.arc(0,0,r*.25,0,TAU);c.fill();c.restore();}});
+makeSorter($('#rep'),[{t:'Amoeba splitting in two',cat:'a'},{t:'Budding in yeast',cat:'a'},{t:'Potato sprouting from an eye',cat:'a'},{t:'New plants from Bryophyllum leaf',cat:'a'},{t:'Frog eggs fertilised by sperm',cat:'s'},{t:'Seeds formed in a flower after pollination',cat:'s'},{t:'A calf born to a cow',cat:'s'}],[{id:'a',label:'1️⃣ Asexual (one parent)'},{id:'s',label:'2️⃣ Sexual (two parents)'}]);
+makeSorter($('#emb'),[{t:'Humans',cat:'in'},{t:'Cow',cat:'in'},{t:'Dog',cat:'in'},{t:'Frog',cat:'out'},{t:'Fish',cat:'out'},{t:'Hen (egg is laid and develops outside)',cat:'out'}],[{id:'in',label:'Inside the mother’s body'},{id:'out',label:'Outside the body (in eggs)'}]);
+
+/* S5 */
+makeSorter($('#cri'),[{t:'Hottest summer on record; glaciers shrinking',cat:'c'},{t:'Heavier rains and stronger cyclones',cat:'c'},{t:'Sea level rising along coasts',cat:'c'},{t:'Forests cut down; tigers lose their home',cat:'b'},{t:'Sparrow numbers falling in cities',cat:'b'},{t:'Many coral reefs dying',cat:'b'},{t:'Smog makes city air unsafe to breathe',cat:'p'},{t:'Plastic waste found in fish',cat:'p'},{t:'Factory waste poured into a river',cat:'p'}],[{id:'c',label:'🌡️ Climate change'},{id:'b',label:'🐅 Biodiversity loss'},{id:'p',label:'🏭 Pollution'}]);
+const PL=['🚲 Walk or cycle for short trips','💡 Switch off unused lights & fans','🛍️ Carry a cloth bag','🌳 Plant and care for a tree','🚰 Close taps while brushing','♻️ Separate wet and dry waste','🐦 Keep a water bowl for birds'];let pc=0;
+PL.forEach(p=>{const b=document.createElement('button');b.className='chip';b.textContent=p;b.onclick=()=>{b.classList.toggle('on');pc+=b.classList.contains('on')?1:-1;Sound.good();$('#m5').innerHTML=`<span class="t">${pc} action${pc===1?'':'s'} chosen 🌍</span>${pc>=4?'Wonderful! If everyone in your class does this, that’s a big difference.':'Every small action helps reduce the triple planetary crisis.'}`;};$('#pledge').appendChild(b);});
+makeQuiz($('#quiz'),[{"q": "The Goldilocks zone is the region around a star where…", "o": ["it is always dark", "water can exist as a liquid", "there is no gravity", "only ice is found"], "a": 1, "why": "Not too hot, not too cold — liquid water is possible."}, {"q": "Which layer protects us from harmful ultraviolet rays?", "o": ["Oceans", "Magnetic field", "Ozone layer", "Clouds"], "a": 2, "why": "Ozone absorbs most of the Sun’s harmful UV rays."}, {"q": "Earth’s magnetic field protects life by…", "o": ["making rain", "holding the Moon", "keeping oceans warm", "shielding us from high-energy particles from the Sun"], "a": 3, "why": "It deflects charged particles that would otherwise harm life."}, {"q": "Rivers, oceans and glaciers are part of the…", "o": ["hydrosphere", "biosphere", "atmosphere", "geosphere"], "a": 0, "why": "All the water on Earth forms the hydrosphere."}, {"q": "Budding in yeast is an example of…", "o": ["sexual reproduction", "asexual reproduction", "pollination", "fertilisation"], "a": 1, "why": "A single parent produces a bud that becomes a new yeast cell."}, {"q": "Climate change, biodiversity loss and pollution together are called the…", "o": ["food chain", "greenhouse effect", "triple planetary crisis", "water cycle"], "a": 2, "why": "These three linked challenges threaten life on Earth."}]);
+</script>
+</body></html>

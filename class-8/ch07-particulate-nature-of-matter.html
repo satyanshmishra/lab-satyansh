@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Particulate Nature of Matter · Class 8 Virtual Lab</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>:root{
+  --paper:#f7f2e8; --paper2:#efe7d6; --ink:#1b2232; --ink2:#4a5468; --muted:#7a8296;
+  --card:#ffffff; --line:#e3dac6; --bench:#101a2c; --bench2:#18243b; --benchline:rgba(255,255,255,.06);
+  --good:#1f9d63; --bad:#d64545; --warn:#e3a21a;
+  --r:18px; --shadow:0 1px 0 rgba(0,0,0,.04),0 10px 30px -12px rgba(40,30,10,.25);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 "Nunito","Segoe UI",system-ui,sans-serif;
+  background-image:radial-gradient(circle at 1px 1px,rgba(120,100,60,.12) 1px,transparent 0);background-size:22px 22px}
+h1,h2,h3,h4{font-family:"Baloo 2","Nunito","Segoe UI",sans-serif;line-height:1.15;margin:0 0 .4em;letter-spacing:-.01em}
+button,input,select{font:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);color:#fff;padding:46px 0 40px}
+.hero .wrap{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+.hero .eyebrow{display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);padding:5px 14px;border-radius:99px;font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.hero h1{font-size:clamp(34px,5.2vw,64px);margin:14px 0 8px;font-weight:800;text-shadow:0 2px 0 rgba(0,0,0,.08)}
+.hero p.q{font-size:clamp(17px,2vw,21px);max-width:720px;opacity:.95;margin:0}
+.hero .bignum{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:clamp(110px,16vw,210px);line-height:.8;color:transparent;-webkit-text-stroke:3px rgba(255,255,255,.55);user-select:none}
+.hero .orbits{position:absolute;inset:0;z-index:1;pointer-events:none}
+.hero .orbits span{position:absolute;border:2px solid rgba(255,255,255,.18);border-radius:50%;animation:spin linear infinite}
+.hero .orbits span::after{content:"";position:absolute;top:-6px;left:50%;width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.7)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hero .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+.hero .meta span{background:rgba(0,0,0,.16);padding:4px 12px;border-radius:99px;font-size:14px;font-weight:700}
+
+/* ---------- TABS ---------- */
+.tabbar{position:sticky;top:0;z-index:30;background:rgba(247,242,232,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:12px 0;scrollbar-width:thin}
+.tabs button{flex:0 0 auto;border:1.5px solid var(--line);background:#fff;color:var(--ink2);padding:8px 16px;border-radius:99px;cursor:pointer;font-weight:800;font-size:14px;transition:.2s;display:flex;gap:8px;align-items:center}
+.tabs button .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--paper2);font-size:12px}
+.tabs button:hover{border-color:var(--accent);color:var(--ink)}
+.tabs button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tabs button.active .n{background:var(--accent);color:#fff}
+
+/* ---------- STATIONS ---------- */
+main{padding:28px 0 60px}
+.station{display:none;animation:rise .45s ease}
+.station.active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.st-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.st-head h2{font-size:clamp(26px,3vw,36px);margin:0}
+.st-head .tag{font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;font-size:13px}
+.st-head p{margin:4px 0 0;color:var(--ink2);max-width:760px}
+.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:20px;align-items:start}
+.grid.even{grid-template-columns:1fr 1fr}
+.grid.wide{grid-template-columns:1fr}
+@media(max-width:940px){.grid,.grid.even{grid-template-columns:1fr}.hero .wrap{grid-template-columns:1fr}.hero .bignum{display:none}}
+
+.stage{position:relative;background:var(--bench);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);overflow:hidden;
+  background-image:linear-gradient(var(--benchline) 1px,transparent 1px),linear-gradient(90deg,var(--benchline) 1px,transparent 1px);background-size:28px 28px}
+.stage canvas,.stage svg{display:block;width:100%;height:auto;border-radius:12px}
+.stage .hud{position:absolute;top:22px;left:24px;color:#fff;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.75;pointer-events:none}
+.stage .hint{color:#c9d3e8;font-size:13.5px;text-align:center;padding:8px 6px 2px}
+.stage.light{background:#fff;background-image:none;border:1px solid var(--line)}
+.stage.light .hint{color:var(--ink2)}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 16px;box-shadow:var(--shadow)}
+.panel + .panel{margin-top:16px}
+.panel h3{font-size:20px;display:flex;align-items:center;gap:8px}
+.panel h3 .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.stack > * + *{margin-top:16px}
+
+.ctrl{margin:12px 0}
+.ctrl label{display:flex;justify-content:space-between;font-weight:800;font-size:14px;color:var(--ink2);margin-bottom:4px}
+.ctrl label b{color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent);height:26px;cursor:pointer}
+select{width:100%;padding:9px 12px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-weight:700}
+
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;background:var(--accent);color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;cursor:pointer;transition:transform .12s,filter .2s,box-shadow .2s;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.btn:hover{filter:brightness(1.07)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
+.btn.dark{background:var(--ink)}
+.btn.sm{padding:6px 12px;font-size:14px;border-radius:10px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:#fff;padding:7px 13px;border-radius:99px;cursor:pointer;font-weight:700;font-size:14px;transition:.15s;color:var(--ink)}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.explain{border-left:5px solid var(--accent);background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 10%,#fff),#fff);border-radius:12px;padding:12px 14px;margin-top:12px}
+.explain b.k{color:var(--accent)}
+.explain .t{font-weight:900;text-transform:uppercase;font-size:12px;letter-spacing:.1em;color:var(--accent);display:block;margin-bottom:2px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:12px 0}
+.readout div{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.readout small{display:block;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.readout b{font-size:21px;font-family:"Baloo 2",sans-serif;font-variant-numeric:tabular-nums}
+
+table.log{width:100%;border-collapse:collapse;font-size:14px}
+table.log th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:2px solid var(--line);padding:6px}
+table.log td{border-bottom:1px solid var(--line);padding:7px 6px}
+table.log tr.new td{animation:flash 1.2s ease}
+@keyframes flash{from{background:color-mix(in srgb,var(--accent) 25%,#fff)}to{background:transparent}}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-weight:800;font-size:12.5px}
+.pill.g{background:#dcf5e8;color:#11663f}.pill.r{background:#fde2e2;color:#9b1c1c}.pill.y{background:#fff1cc;color:#7a5200}.pill.b{background:#dde9ff;color:#1d3f8f}.pill.n{background:#eee;color:#444}
+
+/* ---------- SORTER ---------- */
+.sorter .pool{display:flex;flex-wrap:wrap;gap:8px;min-height:48px;padding:10px;border:2px dashed var(--line);border-radius:14px;background:var(--paper)}
+.sorter .card{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:8px 12px;font-weight:700;cursor:grab;user-select:none;transition:.15s;font-size:14.5px}
+.sorter .card.sel{outline:3px solid var(--accent);transform:translateY(-2px)}
+.sorter .card.ok{border-color:var(--good);background:#e9f8f0}
+.sorter .card.no{border-color:var(--bad);background:#fdeaea;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.sorter .bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+.sorter .bin{border:2px solid var(--line);border-radius:14px;padding:10px;min-height:120px;background:#fff;transition:.15s}
+.sorter .bin.hot{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,#fff)}
+.sorter .bin h4{font-size:16px;margin:0 0 8px;display:flex;justify-content:space-between}
+.sorter .bin .cards{display:flex;flex-wrap:wrap;gap:6px}
+.sorter .score{font-weight:800;color:var(--ink2);margin-top:10px}
+
+/* ---------- QUIZ ---------- */
+.quiz{display:grid;gap:14px}
+.qcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow)}
+.qcard .qn{font-weight:900;color:var(--accent);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+.qcard .qt{font-weight:800;font-size:17px;margin:4px 0 10px}
+.qcard .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:640px){.qcard .opts{grid-template-columns:1fr}}
+.qcard .opt{text-align:left;border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:700;transition:.15s;color:var(--ink)}
+.qcard .opt:hover{border-color:var(--accent)}
+.qcard .opt.right{background:#dcf5e8;border-color:var(--good)}
+.qcard .opt.wrong{background:#fde2e2;border-color:var(--bad)}
+.qcard .why{display:none;margin-top:10px;font-size:15px;color:var(--ink2)}
+.qcard.done .why{display:block}
+.qscore{position:sticky;top:64px;z-index:5;background:var(--paper);padding:8px 0;font-family:"Baloo 2","Segoe UI",sans-serif;font-size:22px;font-weight:800}
+
+.keyideas{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:8px}
+.keyideas div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-weight:600;position:relative;padding-left:40px}
+.keyideas div::before{content:"✦";position:absolute;left:14px;top:10px;color:var(--accent);font-size:18px}
+
+footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--muted);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;opacity:0;transition:.3s;z-index:99;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.muted{color:var(--muted)}
+.center{text-align:center}
+.mt0{margin-top:0}
+.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:#c9d3e8;padding:6px 6px 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.caution{background:#fff5df;border:1px solid #f0d79a;border-radius:12px;padding:10px 12px;font-size:14px;margin-top:12px}
+.caution b{color:#8a5a00}
+
+
+.homefab{position:fixed;right:16px;bottom:16px;z-index:60;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;
+  background:rgba(255,255,255,.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.9);
+  box-shadow:0 8px 24px -8px rgba(20,20,60,.35);color:#1b2232;font-weight:900;text-decoration:none;font-size:14px}
+.homefab:hover{transform:translateY(-2px)}
+.mini{font-size:13px;color:var(--muted)}
+.bar{height:14px;border-radius:99px;background:var(--paper2);overflow:hidden}.bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.steps{display:grid;gap:8px}.steps button{text-align:left}
+.orderlist{display:grid;gap:8px;margin-top:10px}.orderlist .slot{border:2px dashed var(--line);border-radius:12px;padding:9px 12px;min-height:42px;font-weight:800;background:#fff}
+.orderlist .slot.ok{border-style:solid;border-color:var(--good);background:#e9f8f0}
+@media(max-width:640px){.hero{padding:30px 0 26px}.stage{padding:8px}}
+
+:root{--accent:#ae3ec9;--accent2:#1098ad}
+</style>
+</head><body>
+<header class="hero"><div class="orbits"></div><div class="wrap"><div>
+<a href="../index.html#/class-8" style="color:#fff;font-weight:800;text-decoration:none;opacity:.9;margin-right:10px">← All labs</a><span class="eyebrow">Class 8 Science · Chapter 7 · Virtual Lab</span>
+<h1>Particulate Nature of Matter</h1><p class="q">How can one tiny crystal colour a whole bucket of water? Why can you squeeze air but not water? Zoom in to the tiny particles that make up everything.</p>
+<div class="meta"><span>Matter is made of particles</span><span>Solids, liquids &amp; gases</span><span>Interparticle attraction &amp; space</span><span>Compressibility</span><span>Diffusion</span></div></div><div class="bignum">7</div></div></header>
+<nav class="tabbar"><div class="wrap tabs"><button data-tab="s1"><span class="n">1</span>One Crystal, Many Particles</button><button data-tab="s2"><span class="n">2</span>Particle Zoom</button><button data-tab="s3"><span class="n">3</span>Squeeze the Syringe</button><button data-tab="s4"><span class="n">4</span>Ink Race</button><button data-tab="s5"><span class="n">5</span>Where Did the Sugar Go?</button><button data-tab="s6"><span class="n">6</span>Check Yourself</button></div></nav>
+<main class="wrap">
+<section class="station" id="s1">
+  <div class="st-head"><div><div class="tag">Station 1 · Activities 7.1 & 7.2</div><h2>One Crystal, Many Particles</h2>
+  <p>Dissolve one crystal of potassium permanganate in water. Then take a little of the solution and dilute it again and again. Does the colour ever fully vanish?</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c1"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Dilute</h3>
+      <div class="btnrow"><button class="btn" id="dil">💧 Take 10 mL and add 90 mL water</button><button class="btn ghost" id="rs1">↺ Start again</button></div>
+      <div class="readout"><div><small>Dilutions</small><b id="nd">0</b></div><div><small>Water used</small><b id="wv">100 mL</b></div><div><small>Colour</small><b id="col">Deep purple</b></div></div>
+      <div class="explain" id="m1"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s2">
+  <div class="st-head"><div><div class="tag">Station 2 · Section 7.2</div><h2>Particle Zoom</h2>
+  <p>Zoom into water at different temperatures. Watch how the particles move and how strongly they hold on to each other.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c2"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Temperature</h3>
+      <div class="ctrl"><label>Water at <b id="tp-v"></b></label><input type="range" id="tp" min="-30" max="140" value="-20"></div>
+      <div class="chips"><button class="chip" id="bonds">Show attractions</button></div>
+      <div class="readout"><div><small>State</small><b id="state">—</b></div><div><small>Attraction</small><b id="attr">—</b></div><div><small>Space between</small><b id="gap">—</b></div></div>
+      <div class="explain" id="m2"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s3">
+  <div class="st-head"><div><div class="tag">Station 3 · Activity 7.5</div><h2>Squeeze the Syringe</h2>
+  <p>Close the nozzle of a syringe and push the plunger. Try it with air, water and chalk pieces.</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c3"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Fill with</h3><div class="chips" id="fillw"></div>
+      <div class="ctrl"><label>Push the plunger <b id="push-v"></b></label><input type="range" id="push" min="0" max="100" value="0"></div>
+      <div class="readout"><div><small>Volume</small><b id="vol3">10 mL</b></div><div><small>Squeezed by</small><b id="sq">0%</b></div></div>
+      <div class="explain" id="m3"></div></div></div>
+  </div>
+</section>
+
+<section class="station" id="s4">
+  <div class="st-head"><div><div class="tag">Station 4 · Activities 7.6 & 7.7</div><h2>Ink Race</h2>
+  <p>Put one drop of ink gently into a glass of cold water and one into hot water at the same time. In which glass does the colour spread faster?</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c4"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Race</h3>
+      <div class="btnrow"><button class="btn" id="drop">💧 Add the drops</button></div>
+      <div class="readout"><div><small>Time</small><b id="t4">0 s</b></div><div><small>Cold glass spread</small><b id="sc">0%</b></div><div><small>Hot glass spread</small><b id="sh">0%</b></div></div>
+      <div class="explain" id="m4"><span class="t">Predict</span>Which glass will turn evenly coloured first?</div></div>
+      <div class="panel"><h3><span class="dot"></span>Diffusion around you</h3><p class="mt0">The smell of an agarbatti or of hot food spreads across a room because gas particles move fast and mix with air particles. Hot food smells reach you faster than cold food!</p></div></div>
+  </div>
+</section>
+
+<section class="station" id="s5">
+  <div class="st-head"><div><div class="tag">Station 5 · Interparticle space</div><h2>Where Did the Sugar Go?</h2>
+  <p>Mark the water level in a glass. Add spoons of sugar and stir. Does the water level rise as much as you expect?</p></div></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c5"></canvas></div>
+    <div class="stack"><div class="panel"><h3><span class="dot"></span>Add sugar</h3>
+      <div class="btnrow"><button class="btn" id="spoon">🥄 Add a spoon & stir</button><button class="btn ghost" id="rs5">↺ Fresh water</button></div>
+      <div class="readout"><div><small>Spoons</small><b id="sp5">0</b></div><div><small>Level</small><b id="lv5">100 mL</b></div></div>
+      <div class="explain" id="m5"></div></div></div>
+  </div>
+</section>
+<section class="station" id="s6">
+  <div class="st-head"><div><div class="tag">Station 6</div><h2>Check Yourself</h2></div></div>
+  <div id="quiz"></div>
+  <h3 style="margin-top:28px">Key ideas</h3>
+  <div class="keyideas"><div>Matter is made of extremely tiny particles.</div><div>Particles are held together by interparticle forces of attraction.</div><div>Attraction is strongest in solids, weaker in liquids and weakest in gases.</div><div>Solids have a fixed shape and volume; liquids have a fixed volume but no fixed shape; gases have neither.</div><div>Gases are easily compressed because their particles have lots of space between them.</div><div>Particles are always moving; they move faster when heated, so diffusion is faster in hot water.</div></div>
+</section>
+</main>
+<footer class="wrap">Class 8 Science · Chapter 7: Particulate Nature of Matter · Interactive Virtual Lab · Explore, predict, observe, explain.</footer>
+<a class="homefab" href="../index.html#/class-8">🏠 Lab Home</a>
+<script>/* ===== Shared lab toolkit ===== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const rand = (a, b) => a + Math.random() * (b - a);
+const TAU = Math.PI * 2;
+
+/* Canvas with crisp DPR scaling; draw in logical W x H units */
+function setupCanvas(cv, W, H) {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = W * dpr; cv.height = H * dpr;
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  cv._W = W; cv._H = H; ctx.W = W; ctx.H = H;
+  return ctx;
+}
+function canvasPoint(cv, e) {
+  const r = cv.getBoundingClientRect();
+  const p = e.touches ? e.touches[0] : e;
+  return { x: (p.clientX - r.left) * cv._W / r.width, y: (p.clientY - r.top) * cv._H / r.height };
+}
+function svgPoint(svg, e) {
+  const pt = svg.createSVGPoint(); const p = e.touches ? e.touches[0] : e;
+  pt.x = p.clientX; pt.y = p.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+function mixColor(c1, c2, t) { // hex colours
+  const a = parseInt(c1.slice(1), 16), b = parseInt(c2.slice(1), 16);
+  const r = Math.round(lerp(a >> 16, b >> 16, t)), g = Math.round(lerp((a >> 8) & 255, (b >> 8) & 255, t)), bl = Math.round(lerp(a & 255, b & 255, t));
+  return `rgb(${r},${g},${bl})`;
+}
+
+/* Animation loop: callbacks receive dt (s). Each registered with a station id; runs only when that station is visible */
+const Loop = { fns: [], last: 0,
+  add(stationId, fn) { this.fns.push({ id: stationId, fn }); },
+  tick(t) { const dt = Math.min(.05, (t - (Loop.last || t)) / 1000); Loop.last = t;
+    for (const f of Loop.fns) { const el = f.id ? document.getElementById(f.id) : null; if (!f.id || (el && el.classList.contains('active'))) f.fn(dt, t / 1000); }
+    requestAnimationFrame(Loop.tick); } };
+requestAnimationFrame(Loop.tick);
+
+/* Tabs */
+function initTabs() {
+  const btns = $$('.tabs button');
+  const show = id => {
+    btns.forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+    $$('.station').forEach(s => s.classList.toggle('active', s.id === id));
+    document.dispatchEvent(new CustomEvent('station', { detail: id }));
+    try { history.replaceState(null, '', '#' + id); } catch (e) {}
+  };
+  btns.forEach(b => b.addEventListener('click', () => { show(b.dataset.tab); window.scrollTo({ top: $('.tabbar').offsetTop, behavior: 'smooth' }); }));
+  const h = location.hash.slice(1);
+  show(btns.some(b => b.dataset.tab === h) ? h : btns[0].dataset.tab);
+}
+
+/* Toast */
+let _tt; function toast(msg, ms = 2200) { let t = $('.toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add('show'); clearTimeout(_tt); _tt = setTimeout(() => t.classList.remove('show'), ms); }
+
+/* Sound (Web Audio) */
+let _ac; function ac() { if (!_ac) { try { _ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (_ac && _ac.state === 'suspended') _ac.resume(); return _ac; }
+const Sound = {
+  on: true,
+  tone(f = 440, d = .15, type = 'sine', v = .15) { const a = ac(); if (!a || !this.on) return; const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(v, a.currentTime); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + d); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + d); },
+  ring(f = 880) { [1, 2.76, 5.4].forEach((m, i) => setTimeout(() => this.tone(f * m, 1.6 - i * .4, 'sine', .12 / (i + 1)), 0)); },
+  thud() { const a = ac(); if (!a || !this.on) return; const o = a.createOscillator(), g = a.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(140, a.currentTime); o.frequency.exponentialRampToValueAtTime(40, a.currentTime + .15); g.gain.setValueAtTime(.35, a.currentTime); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + .18); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + .2); },
+  noise(d = .5, v = .08, hp = 2000) { const a = ac(); if (!a || !this.on) return; const b = a.createBuffer(1, a.sampleRate * d, a.sampleRate), ch = b.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / ch.length); const s = a.createBufferSource(); s.buffer = b; const f = a.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = hp; const g = a.createGain(); g.gain.value = v; s.connect(f).connect(g).connect(a.destination); s.start(); },
+  good() { this.tone(660, .12, 'sine', .12); setTimeout(() => this.tone(990, .18, 'sine', .12), 110); },
+  bad() { this.tone(200, .22, 'square', .05); },
+  click() { this.tone(1200, .03, 'square', .03); }
+};
+
+/* Click-or-drag sorter. items: [{t, cat}], cats: [{id,label}] */
+function makeSorter(root, items, cats, opts = {}) {
+  root.classList.add('sorter');
+  root.innerHTML = `<div class="pool"></div><div class="bins">${cats.map(c => `<div class="bin" data-cat="${c.id}"><h4>${c.label}<span class="cnt">0</span></h4><div class="cards"></div></div>`).join('')}</div><div class="score"></div>`;
+  const pool = $('.pool', root); let sel = null, right = 0, tries = 0;
+  const shuffled = items.map(x => ({ ...x })).sort(() => Math.random() - .5);
+  shuffled.forEach((it, i) => { const c = document.createElement('div'); c.className = 'card'; c.textContent = it.t; c.draggable = true; c.dataset.i = i;
+    c.addEventListener('click', () => { if (c.classList.contains('ok')) return; $$('.card.sel', root).forEach(x => x.classList.remove('sel')); sel = c; c.classList.add('sel'); });
+    c.addEventListener('dragstart', e => { sel = c; e.dataTransfer.setData('text', i); }); pool.appendChild(c); });
+  const drop = bin => { if (!sel) return; const it = shuffled[+sel.dataset.i]; tries++;
+    const ok = Array.isArray(it.cat) ? it.cat.includes(bin.dataset.cat) : it.cat === bin.dataset.cat;
+    if (ok) { right++; sel.classList.remove('sel', 'no'); sel.classList.add('ok'); sel.draggable = false; $('.cards', bin).appendChild(sel); $('.cnt', bin).textContent = $$('.card', bin).length; Sound.good(); if (it.why) toast(it.why, 3000); }
+    else { sel.classList.remove('no'); void sel.offsetWidth; sel.classList.add('no'); Sound.bad(); toast(it.hint || 'Not quite — think again!'); }
+    sel = null; $$('.card.sel', root).forEach(x => x.classList.remove('sel'));
+    $('.score', root).textContent = `Sorted ${right} / ${items.length}` + (right === items.length ? `  ·  🎉 Done in ${tries} tries!` : '');
+    if (right === items.length && opts.onDone) opts.onDone(tries);
+  };
+  $$('.bin', root).forEach(b => { b.addEventListener('click', () => drop(b)); b.addEventListener('dragover', e => { e.preventDefault(); b.classList.add('hot'); }); b.addEventListener('dragleave', () => b.classList.remove('hot')); b.addEventListener('drop', e => { e.preventDefault(); b.classList.remove('hot'); drop(b); }); });
+  $('.score', root).textContent = `Sorted 0 / ${items.length}  ·  Tip: tap a card, then tap a box (or drag it).`;
+}
+
+/* Quiz: [{q, o:[..], a:index, why}] */
+function makeQuiz(root, qs) {
+  let score = 0, done = 0;
+  const head = document.createElement('div'); head.className = 'qscore'; root.before(head);
+  const upd = () => head.textContent = `Score: ${score} / ${qs.length}` + (done === qs.length ? (score === qs.length ? '  ·  Perfect! 🌟' : score >= qs.length * .7 ? '  ·  Great work!' : '  ·  Revisit the stations and try again') : '');
+  root.classList.add('quiz');
+  qs.forEach((q, i) => { const c = document.createElement('div'); c.className = 'qcard';
+    c.innerHTML = `<div class="qn">Question ${i + 1}</div><div class="qt">${q.q}</div><div class="opts">${q.o.map((o, j) => `<button class="opt" data-j="${j}">${String.fromCharCode(65 + j)}. ${o}</button>`).join('')}</div><div class="why">${q.why || ''}</div>`;
+    $$('.opt', c).forEach(b => b.addEventListener('click', () => { if (c.classList.contains('done')) return; c.classList.add('done'); done++;
+      const j = +b.dataset.j; if (j === q.a) { score++; b.classList.add('right'); Sound.good(); } else { b.classList.add('wrong'); $$('.opt', c)[q.a].classList.add('right'); Sound.bad(); }
+      upd(); }));
+    root.appendChild(c); });
+  const r = document.createElement('button'); r.className = 'btn ghost'; r.textContent = '↺ Reset quiz'; r.style.marginTop = '6px';
+  r.onclick = () => { root.innerHTML = ''; head.remove(); r.remove(); makeQuiz(root, qs); }; root.after(r);
+  upd();
+}
+
+/* Logging helper */
+function addRow(tbody, cells, max = 12) { const tr = document.createElement('tr'); tr.className = 'new'; tr.innerHTML = cells.map(c => `<td>${c}</td>`).join(''); tbody.prepend(tr); while (tbody.children.length > max) tbody.lastChild.remove(); }
+
+/* Range binding: bindRange('#id', v=>..., fmt) */
+function bindRange(sel, fn, fmt = v => v) { const el = $(sel); const out = $(sel + '-v'); const go = () => { const v = +el.value; if (out) out.textContent = fmt(v); fn(v); }; el.addEventListener('input', go); go(); return el; }
+
+document.addEventListener('DOMContentLoaded', () => {
+  initTabs();
+  const o = $('.hero .orbits'); if (o) { [[420, 30, 70, -120], [620, 50, 40, -250], [260, 18, 80, 30]].forEach(([s, d, x, y]) => { const sp = document.createElement('span'); sp.style.cssText = `width:${s}px;height:${s}px;left:${x}%;top:${y}px;animation-duration:${d}s`; o.appendChild(sp); }); }
+});
+
+</script>
+<script>
+/* S1 dilution */
+let nd=0;const c1=$('#c1'),x1=setupCanvas(c1,700,400);$('#dil').onclick=()=>{if(nd<8){nd++;Sound.click();}};$('#rs1').onclick=()=>nd=0;
+Loop.add('s1',(dt,t)=>{const conc=Math.pow(.1,nd);const vis=clamp(1-Math.log10(1/conc)/7,0,1);$('#nd').textContent=nd;$('#wv').textContent=(100+nd*90)+' mL';$('#col').textContent=vis>.75?'Deep purple':vis>.45?'Purple':vis>.2?'Light pink':vis>.05?'Very faint pink':'Looks clear';
+ const m=nd===0?'<span class="t">One crystal</span>A single crystal turns 100 mL of water deep purple. Now dilute it!':vis>.05?`<span class="t">Still coloured!</span>After ${nd} dilution${nd>1?'s':''}, the crystal’s particles are spread through so much water — yet you can still see colour. The crystal must contain an <b>enormous number</b> of tiny particles.`:'<span class="t">Too faint to see</span>The particles are still there, just too few in each beaker for our eyes to notice.';if($('#m1').innerHTML!==m)$('#m1').innerHTML=m;
+ const c=x1;c.clearRect(0,0,700,400);for(let i=0;i<=Math.min(nd,6);i++){const k=Math.max(0,nd-6)+i,cv=clamp(1-k/7,0,1);const x=40+i*95,w=80;c.fillStyle=`rgba(156,54,181,${cv*.9})`;c.fillRect(x,180,w,150);c.strokeStyle='#dee2e6';c.lineWidth=2;c.strokeRect(x,140,w,190);c.fillStyle='#c9d3e8';c.font='700 12px Nunito,"Segoe UI",sans-serif';c.textAlign='center';c.fillText(k?('dilution '+k):'start',x+w/2,355);
+  if(i===Math.min(nd,6)){c.fillStyle='#e599f7';const n=Math.max(1,Math.round(60*cv));for(let j=0;j<n;j++){c.beginPath();c.arc(x+8+((j*37+t*20)%64),190+(j*53)%130,2.5,0,TAU);c.fill();}}}});
+
+/* S2 particles */
+let tp=-20,bonds=false;const c2=$('#c2'),x2=setupCanvas(c2,700,420);const N=48;const Pp=[];for(let i=0;i<N;i++){const gx=i%8,gy=Math.floor(i/8);Pp.push({hx:230+gx*34,hy:220+gy*32,x:230+gx*34,y:220+gy*32,vx:0,vy:0});}
+bindRange('#tp',v=>tp=v,v=>v+' °C');$('#bonds').onclick=()=>{bonds=!bonds;$('#bonds').classList.toggle('on',bonds);};
+Loop.add('s2',(dt,t)=>{const st=tp<=0?'Solid (ice)':tp<100?'Liquid (water)':'Gas (steam)';const sp=10+Math.abs(tp+30)*1.3;
+ $('#state').textContent=st;$('#attr').textContent=tp<=0?'Strongest':tp<100?'Weaker':'Negligible';$('#gap').textContent=tp<=0?'Least':tp<100?'A little':'Maximum';
+ for(const p of Pp){if(tp<=0){const a=sp*.08;p.x=p.hx+Math.sin(t*20+p.hx)*a*.3;p.y=p.hy+Math.cos(t*23+p.hy)*a*.3;p.vx=rand(-1,1)*40;p.vy=rand(-1,1)*40;}
+  else{const s=tp<100?sp*.6:sp*2.2;p.vx+=rand(-1,1)*s*dt*8;p.vy+=rand(-1,1)*s*dt*8+(tp<100?120*dt:0);const v=Math.hypot(p.vx,p.vy);if(v>s){p.vx*=s/v;p.vy*=s/v;}p.x+=p.vx*dt;p.y+=p.vy*dt;
+   const top=tp<100?230:30;if(p.x<40){p.x=40;p.vx*=-1;}if(p.x>660){p.x=660;p.vx*=-1;}if(p.y>390){p.y=390;p.vy*=-1;}if(p.y<top){p.y=top;p.vy=Math.abs(p.vy);}}}
+ if(tp>0&&tp<100){for(const a of Pp)for(const b of Pp){if(a===b)continue;const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);if(d<22&&d>0){a.x-=dx/d*(22-d)*.5;a.y-=dy/d*(22-d)*.5;}}}
+ const m=tp<=0?'<span class="t">Solid</span>Particles are tightly packed and only vibrate about fixed positions. Strong attraction → fixed shape and volume.':tp<100?'<span class="t">Liquid</span>Particles slide past each other but stay close. They take the shape of the container but keep their volume.':'<span class="t">Gas</span>Particles move freely and fast in all directions, filling the whole container. Attraction is negligible.';if($('#m2').innerHTML!==m)$('#m2').innerHTML=m;
+ const c=x2;c.clearRect(0,0,700,420);c.strokeStyle='rgba(255,255,255,.35)';c.lineWidth=2;c.strokeRect(30,20,640,385);
+ if(bonds){c.strokeStyle=`rgba(255,212,59,${tp<=0?.7:tp<100?.35:0})`;c.lineWidth=1.5;for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){const d=Math.hypot(Pp[i].x-Pp[j].x,Pp[i].y-Pp[j].y);if(d<38){c.beginPath();c.moveTo(Pp[i].x,Pp[i].y);c.lineTo(Pp[j].x,Pp[j].y);c.stroke();}}}
+ for(const p of Pp){c.fillStyle=tp<=0?'#a5d8ff':tp<100?'#4dabf7':'#e7f5ff';c.beginPath();c.arc(p.x,p.y,10,0,TAU);c.fill();}});
+
+/* S3 syringe */
+const FL={air:['💨 Air',.7],water:['💧 Water',.01],chalk:['🪨 Chalk pieces',0]};let fl='air',push=0;const c3=$('#c3'),x3=setupCanvas(c3,700,360);
+Object.entries(FL).forEach(([k,v],i)=>{const b=document.createElement('button');b.className='chip'+(i?'':' on');b.textContent=v[0];b.onclick=()=>{fl=k;$$('#fillw .chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');};$('#fillw').appendChild(b);});
+bindRange('#push',v=>push=v,v=>v+'%');
+Loop.add('s3',(dt,t)=>{const comp=push/100*FL[fl][1];const V=10*(1-comp);$('#vol3').textContent=V.toFixed(1)+' mL';$('#sq').textContent=Math.round(comp*100)+'%';
+ const m=push<5?'<span class="t">Push!</span>Slide the plunger control.':fl==='air'?'<span class="t">Air squeezes easily</span>Gas particles have large spaces between them, so they can be pushed closer together.':fl==='water'?'<span class="t">Water hardly moves</span>Liquid particles are already close together — liquids are almost incompressible.':'<span class="t">Chalk won’t budge</span>Solid particles are tightly packed. Solids cannot be compressed.';if($('#m3').innerHTML!==m)$('#m3').innerHTML=m;
+ const c=x3;c.clearRect(0,0,700,360);const x0=120,len=400*(1-comp);c.strokeStyle='#dee2e6';c.lineWidth=3;c.strokeRect(x0,130,420,100);c.fillStyle='#495057';c.fillRect(x0-30,165,30,30);
+ const n=40;c.fillStyle=fl==='air'?'#e7f5ff':fl==='water'?'#4dabf7':'#f1f3f5';for(let i=0;i<n;i++){const fx=((i*61)%100)/100,fy=((i*37)%100)/100;c.beginPath();if(fl==='chalk'){c.fillRect(x0+8+fx*(len-30),140+fy*76,18,12);}else{c.arc(x0+8+fx*(len-16)+Math.sin(t*(fl==='air'?9:3)+i)*(fl==='air'?4:1),140+fy*80,fl==='air'?5:8,0,TAU);c.fill();}}
+ c.fillStyle='#868e96';c.fillRect(x0+len,135,12,90);c.fillRect(x0+len+12,175,200,10);c.fillRect(x0+len+200,145,14,70);});
+
+/* S4 ink race */
+let t4=-1;const c4=$('#c4'),x4=setupCanvas(c4,700,400);const mk=()=>[...Array(150)].map(()=>({x:0,y:0}));let cold=mk(),hot=mk();
+$('#drop').onclick=()=>{t4=0;cold=mk();hot=mk();Sound.click();};
+const spread=a=>{const mx=a.reduce((s,p)=>s+Math.abs(p.x)+Math.abs(p.y-60),0)/a.length;return Math.min(100,mx/1.1);};
+Loop.add('s4',(dt,t)=>{const c=x4;c.clearRect(0,0,700,400);[[cold,170,'#74c0fc','COLD 10 °C',18],[hot,530,'#ff8787','HOT 70 °C',55]].forEach(([arr,cx,col,lab,sp])=>{c.fillStyle='rgba(116,192,252,.2)';c.fillRect(cx-130,90,260,280);c.strokeStyle='#dee2e6';c.lineWidth=2;c.strokeRect(cx-130,70,260,300);c.fillStyle=col;c.font='900 14px Nunito,"Segoe UI",sans-serif';c.textAlign='center';c.fillText(lab,cx,55);
+ if(t4>=0){for(const p of arr){p.x=clamp(p.x+rand(-1,1)*sp*dt*6,-125,125);p.y=clamp(p.y+rand(-1,1)*sp*dt*6+dt*4,-0,275);c.fillStyle='rgba(92,54,181,.55)';c.beginPath();c.arc(cx+p.x,92+p.y,4,0,TAU);c.fill();}}});
+ if(t4>=0){t4+=dt;const a=spread(cold),b=spread(hot);$('#t4').textContent=Math.round(t4)+' s';$('#sc').textContent=Math.round(a)+'%';$('#sh').textContent=Math.round(b)+'%';
+  if(t4>4){const m='<span class="t">Hot water wins</span>Particles of hot water move faster, so they bump the ink particles around more and the ink mixes — <b>diffuses</b> — faster.';if($('#m4').innerHTML!==m)$('#m4').innerHTML=m;}}});
+
+/* S5 sugar */
+let sp5=0,stir=0;const c5=$('#c5'),x5=setupCanvas(c5,700,400);$('#spoon').onclick=()=>{if(sp5<8){sp5++;stir=1.5;Sound.click();}};$('#rs5').onclick=()=>{sp5=0;};
+Loop.add('s5',(dt,t)=>{stir=Math.max(0,stir-dt);const lv=100+sp5*.8;$('#sp5').textContent=sp5;$('#lv5').textContent=lv.toFixed(1)+' mL';
+ const m=sp5===0?'<span class="t">Mark the level</span>The glass has 100 mL of water.':`<span class="t">Hardly any rise!</span>${sp5} spoons of sugar (about ${sp5*5} mL of crystals) were added, but the level rose by only ${(sp5*.8).toFixed(1)} mL. The sugar particles have slipped into the <b>spaces between water particles</b>.`;if($('#m5').innerHTML!==m)$('#m5').innerHTML=m;
+ const c=x5;c.clearRect(0,0,700,400);c.fillStyle='rgba(116,192,252,.35)';const top=360-200*(lv/110);c.fillRect(150,top,220,360-top);c.strokeStyle='#dee2e6';c.lineWidth=3;c.strokeRect(150,100,220,260);c.strokeStyle='#ff6b6b';c.setLineDash([6,4]);c.beginPath();c.moveTo(140,360-200*(100/110));c.lineTo(380,360-200*(100/110));c.stroke();c.setLineDash([]);
+ c.fillStyle='#ff6b6b';c.font='700 12px Nunito,"Segoe UI",sans-serif';c.textAlign='left';c.fillText('first mark',385,364-200*(100/110));
+ if(stir>0){c.fillStyle='rgba(255,255,255,.9)';for(let i=0;i<sp5*6;i++)c.fillRect(160+(i*41)%200,top+20+((i*23+t*80)%(340-top)),5,5);}
+ c.save();c.translate(560,220);const R=110;c.beginPath();c.arc(0,0,R,0,TAU);c.clip();c.fillStyle='#0b1220';c.fillRect(-R,-R,2*R,2*R);for(let i=0;i<7;i++)for(let j=0;j<7;j++){const x=-R+18+i*32+Math.sin(t*3+i+j)*3,y=-R+18+j*32+Math.cos(t*3+i*j)*3;c.fillStyle='#4dabf7';c.beginPath();c.arc(x,y,12,0,TAU);c.fill();}
+ for(let k=0;k<Math.min(sp5*4,30);k++){const i=k%6,j=Math.floor(k/6)%6;c.fillStyle='#fff';c.beginPath();c.arc(-R+34+i*32,-R+34+j*32,5,0,TAU);c.fill();}c.restore();c.strokeStyle='#adb5bd';c.lineWidth=4;c.beginPath();c.arc(560,220,110,0,TAU);c.stroke();
+ c.fillStyle='#c9d3e8';c.textAlign='center';c.fillText('zoomed in: sugar (white) fills gaps',560,350);});
+makeQuiz($('#quiz'),[{"q": "A tiny crystal of potassium permanganate can colour a lot of water. This shows that…", "o": ["the crystal grows in water", "water becomes a solid", "colour is a gas", "matter is made of a very large number of tiny particles"], "a": 3, "why": "One crystal contains millions of tiny particles that spread through the water."}, {"q": "Interparticle attraction is the strongest in…", "o": ["solids", "it is the same in all", "gases", "liquids"], "a": 0, "why": "Solids have the strongest attraction and least space between particles."}, {"q": "Which can be compressed the most?", "o": ["Water", "Air", "Iron", "Chalk"], "a": 1, "why": "Gas particles have a lot of space between them."}, {"q": "Ink spreads faster in hot water because…", "o": ["cold water has no particles", "hot water is heavier", "particles move faster at higher temperature", "ink becomes a solid"], "a": 2, "why": "Heat gives particles more energy, so diffusion is faster."}, {"q": "Liquids have…", "o": ["no fixed shape and no fixed volume", "fixed shape but no fixed volume", "fixed shape and fixed volume", "fixed volume but no fixed shape"], "a": 3, "why": "Particles can slide past each other but stay close together."}, {"q": "When sugar dissolves in water, the level barely rises because…", "o": ["sugar particles fit into the spaces between water particles", "water evaporates", "sugar has no mass", "sugar disappears forever"], "a": 0, "why": "There are spaces between particles of matter."}]);
+</script>
+</body></html>
