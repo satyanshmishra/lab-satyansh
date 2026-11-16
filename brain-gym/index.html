@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Brain Gym">
+<meta name="theme-color" content="#0B1426">
+<title>Science Brain Gym · Grade 6</title>
+<style>
+:root{--bg:#0B1426;--panel:#14223D;--panel2:#1C2E52;--line:#2C4370;--text:#F5F8FF;--muted:#A9B8D0;
+--cyan:#4CC9F0;--amber:#FFB703;--green:#06D6A0;--coral:#EF476F;--violet:#B388FF;--lime:#9EF01A;--orange:#FF9F1C}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+body{background:radial-gradient(1200px 600px at 85% 110%,#16305a 0%,transparent 60%),var(--bg);min-height:100%}
+button{font:inherit;color:inherit;border:none;cursor:pointer;touch-action:manipulation}
+.top{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 18px;background:#0B1426ee;border-bottom:1px solid var(--line)}
+.brand{font-weight:800;font-size:20px;letter-spacing:.3px;cursor:pointer;white-space:nowrap}
+.brand span{color:var(--amber)}
+.sp{flex:1}
+.tbtn{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:700;font-size:15px}
+.tbtn:hover{border-color:var(--cyan)}
+.teams{display:flex;gap:8px;flex-wrap:wrap}
+.team{display:flex;align-items:center;gap:6px;background:var(--panel);border:2px solid var(--c);border-radius:999px;padding:3px 4px 3px 12px;font-weight:800}
+.team .nm{color:var(--c);font-size:15px}
+.team .sc{min-width:30px;text-align:center;font-size:20px}
+.team button{width:32px;height:32px;border-radius:50%;background:var(--panel2);font-size:18px;font-weight:900;color:var(--c)}
+.timer{font-variant-numeric:tabular-nums;min-width:86px}
+.timer.run{border-color:var(--amber);color:var(--amber)}
+.timer.end{background:var(--coral);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:22px 18px 60px}
+h1{font-size:clamp(30px,4.5vw,52px);margin:8px 0 4px;letter-spacing:.3px}
+h1 em{font-style:normal;color:var(--amber)}
+.sub{color:var(--muted);font-size:clamp(15px,1.8vw,19px);margin:0 0 22px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.tile{position:relative;text-align:left;background:var(--panel);border:1.5px solid var(--line);border-radius:18px;padding:18px 18px 16px;min-height:150px;transition:transform .15s,border-color .15s}
+.tile:hover,.tile:focus-visible{transform:translateY(-3px);border-color:var(--c)}
+.tile .ic{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 18%,transparent);border:2px solid var(--c);font-size:26px}
+.tile h3{margin:12px 0 4px;font-size:21px;color:var(--c)}
+.tile p{margin:0;color:var(--muted);font-size:15px;line-height:1.35}
+.tile .stars{position:absolute;top:16px;right:16px;color:var(--amber);font-size:16px;letter-spacing:1px}
+.tile .cnt{position:absolute;bottom:14px;right:16px;font-size:13px;color:var(--muted)}
+.ahead{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.ahead h2{margin:0;font-size:clamp(24px,3.2vw,36px);color:var(--c)}
+.chip{display:inline-block;border:1.5px solid var(--c);color:var(--c);border-radius:999px;padding:4px 12px;font-weight:700;font-size:14px;background:color-mix(in srgb,var(--c) 12%,transparent)}
+.dots{display:flex;gap:6px;flex-wrap:wrap}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--line);cursor:pointer}
+.dot.on{background:var(--c)}
+.card{background:var(--panel);border:1.5px solid var(--line);border-radius:20px;padding:clamp(18px,2.6vw,30px)}
+.enter .card,.new{animation:pop .35s ease}
+@keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.big{font-size:clamp(20px,2.6vw,30px);line-height:1.35;font-weight:650;margin:0 0 16px}
+.txt{font-size:clamp(17px,2vw,22px);line-height:1.5}
+.muted{color:var(--muted)}
+.opts{display:grid;gap:12px;margin-top:14px}
+.opt{text-align:left;background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:14px 18px;font-size:clamp(17px,2vw,22px);line-height:1.35;display:flex;gap:14px;align-items:flex-start}
+.opt b{color:var(--c);min-width:22px}
+.opt:hover{border-color:var(--c)}
+.opt.ok{border-color:var(--green);background:#0E3B33}
+.opt.no{border-color:var(--coral);background:#3D1626}
+.opt.dim{opacity:.55}
+.fb{margin-top:16px;padding:14px 18px;border-radius:14px;font-size:clamp(16px,1.9vw,21px);line-height:1.45}
+.fb.ok{background:#0E3B33;border:1.5px solid var(--green)}
+.fb.no{background:#3D1626;border:1.5px solid var(--coral)}
+.fb.info{background:#1B2F57;border:1.5px solid var(--cyan)}
+.fb strong{display:block;margin-bottom:4px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;align-items:center}
+.btn{background:var(--panel2);border:2px solid var(--c,var(--cyan));color:var(--c,var(--cyan));border-radius:999px;padding:11px 20px;font-weight:800;font-size:17px}
+.btn.solid{background:var(--c,var(--amber));color:#0B1426;border-color:transparent}
+.btn:disabled{opacity:.4;cursor:default}
+.nav{display:flex;justify-content:space-between;margin-top:20px;gap:10px}
+.clue{display:flex;gap:12px;align-items:flex-start;background:var(--panel2);border-radius:14px;padding:12px 16px;margin:10px 0;font-size:clamp(17px,2vw,22px)}
+.clue .n{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--c);color:#0B1426;font-weight:900}
+.pts{font-size:clamp(18px,2vw,22px);font-weight:800;color:var(--amber)}
+.answer{font-size:clamp(26px,3.6vw,42px);font-weight:900;color:var(--green);margin:14px 0 4px}
+.sent{display:block;width:100%;text-align:left;background:var(--panel2);border:2px solid transparent;border-radius:12px;padding:12px 16px;margin:8px 0;font-size:clamp(17px,2vw,22px);line-height:1.45}
+.sent.sus{border-color:var(--amber);background:#3A2E0B}
+.sent.wrong{border-color:var(--coral);background:#3D1626}
+.sent.right{border-color:var(--green);background:#0E3B33}
+.sent.missed{border-color:var(--coral);border-style:dashed}
+.sent .fix{display:block;margin-top:6px;color:var(--green);font-weight:700}
+.sent .tag{float:right;font-size:14px;font-weight:800;margin-left:8px}
+.badges{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.plus{font-size:28px;font-weight:900;color:var(--amber)}
+.tray{display:flex;flex-wrap:wrap;gap:10px;min-height:64px;padding:12px;border:2px dashed var(--line);border-radius:16px;margin:10px 0 16px}
+.scard{background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:10px 16px;font-size:clamp(16px,1.9vw,20px);font-weight:700}
+.scard.sel{border-color:var(--amber);background:#3A2E0B;transform:scale(1.05)}
+.scard.ok{border-color:var(--green)}
+.scard.no{border-color:var(--coral);background:#3D1626}
+.bins{display:grid;gap:14px}
+.bin{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:12px;min-height:150px;cursor:pointer}
+.bin.hot{border-color:var(--amber)}
+.bin h4{margin:0 0 10px;font-size:clamp(18px,2vw,22px);color:var(--c);text-align:center}
+.bin .tray{border:none;min-height:40px;margin:0;padding:0}
+.idea{background:var(--panel2);border-left:0;border-radius:12px;padding:12px 16px;margin:10px 0;font-size:clamp(17px,2vw,22px);display:flex;gap:12px}
+.idea::before{content:"💡";flex:none}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:760px){.cols{grid-template-columns:1fr}}
+.list{margin:6px 0 0;padding-left:22px;font-size:clamp(16px,1.9vw,21px);line-height:1.55}
+.label{font-size:14px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:12px 0 4px}
+.locks{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin:16px 0}
+.lock{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:16px 10px;text-align:center}
+.lock .li{font-size:42px}
+.lock .lc{color:var(--muted);font-size:14px;margin-top:4px}
+.lock.open{border-color:var(--green);background:#0E3B33}
+.lock.cur{border-color:var(--amber)}
+.code{display:flex;gap:10px;justify-content:center;margin:10px 0 6px}
+.slot{width:clamp(44px,7vw,64px);height:clamp(56px,9vw,80px);border-radius:12px;background:var(--panel2);border:2px solid var(--line);display:grid;place-items:center;font-size:clamp(28px,4.5vw,44px);font-weight:900;color:var(--green)}
+.pad{display:grid;grid-template-columns:repeat(5,minmax(52px,72px));gap:10px;margin-top:14px}
+.key{height:60px;border-radius:14px;background:var(--panel2);border:2px solid var(--line);font-size:26px;font-weight:900}
+.key:active{transform:scale(.95)}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-5px)}}
+.win{text-align:center;padding:30px 10px}
+.win .trophy{font-size:90px;animation:pop .6s}
+.conf{position:fixed;top:-20px;width:10px;height:16px;z-index:50;animation:fall linear forwards;pointer-events:none}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+.foot{color:var(--muted);font-size:14px;text-align:center;margin-top:30px}
+.setup{display:flex;gap:8px;align-items:center}
+select{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:999px;padding:7px 10px;font:inherit;font-weight:700}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand" onclick="go('home')">🧠 Science <span>Brain Gym</span></div>
+  <div class="sp"></div>
+  <div class="teams" id="teams"></div>
+  <div class="setup"><select id="tcount" aria-label="Number of teams" onchange="setTeams(+this.value)">
+    <option value="0">No teams</option><option value="2" selected>2 teams</option><option value="3">3 teams</option><option value="4">4 teams</option></select></div>
+  <button class="tbtn timer" id="timer" onclick="timerTap()" title="Tap: start / pause · Double-tap: reset">⏱ 1:00</button>
+  <button class="tbtn" onclick="fullscreen()" title="Full screen">⛶</button>
+  <button class="tbtn" onclick="go('home')">⌂ Home</button>
+  <a class="tbtn" href="../#/class-6" style="text-decoration:none;color:inherit" title="Back to the Science Lab">🧪 Lab</a>
+</div>
+<main id="app"></main>
+<script>
+const DATA = {
+truths: [
+ { ch: 'Beyond Earth', s: ['Venus shines by its own light.', 'The Pole Star appears nearly fixed in the northern sky.', "Orion's belt is made of three stars in a row."], lie: 0,
+   why: 'Venus is a planet. It shines because it reflects sunlight — only stars like the Sun make their own light.' },
+ { ch: 'Exploring Magnets', s: ['The poles of a magnet always exist in pairs.', 'An aluminium can is attracted by a magnet.', 'A freely hanging magnet comes to rest along north–south.'], lie: 1,
+   why: 'Aluminium is non-magnetic. Iron, steel, nickel and cobalt are attracted by magnets.' },
+ { ch: 'Temperature', s: ['A clinical thermometer reads roughly 35 °C to 42 °C.', 'Normal human body temperature is about 37 °C.', 'Kelvin temperatures are written with a degree sign, like 300 °K.'], lie: 2,
+   why: 'The kelvin unit is written as K with no degree sign: 300 K. Only °C and °F use the degree sign.' },
+ { ch: 'Separation', s: ['Winnowing uses wind to separate husk from grain.', 'Filtration can remove salt dissolved in water.', 'Butter is separated from curd by churning.'], lie: 1,
+   why: 'Dissolved salt passes through filter paper. To get salt back, we must evaporate the water.' },
+ { ch: 'States of Water', s: ['Evaporation causes cooling.', 'Clouds form when water vapour condenses into tiny droplets.', 'Water vapour can be seen as a white cloud.'], lie: 2,
+   why: 'Water vapour is invisible. The white trail we see is made of tiny droplets of liquid water formed by condensation.' },
+ { ch: 'Diversity', s: ['A wheat plant has fibrous roots.', 'Cactus spines are leaves changed into spines.', 'Camels of the cold desert of Ladakh have one hump.'], lie: 2,
+   why: 'Ladakh camels have two humps and thick hair. Camels of the hot Rajasthan desert have one hump.' },
+ { ch: 'Mindful Eating', s: ['Iodine solution turns starch blue-black.', 'A lack of vitamin C causes scurvy.', 'Goitre is caused by a lack of vitamin A.'], lie: 2,
+   why: 'Goitre is caused by a lack of iodine — that is why we use iodised salt.' },
+ { ch: 'Living Creatures', s: ['Seeds need water and air to germinate.', 'A car is living because it moves and uses fuel.', 'A tadpole lives in water.'], lie: 1,
+   why: 'A car cannot grow or reproduce. Moving and using energy alone do not make something living.' },
+ { ch: "Nature's Treasures", s: ['Coal is a non-renewable resource.', 'Sunlight is a renewable resource.', 'Air is about 78% oxygen.'], lie: 2,
+   why: 'Air is about 78% nitrogen and 21% oxygen.' },
+ { ch: 'Materials Around Us', s: ['Sugar is soluble in water.', 'Frosted glass is translucent.', 'Air is not matter because we cannot see it.'], lie: 2,
+   why: 'Air has mass and occupies space (it fills a balloon), so it is matter — even though it is invisible.' },
+],
+
+riddles: [
+ { ch: 'Beyond Earth', clues: ['Travellers have trusted me for thousands of years.', 'While other stars seem to move across the night sky, I hardly move at all.', 'Two stars of the Saptarishi point straight at me, and I show the North.'], ans: 'The Pole Star' },
+ { ch: 'States of Water', clues: ['I work silently, without any boiling.', 'I am faster on hot, dry and windy days.', 'I turn liquid water into vapour, and I cool you down when you sweat.'], ans: 'Evaporation' },
+ { ch: 'Diversity', clues: ['I live where it almost never rains.', 'My leaves have turned into sharp spines.', 'My thick green stem stores water and makes my food.'], ans: 'A cactus' },
+ { ch: 'Temperature', clues: ['I have a narrow range — I never read below 35 or above 42.', 'Doctors and nurses use me every day.', 'I measure your body temperature when you have fever.'], ans: 'A clinical thermometer' },
+ { ch: 'Exploring Magnets', clues: ['I am thin, light and I can turn freely.', 'Wherever you take me, I settle in the same direction.', 'Sailors and hikers use me to find north and south.'], ans: 'A magnetic compass needle' },
+ { ch: 'Living Creatures', clues: ['I hatch from an egg in a pond.', 'I have a tail and I can live only in water.', 'One day I will lose my tail, grow legs and hop on land.'], ans: 'A tadpole' },
+ { ch: 'Separation', clues: ['I am a thin sheet with very tiny holes.', 'I let water pass through but stop the mud.', 'What stays on me is called the residue.'], ans: 'Filter paper' },
+ { ch: 'Mindful Eating', clues: ['I am a brown liquid kept in the science lab.', 'Drop me on a cut potato or a slice of bread.', 'I turn blue-black when starch is present.'], ans: 'Iodine solution' },
+ { ch: 'Beyond Earth', clues: ['I do not make any light of my own.', 'I go round the Earth about once in 27 days.', "India's Chandrayaan-3 landed near my south pole."], ans: 'The Moon' },
+ { ch: "Nature's Treasures", clues: ['I stand tall in open, windy places.', 'My big wings turn round and round, just like a paper firki.', 'Muppandal and Jaisalmer have many of me making electricity.'], ans: 'A windmill' },
+],
+
+cases: [
+ { ch: 'States of Water + Separation', title: 'The Mystery of the White Crust', story: 'Neha left a steel plate of sea water on the sunny roof. Three days later the water was gone, but a thin white crust covered the plate.',
+   clues: ['Nobody touched the plate.', 'It did not rain on those days.', 'The crust tasted salty.'],
+   q: 'What solved the mystery?', opts: ['The water evaporated in the sun, leaving the dissolved salt behind', 'A bird drank the water and dropped salt', 'The steel plate turned white because of heat', 'The water froze into white ice'], ans: 0,
+   why: 'Sunlight heated the water and it evaporated into the air. Salt does not evaporate, so it stayed as a white crust. This is how salt is obtained from sea water.' },
+ { ch: 'States of Water', title: 'Did the Bottle Leak?', story: 'Arjun took a sealed, ice-cold bottle out of the fridge and put it on a dry table. Ten minutes later there was a ring of water under it. His sister said, "The bottle leaks!"',
+   clues: ['The cap was tightly closed and the bottle was still full.', 'The outside of the bottle was covered with tiny droplets.', 'It happened on a humid, rainy day.'],
+   q: 'Where did the water come from?', opts: ['Water vapour in the air condensed on the cold bottle', 'Water seeped out through the plastic', 'The table released water', 'The ice inside melted through the bottle'], ans: 0,
+   why: 'Water vapour in the air cooled on the cold surface and became liquid droplets — condensation. On humid days there is more vapour in the air, so more water collects.' },
+ { ch: 'Exploring Magnets', title: 'The Confused Compass', story: 'On a school trek, Kabir\'s compass needle kept pointing in a strange direction. His friend\'s compass, a few steps away, pointed normally.',
+   clues: ['Both compasses worked fine at school.', 'Kabir had a toy magnet in his shirt pocket.', 'When he kept the magnet in his bag far away, his compass worked again.'],
+   q: 'What was confusing the compass?', opts: ['The magnet near it was attracting and repelling the needle', 'The mountain air was too cold', 'The compass was too old', 'The trees were blocking the North'], ans: 0,
+   why: 'A compass needle is a tiny magnet. A nearby magnet attracts or repels its poles and makes it point wrongly. Compasses must be kept away from magnets.' },
+ { ch: 'Living Creatures', title: 'The Seeds That Slept', story: 'Two jars had the same bean seeds. In Jar 1 the seeds sat on wet cotton. In Jar 2 the seeds were filled to the top with water and the lid was closed. After five days, only Jar 1 seeds had sprouted.',
+   clues: ['Both jars were kept in the same room at the same temperature.', 'Jar 2 seeds had plenty of water.', 'Jar 2 seeds were cut off from the air.'],
+   q: 'Why did the Jar 2 seeds not germinate?', opts: ['They did not get air', 'They did not get water', 'They needed darkness', 'Bean seeds never germinate in jars'], ans: 0,
+   why: 'Seeds need both water and air to germinate. Jar 2 had water but no air, so its seeds could not start growing.' },
+ { ch: 'Temperature', title: 'The Fever That Wasn\'t', story: 'Riya came home after playing in the afternoon sun. Her mother touched her forehead and said, "You are burning — you have fever!"',
+   clues: ["Her mother's hands were cold from washing vegetables.", 'A clinical thermometer in Riya\'s armpit showed 36.5 °C.', 'Riya felt perfectly fine.'],
+   q: 'What is the best conclusion?', opts: ['Riya was normal; touch is not a reliable way to judge temperature', 'Riya had high fever', 'The thermometer was wrong because it did not show 42 °C', 'Playing in the sun always causes fever'], ans: 0,
+   why: 'Our sense of touch depends on how warm or cold our own hand is. An armpit reading of 36.5 °C means a body temperature of about 37 °C — normal. Only a thermometer gives a reliable reading.' },
+ { ch: 'Beyond Earth', title: 'Where Did the Stars Go?', story: 'Aditi counted only about 10 stars from her flat in a big city. During her holidays in a remote village, she could see thousands of stars and a faint band of light across the sky.',
+   clues: ['The sky was clear on both nights.', 'The city had bright street lights, hoardings and traffic.', 'The village had very few lights.'],
+   q: 'Why did she see fewer stars in the city?', opts: ['Light pollution, smoke and dust in the city hide faint stars', 'Stars do not shine over cities', 'The city is farther from the stars', 'Stars appear only during holidays'], ans: 0,
+   why: 'Excessive artificial light at night (light pollution), along with smoke and dust, makes faint stars hard to see. Dark village skies show many more stars.' },
+],
+
+mistakes: [
+ { title: "Aman's Fever Day", ch: 'Temperature', parts: [
+   { t: 'Aman woke up feeling weak.' },
+   { t: 'His mother touched his forehead and said his temperature was exactly 39 °C.', fix: 'Touch cannot give an exact temperature — we need a thermometer.' },
+   { t: 'She used a laboratory thermometer to check his fever.', fix: 'Fever is checked with a clinical thermometer (35–42 °C).' },
+   { t: 'She kept the thermometer in his armpit for the time shown on it.' },
+   { t: 'It read 98.6 °F, which is normal body temperature.' },
+   { t: 'She wrote it in her diary as 310 °K.', fix: 'Kelvin is written without a degree sign: 310 K.' } ] },
+ { title: 'Riya in the Kitchen', ch: 'Separation', parts: [
+   { t: 'Riya washed the rice and poured off the dirty water by tilting the pot — this is called filtration.', fix: 'Pouring off the water above settled rice is decantation.' },
+   { t: 'She removed a few small stones from the dal by hand — this is handpicking.' },
+   { t: 'To get butter, she boiled the curd for ten minutes.', fix: 'Butter is separated from curd by churning.' },
+   { t: 'She separated tea leaves from the tea using a strainer.' },
+   { t: 'She said filter paper can also take the salt out of salty water.', fix: 'Dissolved salt passes through filter paper; evaporation is needed.' } ] },
+ { title: 'Night Sky Camp', ch: 'Beyond Earth', parts: [
+   { t: 'At sunset, the campers saw Venus, the brightest star in the sky.', fix: 'Venus is a planet, not a star; it reflects sunlight.' },
+   { t: 'Later, they found Orion with three stars in a row as its belt.' },
+   { t: 'They noticed the Pole Star moving quickly across the sky all night.', fix: 'The Pole Star appears nearly fixed in the north.' },
+   { t: 'They used two stars of the Saptarishi to find the North.' },
+   { t: 'The full Moon glowed with its own light.', fix: 'The Moon has no light of its own; it reflects sunlight.' } ] },
+ { title: 'Garden Walk', ch: 'Diversity + Living Creatures', parts: [
+   { t: 'Kavya pulled out a wheat plant and saw one thick main root — a taproot.', fix: 'Wheat has fibrous roots (a bunch of thin roots).' },
+   { t: 'The mango leaf had a net-like (reticulate) pattern of veins.' },
+   { t: 'She called the rose plant a herb because it has a hard woody stem.', fix: 'A rose plant with a hard woody stem branching near the base is a shrub.' },
+   { t: 'Near the pond, a frog jumped from the land into the water.' },
+   { t: 'She saw mosquito larvae wriggling in the dry soil.', fix: 'Mosquito larvae live and grow in water.' } ] },
+],
+
+connect: [
+ { chs: ['Exploring Magnets', 'Separation'], q: 'Iron pins have fallen into a heap of sand. Using an idea from the Magnets chapter, how can you separate them quickly?', hint: 'Which of the two is a magnetic material?',
+   ans: 'Move a magnet over the sand. Iron pins are magnetic and stick to it; sand is not attracted. This is magnetic separation.' },
+ { chs: ['States of Water', 'Separation'], q: 'How do people living near the sea get common salt from sea water?', hint: 'What happens to water under the hot sun?',
+   ans: 'Sea water is kept in shallow beds in the sun. The water evaporates and the salt is left behind and collected.' },
+ { chs: ["Nature's Treasures", 'Living Creatures'], q: 'A boy drinks milk from a cow that eats grass. Trace where the energy in the milk originally came from.', hint: 'How does grass make its food?',
+   ans: 'Sun → grass (uses sunlight to make food) → cow → milk → boy. The Sun is the original source of energy.' },
+ { chs: ['Materials Around Us', 'Separation'], q: 'Sugar and sand are both stirred into water. Which one can you get back by filtration, and why?', hint: 'Which one dissolves?',
+   ans: 'Sand, because it is insoluble and stays on the filter paper. Sugar dissolves and passes through; it can be got back only by evaporating the water.' },
+ { chs: ['Measurement and Motion', 'Beyond Earth'], q: 'What type of motion does the Moon show as it goes round the Earth again and again?', hint: 'Think of its path.',
+   ans: 'Circular motion (it moves along a nearly circular path), and it repeats itself regularly.' },
+ { chs: ['Mindful Eating', 'Diversity'], q: 'Why are millets like bajra and ragi a smart crop for dry regions of India?', hint: 'Think about adaptations and nutrients.',
+   ans: 'They can grow easily in different climatic conditions, even with less water, and they are rich in nutrients — good for farmers and for our health.' },
+ { chs: ['Temperature', 'States of Water'], q: 'Why do we feel cold when we come out of a swimming pool on a windy day?', hint: 'What happens to the water on our skin?',
+   ans: 'Water on our skin evaporates quickly in the wind and takes heat from our body, so our skin feels cold (cooling by evaporation).' },
+],
+
+sorts: [
+ { title: 'Renewable or Non-renewable?', ch: "Nature's Treasures", bins: ['Renewable', 'Non-renewable'],
+   cards: [['Sunlight', 0], ['Wind', 0], ['Air', 0], ['Coal', 1], ['Petroleum', 1], ['Natural gas', 1]] },
+ { title: 'Magnetic or Non-magnetic?', ch: 'Exploring Magnets', bins: ['Magnetic', 'Non-magnetic'],
+   cards: [['Iron nail', 0], ['Steel spoon', 0], ['Iron filings', 0], ['Steel safety pin', 0], ['Copper wire', 1], ['Aluminium foil', 1], ['Plastic comb', 1], ['Wooden pencil', 1], ['Glass marble', 1]] },
+ { title: 'Soluble or Insoluble in water?', ch: 'Materials Around Us', bins: ['Soluble', 'Insoluble'],
+   cards: [['Sugar', 0], ['Common salt', 0], ['Sand', 1], ['Chalk powder', 1], ['Sawdust', 1], ['Iron filings', 1]] },
+ { title: 'Which type of motion?', ch: 'Measurement and Motion', bins: ['Linear', 'Circular', 'Oscillatory'],
+   cards: [['Falling stone', 0], ['Lift going up', 0], ['Car on a straight road', 0], ['Tip of a fan blade', 1], ['Seat of a giant wheel', 1], ['Tip of a clock hand', 1], ['Child on a swing', 2], ['Sewing machine needle', 2], ['Clock pendulum', 2]] },
+ { title: 'Where does it live?', ch: 'Diversity', bins: ['Aquatic', 'Terrestrial', 'Both'],
+   cards: [['Fish', 0], ['Dolphin', 0], ['Lotus', 0], ['Camel', 1], ['Goat', 1], ['Squirrel', 1], ['Frog', 2]] },
+],
+
+whatif: [
+ { q: 'What if water never evaporated?', ideas: ['No clouds would form, so there would be no rain.', 'Wet clothes would never dry.', 'We could not get salt from sea water.', 'Sweating would not cool our body.'] },
+ { q: 'What if there were no standard units like the metre?', ideas: ['Everyone would measure with their own handspan or cubit.', 'The same cloth would have different lengths for different people.', 'Buying, selling and building would be confusing and unfair.'] },
+ { q: 'What if seeds needed bright sunlight to germinate?', ideas: ['Seeds sown under the soil could not sprout.', 'Farmers would have to leave seeds on top of the soil, where birds eat them.', 'Many plants we eat might not grow at all.'] },
+ { q: 'What if we had no thermometers?', ideas: ['We would judge temperature by touch, which is unreliable.', 'Doctors could not tell exactly how high a fever is.', 'Cooking and science experiments would be guesswork.'] },
+ { q: 'What if all the coal and petroleum ran out tomorrow?', ideas: ['Many vehicles and power plants would stop.', 'We would need to use more sunlight, wind and water energy.', 'Saving energy would become very important.'] },
+ { q: 'What if all glass became opaque?', ideas: ['Windows would not let light in; rooms would be dark.', 'We could not see through spectacles or a drinking glass.', 'We would need another transparent material.'] },
+ { q: 'What if the Earth had no Moon?', ideas: ['Nights would be much darker.', 'There would be no moonlight to see by.', 'Missions like Chandrayaan would have no Moon to explore.'] },
+ { q: 'What if our food had no dietary fibre (roughage)?', ideas: ['Food and waste would not move smoothly through the body.', 'Many people would suffer from constipation.', 'We would need to eat more fruits, vegetables and whole grains.'] },
+],
+
+engineer: [
+ { title: 'Desi Fridge', ch: 'States of Water', mission: 'Your village has no electricity in summer. Design a way to keep drinking water cool.',
+   materials: ['earthen pot (matka)', 'cotton cloth', 'water', 'a shady, airy spot'],
+   hints: ['What happens to water when it evaporates?', 'Where does evaporation happen faster — in still air or in a breeze?'],
+   solution: ['Fill an earthen pot with water — water seeps through its tiny pores.', 'Or wrap a bottle in a wet cotton cloth.', 'Keep it in a shady place where air moves.', 'Keep the cloth wet.'],
+   science: 'Water evaporating from the outer surface takes heat from the pot and the water inside, so the water stays cool. Moving air makes evaporation faster.' },
+ { title: 'Compass for a Lost Hiker', ch: 'Exploring Magnets', mission: 'Your friend is lost in a forest on a cloudy day. Make a compass to find the north.',
+   materials: ['steel needle', 'bar magnet', 'cork or leaf', 'bowl of water'],
+   hints: ['How do you turn a needle into a magnet?', 'What does a freely floating magnet do?'],
+   solution: ['Rub the needle with one pole of the magnet many times in the same direction.', 'Put the needle on a piece of cork floating in a bowl of water.', 'Keep it away from the magnet and iron objects.', 'Wait — the needle settles north–south.'],
+   science: 'Rubbing makes the needle a magnet. A freely floating magnet always comes to rest along the north–south direction.' },
+ { title: 'Clean Water After a Flood', ch: 'Separation', mission: 'After a flood, the only water is muddy. Plan the steps to make it clearer.',
+   materials: ['buckets', 'clean cloth', 'filter paper', 'funnel'],
+   hints: ['What happens if muddy water is left undisturbed?', 'How can the last fine particles be removed?'],
+   solution: ['Leave the water undisturbed so mud settles (sedimentation).', 'Gently pour the clearer water into another bucket (decantation).', 'Pour it through a clean folded cloth or filter paper (filtration).', 'Ask an adult to boil it before drinking.'],
+   science: 'Heavier particles settle, decantation removes the water above, and filtration stops the remaining insoluble particles.' },
+ { title: 'Measure the Winding Path', ch: 'Measurement and Motion', mission: 'Find the length of the winding garden path from the gate to the classroom without a long measuring tape.',
+   materials: ['a long string', 'a metre scale', 'your own steps'],
+   hints: ['How could a string follow the bends?', 'How can you find the length of one of your steps?'],
+   solution: ['Method 1: lay the string along the path, mark it, and measure the string in metres.', 'Method 2: walk a known 10 m distance and count your steps to find one step\'s length.', 'Walk the path, count steps, and multiply by the length of one step.'],
+   science: 'A string follows curves, and a step of known length acts as a measuring unit — but always convert to standard units (metres).' },
+ { title: 'Balanced Tiffin Challenge', ch: 'Mindful Eating', mission: 'Plan a one-day tiffin that has an energy food, a body-building food, and a protective food — using local foods.',
+   materials: ['local grains and millets', 'pulses', 'seasonal fruits and vegetables'],
+   hints: ['Which foods give mainly carbohydrates?', 'Which foods are rich in protein? In vitamins and fibre?'],
+   solution: ['Energy: a ragi or bajra roti, or rice.', 'Body-building: dal, sprouts, paneer or curd.', 'Protective: a seasonal fruit and a salad.', 'Avoid fried and packaged junk food.'],
+   science: 'A balanced diet has all nutrients in the right amounts, plus dietary fibre and water. Local foods also have fewer food miles.' },
+],
+
+escape: {
+ story: 'The Science Lab door has locked itself! Open all 6 locks to build the secret code and escape.',
+ locks: [
+  { ch: 'Measurement', q: 'Riya\'s step is 50 cm long. She takes 18 steps across the lab. How many metres wide is the lab?', a: 9, hint: '18 × 50 cm = ? cm. 100 cm = 1 m.', why: '18 × 50 cm = 900 cm = 9 m.' },
+  { ch: 'Temperature', q: 'A lab thermometer has 5 small divisions between 30 °C and 40 °C. How many °C does ONE small division show?', a: 2, hint: '(40 − 30) ÷ 5', why: '10 °C ÷ 5 = 2 °C per division.' },
+  { ch: "Nature's Treasures", q: 'Imagine 100 balls stand for air: 78 nitrogen and 21 oxygen. How many balls are other gases?', a: 1, hint: '100 − 78 − 21', why: '100 − 78 − 21 = 1 (about 1% other gases like argon and carbon dioxide).' },
+  { ch: 'Magnets', q: 'A bar magnet breaks into 3 pieces. How many poles are there in total now?', a: 6, hint: 'Every piece is a complete magnet.', why: 'Each piece has a North and a South pole: 3 × 2 = 6.' },
+  { ch: 'Beyond Earth', q: 'How many bright stars make up the Big Dipper (Saptarishi)?', a: 7, hint: 'Sapta = ?', why: 'Saptarishi means "seven sages" — it has seven bright stars.' },
+  { ch: 'Living Creatures', q: 'How many stages are there in the life cycle of a mosquito?', a: 4, hint: 'Egg → ... → adult', why: 'Egg → larva → pupa → adult = 4 stages.' },
+ ],
+ final: 'Door unlocked! You are Science Champions!',
+},
+};
+
+</script>
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const L = ['A', 'B', 'C', 'D'];
+const ACTS = [
+  { id: 'truths', t: 'Two Truths, One Lie', ic: '🕵️', c: '--cyan', st: '★', d: 'Three statements — one is false. Spot the lie!', n: () => DATA.truths.length },
+  { id: 'riddles', t: 'Who Am I?', ic: '❓', c: '--violet', st: '★', d: 'Guess from as few clues as possible. Fewer clues, more points.', n: () => DATA.riddles.length },
+  { id: 'cases', t: 'Science Detective', ic: '🔍', c: '--amber', st: '★★', d: 'Read the case, collect the clues, solve the mystery.', n: () => DATA.cases.length },
+  { id: 'mistakes', t: 'Spot the Mistake', ic: '✏️', c: '--coral', st: '★★', d: 'A story with hidden science mistakes. Tap every wrong line.', n: () => DATA.mistakes.length },
+  { id: 'sorts', t: 'Sort It Out', ic: '🗂️', c: '--lime', st: '★', d: 'Tap a card, then tap the right box. Then check!', n: () => DATA.sorts.length },
+  { id: 'connect', t: 'Connect the Chapters', ic: '🔗', c: '--green', st: '★★', d: 'One question, two chapters. Join the ideas.', n: () => DATA.connect.length },
+  { id: 'whatif', t: 'What If…?', ic: '🌀', c: '--orange', st: '★★', d: 'Imagine and reason. Many answers can be right!', n: () => DATA.whatif.length },
+  { id: 'engineer', t: 'Little Engineer', ic: '🛠️', c: '--cyan', st: '★★★', d: 'Design a real solution with simple things.', n: () => DATA.engineer.length },
+  { id: 'escape', t: 'Escape the Lab', ic: '🔐', c: '--amber', st: '★★★', d: 'Open 6 locks with 6 answers to escape. Best as a team game!', n: () => DATA.escape.locks.length },
+];
+const nw = (k) => (S.st && S.st.last === k ? 'new' : '');
+const S = { view: 'home', i: 0, escape: { open: [], cur: null, input: '' } };
+
+/* ---------- teams ---------- */
+const TCOL = ['--cyan', '--amber', '--green', '--coral'];
+let teams = [];
+function setTeams(n) {
+  teams = Array.from({ length: n }, (_, k) => ({ name: 'Team ' + 'ABCD'[k], score: teams[k] ? teams[k].score : 0 }));
+  drawTeams();
+}
+function drawTeams() {
+  $('#teams').innerHTML = teams.map((t, k) => `<div class="team" style="--c:var(${TCOL[k]})">
+    <span class="nm">${t.name}</span><button onclick="pt(${k},-1)" aria-label="minus">−</button>
+    <span class="sc">${t.score}</span><button onclick="pt(${k},1)" aria-label="plus">+</button></div>`).join('');
+}
+function pt(k, d) { teams[k].score = Math.max(0, teams[k].score + d); drawTeams(); }
+
+/* ---------- timer ---------- */
+let tLeft = 60, tRun = null, lastTap = 0;
+function tDraw() {
+  const b = $('#timer'); b.textContent = '⏱ ' + Math.floor(tLeft / 60) + ':' + String(tLeft % 60).padStart(2, '0');
+  b.classList.toggle('run', !!tRun); b.classList.toggle('end', tLeft === 0);
+}
+function timerTap() {
+  const now = Date.now();
+  if (now - lastTap < 350) { clearInterval(tRun); tRun = null; tLeft = 60; tDraw(); lastTap = 0; return; }
+  lastTap = now;
+  if (tRun) { clearInterval(tRun); tRun = null; }
+  else { if (tLeft === 0) tLeft = 60; tRun = setInterval(() => { tLeft--; if (tLeft <= 0) { tLeft = 0; clearInterval(tRun); tRun = null; } tDraw(); }, 1000); }
+  tDraw();
+}
+function fullscreen() {
+  const d = document.documentElement;
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) (d.requestFullscreen || d.webkitRequestFullscreen || (() => {})).call(d);
+  else (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+}
+
+/* ---------- routing ---------- */
+function go(v, i = 0) { S.view = v; S.i = i; S.st = {}; S.anim = 1; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function act() { return ACTS.find((a) => a.id === S.view); }
+function header(a, n) {
+  const dots = n > 1 ? `<div class="dots">${Array.from({ length: n }, (_, k) => `<span class="dot ${k === S.i ? 'on' : ''}" onclick="go('${a.id}',${k})"></span>`).join('')}</div>` : '';
+  return `<div class="ahead"><h2>${a.ic} ${a.t}</h2><span class="chip">${a.st}</span>${n > 1 ? `<span class="muted">${S.i + 1} / ${n}</span>` : ''}<div class="sp"></div>${dots}</div>`;
+}
+function navRow(n) {
+  return `<div class="nav"><button class="btn" ${S.i === 0 ? 'disabled' : ''} onclick="go(S.view,S.i-1)">◀ Previous</button>
+    ${S.i < n - 1 ? `<button class="btn solid" onclick="go(S.view,S.i+1)">Next ▶</button>` : `<button class="btn solid" onclick="go('home')">Finish ⌂</button>`}</div>`;
+}
+function render() {
+  const app = $('#app');
+  app.classList.toggle('enter', !!S.anim); S.anim = 0;
+  if (S.view === 'home') return (app.innerHTML = home());
+  const a = act();
+  app.style.setProperty('--c', `var(${a.c})`);
+  app.innerHTML = VIEWS[a.id](a);
+}
+function home() {
+  $('#app').style.removeProperty('--c');
+  return `<h1>Science <em>Brain Gym</em></h1>
+  <p class="sub">Grade 6 · revise all 11 chapters through puzzles, mysteries and challenges. ★ warm-up · ★★ thinker · ★★★ champion</p>
+  <div class="grid">${ACTS.map((a) => `<button class="tile" style="--c:var(${a.c})" onclick="go('${a.id}')">
+    <span class="stars">${a.st}</span><div class="ic">${a.ic}</div><h3>${a.t}</h3><p>${a.d}</p><span class="cnt">${a.n()} ${a.id === 'escape' ? 'locks' : 'rounds'}</span></button>`).join('')}</div>
+  <p class="foot">Tip: use the team buttons on top to keep score, and the ⏱ timer (tap to start/pause, double-tap to reset). Arrow keys ← → move between rounds.</p>`;
+}
+
+/* ---------- views ---------- */
+const VIEWS = {
+  truths(a) {
+    const it = DATA.truths[S.i], st = S.st, n = DATA.truths.length;
+    const opts = it.s.map((s, k) => {
+      let cls = '';
+      if (st.pick !== undefined) cls = k === it.lie ? 'no' : (k === st.pick ? 'dim' : 'ok');
+      return `<button class="opt ${cls}" onclick="S.st.pick=${k};S.st.last='fb';render()"><b>${k + 1}</b><span>${esc(s)}${st.pick !== undefined ? (k === it.lie ? '  — ❌ LIE' : '  — ✅ true') : ''}</span></button>`;
+    }).join('');
+    const fb = st.pick === undefined ? '' : `<div class="fb ${nw('fb')} ${st.pick === it.lie ? 'ok' : 'no'}"><strong>${st.pick === it.lie ? '🎉 You caught the lie!' : '🤔 That one is actually true.'}</strong>${esc(it.why)}</div>`;
+    return header(a, n) + `<div class="card"><span class="chip">${esc(it.ch)}</span><p class="big" style="margin-top:14px">Which statement is the LIE?</p><div class="opts">${opts}</div>${fb}</div>` + navRow(n);
+  },
+  riddles(a) {
+    const it = DATA.riddles[S.i], st = S.st, n = DATA.riddles.length, shown = st.k || 1;
+    const clues = it.clues.slice(0, shown).map((c, k) => `<div class="clue ${k === shown - 1 ? nw('clue') : ''}"><span class="n">${k + 1}</span><span>${esc(c)}</span></div>`).join('');
+    const ptsNow = 4 - shown;
+    return header(a, n) + `<div class="card"><div class="badges"><span class="chip">${esc(it.ch)}</span><span class="sp"></span>
+      ${st.rev ? '' : `<span class="pts">Guess now for ${ptsNow} point${ptsNow > 1 ? 's' : ''}</span>`}</div>
+      <p class="big">Who am I?</p>${clues}
+      ${st.rev ? `<div class="answer ${nw('rev')}">I am ${esc(it.ans)}!</div>` : ''}
+      <div class="row">${shown < 3 && !st.rev ? `<button class="btn" onclick="S.st.k=${shown + 1};S.st.last='clue';render()">Next clue ➜</button>` : ''}
+      ${st.rev ? '' : `<button class="btn solid" style="--c:var(--green)" onclick="S.st.rev=1;S.st.k=3;S.st.last='rev';render()">Reveal answer</button>`}</div></div>` + navRow(n);
+  },
+  cases(a) {
+    const it = DATA.cases[S.i], st = S.st, n = DATA.cases.length, k = st.k || 0;
+    const clues = it.clues.slice(0, k).map((c, j) => `<div class="clue ${j === k - 1 ? nw('clue') : ''}"><span class="n">🔍</span><span><b>Clue ${j + 1}:</b> ${esc(c)}</span></div>`).join('');
+    const opts = it.opts.map((o, j) => {
+      let cls = '';
+      if (st.pick !== undefined) cls = j === it.ans ? 'ok' : (j === st.pick ? 'no' : 'dim');
+      return `<button class="opt ${cls}" onclick="S.st.pick=${j};S.st.last='fb';render()"><b>${L[j]}</b><span>${esc(o)}</span></button>`;
+    }).join('');
+    const fb = st.pick === undefined ? '' : `<div class="fb ${nw('fb')} ${st.pick === it.ans ? 'ok' : 'no'}"><strong>${st.pick === it.ans ? '🕵️ Case solved!' : '❌ Not quite — look at the clues again.'}</strong>${esc(it.why)}</div>`;
+    return header(a, n) + `<div class="card"><span class="chip">${esc(it.ch)}</span>
+      <p class="big" style="margin-top:12px">📁 ${esc(it.title)}</p><p class="txt">${esc(it.story)}</p>${clues}
+      ${k < it.clues.length ? `<div class="row"><button class="btn" onclick="S.st.k=${k + 1};S.st.last='clue';render()">🔍 Reveal clue ${k + 1} of ${it.clues.length}</button></div>` : ''}
+      <p class="big" style="margin-top:18px">${esc(it.q)}</p><div class="opts">${opts}</div>${fb}</div>` + navRow(n);
+  },
+  mistakes(a) {
+    const it = DATA.mistakes[S.i], st = S.st, n = DATA.mistakes.length;
+    st.sus = st.sus || {};
+    const total = it.parts.filter((p) => p.fix).length;
+    let found = 0;
+    const lines = it.parts.map((p, k) => {
+      let cls = st.sus[k] ? 'sus' : '', tag = '', fix = '';
+      if (st.chk) {
+        if (p.fix && st.sus[k]) { cls = 'wrong'; found++; tag = '<span class="tag" style="color:var(--coral)">MISTAKE · found ✓</span>'; }
+        else if (p.fix) { cls = 'missed'; tag = '<span class="tag" style="color:var(--coral)">MISSED</span>'; }
+        else if (st.sus[k]) { cls = 'right'; tag = '<span class="tag" style="color:var(--green)">this line was correct</span>'; }
+        if (p.fix) fix = `<span class="fix">✔ ${esc(p.fix)}</span>`;
+      }
+      return `<button class="sent ${cls}" onclick="${st.chk ? '' : `S.st.sus[${k}]=!S.st.sus[${k}];render()`}">${tag}${esc(p.t)}${fix}</button>`;
+    }).join('');
+    const fb = st.chk ? `<div class="fb new ${found === total ? 'ok' : 'info'}"><strong>You found ${found} of ${total} mistakes ${found === total ? '🎉' : ''}</strong>Read each correction aloud and explain why it is right.</div>` : '';
+    return header(a, n) + `<div class="card"><span class="chip">${esc(it.ch)}</span><p class="big" style="margin-top:12px">📖 ${esc(it.title)}</p>
+      <p class="muted txt" style="margin-top:-6px">This story has <b style="color:var(--amber)">${total}</b> science mistakes. Tap each line you think is wrong.</p>${lines}
+      <div class="row">${st.chk ? `<button class="btn" onclick="S.st={};render()">↺ Try again</button>` : `<button class="btn solid" onclick="S.st.chk=1;render()">Check my answers</button>`}</div>${fb}</div>` + navRow(n);
+  },
+  sorts(a) {
+    const it = DATA.sorts[S.i], st = S.st, n = DATA.sorts.length;
+    st.place = st.place || {};
+    const card = (k) => {
+      const [t, b] = it.cards[k]; let cls = st.sel === k ? 'sel' : '';
+      if (st.chk && st.place[k] !== undefined) cls = st.place[k] === b ? 'ok' : 'no';
+      return `<button class="scard ${cls}" onclick="event.stopPropagation();sortCard(${k})">${esc(t)}${st.chk && st.place[k] !== undefined ? (st.place[k] === b ? ' ✅' : ' ❌') : ''}</button>`;
+    };
+    const tray = it.cards.map((_, k) => k).filter((k) => st.place[k] === undefined).map(card).join('');
+    const bins = it.bins.map((b, j) => `<div class="bin ${st.sel !== undefined && st.sel !== null ? 'hot' : ''}" onclick="sortBin(${j})"><h4>${esc(b)}</h4><div class="tray">
+      ${it.cards.map((_, k) => k).filter((k) => st.place[k] === j).map(card).join('')}</div></div>`).join('');
+    const placed = Object.keys(st.place).length, right = it.cards.filter((c, k) => st.place[k] === c[1]).length;
+    const fb = st.chk ? `<div class="fb ${right === it.cards.length ? 'ok' : 'no'}"><strong>${right} of ${it.cards.length} correct ${right === it.cards.length ? '🎉 Perfect sorting!' : ''}</strong>${right === it.cards.length ? '' : 'Tap a ❌ card to take it back, then place it again.'}</div>` : '';
+    return header(a, n) + `<div class="card"><span class="chip">${esc(it.ch)}</span><p class="big" style="margin-top:12px">${esc(it.title)}</p>
+      <p class="muted txt" style="margin-top:-6px">Tap a card, then tap the box where it belongs.</p>
+      <div class="tray">${tray || '<span class="muted">All cards placed!</span>'}</div>
+      <div class="bins" style="grid-template-columns:repeat(${it.bins.length},1fr)">${bins}</div>
+      <div class="row"><button class="btn solid" ${placed < it.cards.length ? 'disabled' : ''} onclick="S.st.chk=1;render()">Check</button>
+      <button class="btn" onclick="S.st={};render()">↺ Reset</button></div>${fb}</div>` + navRow(n);
+  },
+  connect(a) {
+    const it = DATA.connect[S.i], st = S.st, n = DATA.connect.length;
+    return header(a, n) + `<div class="card"><div class="badges"><span class="chip" style="--c:var(--cyan)">${esc(it.chs[0])}</span><span class="plus">+</span><span class="chip" style="--c:var(--amber)">${esc(it.chs[1])}</span></div>
+      <p class="big">${esc(it.q)}</p>
+      ${st.hint ? `<div class="fb info ${nw('hint')}"><strong>💡 Hint</strong>${esc(it.hint)}</div>` : ''}
+      ${st.rev ? `<div class="fb ok ${nw('rev')}"><strong>✅ Answer</strong>${esc(it.ans)}</div>` : ''}
+      <div class="row">${st.hint ? '' : `<button class="btn" onclick="S.st.hint=1;S.st.last='hint';render()">💡 Hint</button>`}
+      ${st.rev ? '' : `<button class="btn solid" style="--c:var(--green)" onclick="S.st.rev=1;S.st.last='rev';render()">Show answer</button>`}</div></div>` + navRow(n);
+  },
+  whatif(a) {
+    const it = DATA.whatif[S.i], st = S.st, n = DATA.whatif.length, k = st.k || 0;
+    return header(a, n) + `<div class="card"><p class="big" style="font-size:clamp(26px,3.6vw,40px)">🌀 ${esc(it.q)}</p>
+      <p class="muted txt">Discuss in your team for 1 minute (⏱ on top). Each good, reasoned idea = 1 point.</p>
+      ${it.ideas.slice(0, k).map((x, j) => `<div class="idea ${j === k - 1 ? nw('idea') : ''}">${esc(x)}</div>`).join('')}
+      <div class="row">${k < it.ideas.length ? `<button class="btn solid" onclick="S.st.k=${k + 1};S.st.last='idea';render()">Show idea ${k + 1} of ${it.ideas.length}</button>` : '<span class="muted txt">Any other sensible idea also counts! 👏</span>'}</div></div>` + navRow(n);
+  },
+  engineer(a) {
+    const it = DATA.engineer[S.i], st = S.st, n = DATA.engineer.length, h = st.h || 0;
+    return header(a, n) + `<div class="card"><span class="chip">${esc(it.ch)}</span><p class="big" style="margin-top:12px">🛠️ ${esc(it.title)}</p>
+      <div class="cols"><div><div class="label">Your mission</div><p class="txt" style="margin:0">${esc(it.mission)}</p></div>
+      <div><div class="label">You may use</div><ul class="list">${it.materials.map((m) => `<li>${esc(m)}</li>`).join('')}</ul></div></div>
+      <p class="muted txt">Draw your design and write the steps. Then compare with the sample plan.</p>
+      ${it.hints.slice(0, h).map((x, j) => `<div class="fb info ${j === h - 1 ? nw('hint') : ''}"><strong>💡 Hint</strong>${esc(x)}</div>`).join('')}
+      ${st.sol ? `<div class="fb ok ${nw('sol')}"><strong>✅ Sample plan</strong><ol class="list">${it.solution.map((x) => `<li>${esc(x)}</li>`).join('')}</ol>
+        <p style="margin:10px 0 0"><b style="color:var(--amber)">The science:</b> ${esc(it.science)}</p></div>` : ''}
+      <div class="row">${h < it.hints.length && !st.sol ? `<button class="btn" onclick="S.st.h=${h + 1};S.st.last='hint';render()">💡 Hint ${h + 1}</button>` : ''}
+      ${st.sol ? '' : `<button class="btn solid" style="--c:var(--green)" onclick="S.st.sol=1;S.st.last='sol';render()">Show sample plan</button>`}</div></div>` + navRow(n);
+  },
+  escape(a) {
+    const E = DATA.escape, es = S.escape;
+    const all = es.open.length === E.locks.length;
+    const code = `<div class="code">${E.locks.map((l, k) => `<div class="slot">${es.open.includes(k) ? l.a : ''}</div>`).join('')}</div>`;
+    if (all) return header(a, 1) + `<div class="card win"><div class="trophy">🏆</div><p class="big">${esc(E.final)}</p>${code}
+      <p class="muted txt">Secret code: <b style="color:var(--green)">${E.locks.map((l) => l.a).join('')}</b></p>
+      <div class="row" style="justify-content:center"><button class="btn" onclick="S.escape={open:[],cur:null,input:''};render()">↺ Play again</button><button class="btn solid" onclick="go('home')">⌂ Home</button></div></div>`;
+    const locks = E.locks.map((l, k) => `<button class="lock ${es.open.includes(k) ? 'open' : ''} ${es.cur === k ? 'cur' : ''}" onclick="${es.open.includes(k) ? '' : `S.escape.cur=${k};S.escape.input='';S.escape.hint=0;S.escape.bad=0;render()`}">
+      <div class="li">${es.open.includes(k) ? '🔓' : '🔒'}</div><b>Lock ${k + 1}</b><div class="lc">${esc(l.ch)}</div></button>`).join('');
+    let panel = '<p class="muted txt">Choose a locked padlock to see its puzzle.</p>';
+    if (es.cur !== null && es.cur !== undefined) {
+      const l = E.locks[es.cur];
+      panel = `<div class="card" id="lockcard" style="margin-top:6px"><span class="chip">Lock ${es.cur + 1} · ${esc(l.ch)}</span><p class="big" style="margin-top:12px">${esc(l.q)}</p>
+        <div class="row"><div class="slot" style="width:90px">${es.input || '?'}</div>
+        <button class="btn solid" onclick="tryLock()">Unlock 🔑</button><button class="btn" onclick="S.escape.hint=1;render()">💡 Hint</button></div>
+        <div class="pad">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((d) => `<button class="key" onclick="S.escape.input='${d}';S.escape.bad=0;render()">${d}</button>`).join('')}</div>
+        ${es.hint ? `<div class="fb info"><strong>💡 Hint</strong>${esc(l.hint)}</div>` : ''}
+        ${es.bad ? `<div class="fb no"><strong>🔒 Still locked — try again!</strong></div>` : ''}
+        ${es.last !== undefined && es.last === es.cur ? '' : ''}</div>`;
+    }
+    const done = es.lastWhy ? `<div class="fb ok new"><strong>🔓 Lock opened!</strong>${esc(es.lastWhy)}</div>` : '';
+    return header(a, 1) + `<div class="card"><p class="big">🔐 ${esc(E.story)}</p>${code}<div class="locks">${locks}</div>${done}${panel}</div>`;
+  },
+};
+
+function sortCard(k) {
+  const st = S.st;
+  if (st.place[k] !== undefined && st.sel !== null && st.sel !== undefined && st.sel !== k) { return sortBin(st.place[k]); }
+  if (st.place[k] !== undefined) { delete st.place[k]; st.chk = 0; st.sel = null; }
+  else st.sel = st.sel === k ? null : k;
+  render();
+}
+function sortBin(j) {
+  const st = S.st;
+  if (st.sel === null || st.sel === undefined) return;
+  st.place[st.sel] = j; st.sel = null; st.chk = 0; render();
+}
+function tryLock() {
+  const es = S.escape, l = DATA.escape.locks[es.cur];
+  if (es.input !== '' && +es.input === l.a) {
+    es.open.push(es.cur); es.lastWhy = l.why; es.cur = null; es.input = ''; es.bad = 0;
+    confetti(es.open.length === DATA.escape.locks.length ? 120 : 30);
+  } else { es.bad = 1; es.lastWhy = ''; }
+  render();
+  if (es.bad) { const c = $('#lockcard'); c && c.classList.add('shake'); }
+}
+function confetti(n) {
+  const cols = ['#4CC9F0', '#FFB703', '#06D6A0', '#EF476F', '#B388FF'];
+  for (let i = 0; i < n; i++) {
+    const d = document.createElement('div'); d.className = 'conf';
+    d.style.left = Math.random() * 100 + 'vw'; d.style.background = cols[i % cols.length];
+    d.style.animationDuration = 1.6 + Math.random() * 1.8 + 's'; d.style.animationDelay = Math.random() * 0.4 + 's';
+    document.body.appendChild(d); setTimeout(() => d.remove(), 4000);
+  }
+}
+document.addEventListener('keydown', (e) => {
+  if (S.view === 'home' || S.view === 'escape') return;
+  const n = act().n();
+  if (e.key === 'ArrowRight' && S.i < n - 1) go(S.view, S.i + 1);
+  if (e.key === 'ArrowLeft' && S.i > 0) go(S.view, S.i - 1);
+});
+// place the correct option of each detective case at a varied position (B, A, D, C, ...)
+DATA.cases.forEach((c, i) => {
+  const pos = [1, 0, 3, 2, 1, 2][i % 6], right = c.opts[c.ans], rest = c.opts.filter((_, k) => k !== c.ans);
+  rest.splice(pos, 0, right); c.opts = rest; c.ans = pos;
+});
+setTeams(2); tDraw(); render();
+</script>
+<script src="../assets/pen.js" defer></script>
+</body>
+</html>
