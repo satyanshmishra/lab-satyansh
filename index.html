@@ -188,6 +188,7 @@ footer.foot{text-align:center;color:var(--ink3);font-size:13.5px;padding:10px 16
       <a class="glass main-tab" id="mainTab"></a>
       <a class="glass main-tab" id="gymTab" style="margin-top:16px;display:none"></a>
       <a class="glass main-tab" id="olyTab" style="margin-top:16px;display:none"></a>
+      <a class="glass main-tab" id="olyTab4" style="margin-top:16px;display:none"></a>
       <div class="listhead"><h3>📚 Chapter labs</h3><label class="glass search">🔎<input id="q" type="search" placeholder="Search a chapter…" aria-label="Search chapters"></label></div>
       <div class="chapters" id="chapters"></div>
     </div>
@@ -247,8 +248,12 @@ function renderClass(k) {
   else gt.style.display = 'none';
   const ot = $('#olyTab');
   if (k === '6') { ot.style.display = ''; ot.href = 'olympiad-challenge/'; ot.style.setProperty('--a', '#F472B6'); ot.style.setProperty('--b', '#A78BFA');
-    ot.innerHTML = `<div class="ic">🏆</div><div><h3>Science Olympiad Challenge</h3><p>30 activity-based olympiad questions from all chapters — tap an option, check it and see why.</p></div><span class="cta">Start →</span>`; }
+    ot.innerHTML = `<div class="ic">🏆</div><div><h3>Science Olympiad Challenge · Set III</h3><p>30 activity-based olympiad questions from all chapters — tap an option, check it and see why.</p></div><span class="cta">Start →</span>`; }
   else ot.style.display = 'none';
+  const o4 = $('#olyTab4');
+  if (k === '6') { o4.style.display = ''; o4.href = 'olympiad-challenge-iv/'; o4.style.setProperty('--a', '#FBBF24'); o4.style.setProperty('--b', '#34D399');
+    o4.innerHTML = `<div class="ic">🥇</div><div><h3>Science Olympiad Challenge · Set IV</h3><p>30 more activity-based olympiad questions from all chapters — new situations, diagrams and explanations.</p></div><span class="cta">Start →</span>`; }
+  else o4.style.display = 'none';
   const q = $('#q'); q.value = '';
   const draw = () => { const s = q.value.trim().toLowerCase();
     const items = list.filter(ch => !s || (ch.title + ' ' + ch.short + ' ' + ch.num).toLowerCase().includes(s));
